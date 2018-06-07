@@ -1,6 +1,7 @@
-# Aetheria
-A.K.A.: a -six letters- a
-A.K.A.: a6a
+# a6a
+Also known as: a -six letters- a
+
+Also known as: aetheria
 
 ## License
 
