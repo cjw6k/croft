@@ -33,7 +33,10 @@
 	"autoload": {
 		"psr-4": {
 			"A6A\\": "app/code"
-		}
+		},
+		"files": [
+			"app/code/utilities.php"
+		]
 	},
 	"extra": {
 		"branch-alias": {

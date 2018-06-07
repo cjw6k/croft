@@ -1,0 +1,13 @@
+default:
+  autoload:
+    '': '%paths.base%/tests'
+  extensions:
+    Behat\MinkExtension:
+      base_url: 'http://localhost/'
+      goutte: ~
+  suites:
+    public:
+      paths: [ '%paths.base%/tests/features/public' ]
+      contexts:
+       - PublicContext:
+           base_url: 'http://localhost/'

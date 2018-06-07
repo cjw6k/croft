@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpdox xmlns="http://xml.phpdox.net/config" silent="true">
+	<project name="A6A" source="${basedir}/app/code/" workdir="${basedir}/var/build/phpdox/xml">
+		<collector publiconly="false" backend="parser" encoding="auto">
+			<include mask="*.php"/>
+			<inheritance resolve="true"/>
+		</collector>
+		<generator output="${basedir}/../web/docs">
+			<enrich base="${basedir}/var/build">
+				<source type="phploc"/>
+				<source type="git">
+					<git binary="/usr/bin/git"/>
+					<history enabled="true" limit="15" cache="${phpDox.project.workdir}/gitlog.xml"/>
+				</source>
+				<source type="checkstyle"/>
+				<source type="pmd">
+					<file name="phpmd.xml"/>
+				</source>
+			</enrich>
+			<build engine="html" enabled="true" output=""/>
+		</generator>
+	</project>
+</phpdox>
+

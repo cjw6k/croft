@@ -1,0 +1,4 @@
+phpcs:
+  standard: tests/phpcs-standards/A6A
+phpmd:
+  standard: phpmd.xml

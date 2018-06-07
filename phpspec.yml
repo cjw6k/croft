@@ -1,0 +1,7 @@
+bootstrap: tests/fixtures/bootstrap.php
+suites:
+  default:
+    namespace: A6A
+    psr4_prefix: A6A
+    spec_path: tests
+    src_path: app/code
