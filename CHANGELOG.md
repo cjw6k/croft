@@ -7,4 +7,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - This CHANGELOG to track what's happening here.
-- A useless README.md
+- An altogether too brief README.md
+- Licensed (MIT) this work, see LICENSE.md for details
