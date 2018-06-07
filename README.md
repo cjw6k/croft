@@ -5,7 +5,7 @@ Also known as: aetheria
 ## Code Documentation
 To generate the documentation, run phpdox with `./vendor/bin/phpdox`. This generates and copies the documentation into `./public/docs/`.
 
-**Note:** Running the tests also generates updating documentation, but only if the behat & phpspec tests all pass.  
+**Note:** Running the tests also generates updated documentation, but only if the behat & phpspec tests all pass.  
 **Note:** If you don't use `./public` for your public www root, adjust the `./run-tests.sh` script to suit your setup.
 
 ## Testing
