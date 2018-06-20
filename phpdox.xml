@@ -5,7 +5,7 @@
 			<include mask="*.php"/>
 			<inheritance resolve="true"/>
 		</collector>
-		<generator output="${basedir}/../public/docs">
+		<generator output="${basedir}/public/docs">
 			<enrich base="${basedir}/var/build">
 				<source type="phploc"/>
 				<source type="git">
