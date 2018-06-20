@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - This CHANGELOG to track what's happening here.
 - An altogether too brief README.md
 - Licensed (MIT) this work, see LICENSE.md for details
-- Added CONTRIBUTORS.md, for clarity
+- Added CONTRIBUTING.md, for clarity
 - Initialized the project with composer
 - Setup a branch-alias
 - phpqa configuration

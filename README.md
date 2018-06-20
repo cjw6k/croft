@@ -51,7 +51,7 @@ server {
         # add_header Content-Security-Policy "script-src 'self' https://ajax.googleapis.com https://maxcdn.bootstrapcdn.com 'unsafe-inline'; object-src 'self'";
 
         # the qa reports use iframes for fancy flavour
-        # this header is only needed if you haved your X-Frame-Options to DENY elsewhere and need to adjust it for phpqa
+        # this header is only needed if you have your X-Frame-Options set to DENY elsewhere and need to adjust it for phpqa
         #location /docs/ {
         #        add_header X-Frame-Options SAMEORIGIN;
         #}
