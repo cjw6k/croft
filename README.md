@@ -86,13 +86,13 @@ To run all the tests, use `./run-tests.sh`. This copies the reports into `./publ
 
 
 #### Required hack for tests toolchain to work as of 2018-06-07
-There is a limitation with using tabs as the indentation method and phpcs. I don't try to understand it, i just fix it:
+There is a limitation with using tabs as the indentation method and phpcs. I minimize my keypress events and use more screen. You guessed it, I'm a multi-monitor desktop driver. In bash:
 ```shell
 $ mv vendor/bin/phpcs vendor/bin/phpcs-default
 ```
 and create the replacement `./vendor/bin/phpcs` with contents:
 ```shell
-#!/bin/sh
+#!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/phpcs-default "$@" --tab-width=4
