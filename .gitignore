@@ -11,3 +11,5 @@
 /public/docs/
 
 behat.custom.yml
+
+.htpasswd-docs
