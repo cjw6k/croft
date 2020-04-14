@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpdox xmlns="http://xml.phpdox.net/config" silent="true">
-	<project name="A6A" source="${basedir}/app/code/" workdir="${basedir}/var/build/phpdox/xml">
+	<project name="webfoo" source="${basedir}/source/" workdir="${basedir}/tests/build/phpdox/xml">
 		<collector publiconly="false" backend="parser" encoding="auto">
 			<include mask="*.php"/>
 			<inheritance resolve="true"/>
 		</collector>
 		<generator output="${basedir}/public/docs">
-			<enrich base="${basedir}/var/build">
+			<enrich base="${basedir}/tests/build">
 				<source type="phploc"/>
 				<source type="git">
 					<git binary="/usr/bin/git"/>
