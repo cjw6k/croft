@@ -32,10 +32,10 @@
 	"require": {},
 	"autoload": {
 		"psr-4": {
-			"cjw6k\\": "app/code"
+			"cjw6k\\": "source"
 		},
 		"files": [
-			"app/code/utilities.php"
+			"source/utilities.php"
 		]
 	}
 }

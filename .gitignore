@@ -1,15 +1,8 @@
-/logs/
-
 /vendor/
 
-/var/*
-!/var/.gitignore
-!/var/build/
-/var/build/*
-!/var/build/.gitignore
+/tests/build/*
+!/tests/build/.gitignore
 
 /public/docs/
 
-behat.custom.yml
-
-.htpasswd-docs
+/tests/behat.custom.yml

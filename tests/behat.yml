@@ -1,13 +1,13 @@
 default:
   autoload:
-    '': '%paths.base%/tests'
+    '': '%paths.base%/contexts'
   extensions:
     Behat\MinkExtension:
       base_url: 'http://localhost/'
       goutte: ~
   suites:
     public:
-      paths: [ '%paths.base%/tests/features/public' ]
+      paths: [ '%paths.base%/features/public' ]
       contexts:
        - PublicContext:
            base_url: 'http://localhost/'

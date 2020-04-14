@@ -1,0 +1,7 @@
+bootstrap: fixtures/bootstrap.php
+suites:
+  default:
+    namespace: cjw6k\webfoo
+    psr4_prefix: cjw6k\webfoo
+    spec_path: .
+    src_path: source

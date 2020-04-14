@@ -7,7 +7,7 @@ use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Behat\MinkExtension\ContextMinkContext;
 
-require_once __DIR__ . '/fixtures/bootstrap.php';
+require_once __DIR__ . '/../fixtures/bootstrap.php';
 require_once VENDOR_ROOT . 'phpunit/phpunit/src/Framework/Assert/Functions.php';
 
 /**
