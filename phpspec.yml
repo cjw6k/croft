@@ -1,3 +1,4 @@
+bootstrap: "tests/fixtures/bootstrap.php"
 suites:
   default:
     namespace: cjw6k

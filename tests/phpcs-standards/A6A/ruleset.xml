@@ -44,6 +44,7 @@
 	<rule ref="PSR2.Files.EndFileNewline"/>
 	<rule ref="PSR2.Namespaces.NamespaceDeclaration"/>
 	<rule ref="Squiz.Commenting">
+		<exclude name="Squiz.Commenting.BlockComment" />
 		<exclude name="Squiz.Commenting.ClosingDeclarationComment" />
 		<exclude name="Squiz.Commenting.FileComment" />
 		<exclude name="Squiz.Commenting.InlineComment" />

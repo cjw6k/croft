@@ -34,7 +34,9 @@
 			"email": "chris@lot2k.com"
 		}
 	],
-	"require": {},
+	"require": {
+		"ext-yaml": "*"
+	},
 	"autoload": {
 		"psr-4": {
 			"cjw6k\\": "source"

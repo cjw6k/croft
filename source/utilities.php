@@ -1,5 +1,11 @@
 <?php
 
+// Make various paths available in globally defined constants
+const SOURCE_ROOT = __DIR__ . '/';
+const PACKAGE_ROOT = SOURCE_ROOT . '../';
+const TEMPLATES_DEFAULT = PACKAGE_ROOT . 'templates/default/';
+const TEMPLATES_LOCAL = PACKAGE_ROOT . 'templates/local/';
+
 /**
  * A debugging function which produces a var_dump of the argument, wrapped in <pre> for display on the web if not using the cli
  *
@@ -24,7 +30,9 @@ function showMe($data){
 		echo '<pre>';
 	}
 
-	echo 'DEBUG: ', $trace[0]['file'], ', Line ', $trace[0]['line'], $newline, $newline;
+	if(isset($trace[0]['file']) && isset($trace[0]['line'])){
+		echo 'DEBUG: ', $trace[0]['file'], ', Line ', $trace[0]['line'], $newline, $newline;
+	}
 	var_dump($data);
 	echo $newline;
 

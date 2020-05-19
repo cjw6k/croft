@@ -3,14 +3,26 @@
     totallyTyped="false"
     errorLevel="5"
     resolveFromConfigFile="false"
+    findUnusedVariablesAndParams="true"
+    findUnusedCode="true"
+    ensureArrayStringOffsetsExist="true"
+    skipChecksOnUnresolvableIncludes="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
-    <projectFiles>
-	    <directory name="source" />
-        <ignoreFiles>
-		<directory name="vendor" />
-        </ignoreFiles>
-    </projectFiles>
+	<projectFiles>
+		<directory name="source" />
+		<directory name="public" />
+		<ignoreFiles>
+			<directory name="vendor" />
+		</ignoreFiles>
+	</projectFiles>
+	<issueHandlers>
+		<InvalidScope>
+			<errorLevel type="suppress">
+				<directory name="templates" />
+			</errorLevel>
+		</InvalidScope>
+	</issueHandlers>
 </psalm>
