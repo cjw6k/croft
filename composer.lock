@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3bf0d90f36c89f4f2d50811d37e4aaa2",
+    "content-hash": "d1ad7b60bd594ce3b6ab65bee70c8bba",
     "packages": [],
     "packages-dev": [
         {
@@ -3468,6 +3468,49 @@
             ],
             "description": "A polyfill for getallheaders.",
             "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
+            "name": "rexxars/html-validator",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rexxars/html-validator.git",
+                "reference": "d225fc8414a0b58db43db7d73b3b43176037e2c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rexxars/html-validator/zipball/d225fc8414a0b58db43db7d73b3b43176037e2c2",
+                "reference": "d225fc8414a0b58db43db7d73b3b43176037e2c2",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^6.2.1",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "ext-dom": "*",
+                "phpunit/phpunit": "^5.5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "HtmlValidator": "library"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Espen Hovlandsdal",
+                    "email": "espen@hovlandsdal.com"
+                }
+            ],
+            "description": "Validates HTML using Validator.nu",
+            "time": "2019-07-31T13:59:30+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
