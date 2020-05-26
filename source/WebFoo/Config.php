@@ -41,9 +41,8 @@ class Config
 			return;
 		}
 
-		throw new Exception(
-			sprintf('The specified config file %s does not exist', $config_file)
-		);
+		// This should be a notice to run setup.php
+		$this->_makeDefaultConfig();
 	}
 
 	/**

@@ -31,11 +31,29 @@ trait WebContextTrait
 	}
 
 	/**
+	 * @BeforeScenario @user_exists
+	 */
+	public function makeConfigWithUsers()
+	{
+		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
+		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array('username' => 'test', 'password' => password_hash('test', PASSWORD_DEFAULT)));
+	}
+
+	/**
 	 * @AfterScenario
 	 */
 	public function resetSession()
 	{
 		$this->getSession()->reset();
+	}
+
+	/**
+	 * @AfterScenario @user_exists
+	 */
+	public function removeConfig()
+	{
+		unlink(PACKAGE_ROOT . 'config.yml');
+		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file exists');
 	}
 
 	/**
@@ -96,4 +114,21 @@ trait WebContextTrait
 		$result = $validator->validateDocument($this->getSession()->getPage()->getContent());
 		assertEmpty((string)$result, $result);
 	}
+
+    /**
+     * @Given I log in with username :username and password :password
+     */
+    public function iLogInWithEmailAndPassword2($username, $password)
+    {
+        $this->doLogIn($username, $password);
+    }
+
+	public function doLogIn($username, $password){
+		$this->getSession()->visit('/login/');
+		$page = $this->getSession()->getPage();
+		$page->find('named', array('field', 'username'))->setValue($username);
+		$page->find('named', array('field', 'userkey'))->setValue($password);
+		$page->find('css', 'button[type=submit]')->submit();
+	}
+
 }

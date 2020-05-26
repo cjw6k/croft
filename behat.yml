@@ -11,3 +11,12 @@ default:
       contexts:
        - PublicContext:
            base_url: 'http://localhost/'
+    private:
+      paths: [ '%paths.base%/tests/features/private' ]
+      contexts:
+       - PrivateContext:
+           base_url: 'http://localhost/'
+    cli:
+      paths: [ '%paths.base%/tests/features/cli' ]
+      contexts:
+       - CLIContext:

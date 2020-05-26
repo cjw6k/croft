@@ -41,3 +41,19 @@ function showMe($data){
 		echo '</pre>';
 	}
 }
+
+/**
+ * Get the time the current request was made, or from the system clock if request time is not set
+ *
+ * @return integer The current time as a unix time stamp.
+ *
+ * @SuppressWarnings(PHPMD.Superglobals)
+ */
+function now()
+{
+	if(isset($_SERVER['REQUEST_TIME'])){
+		return $_SERVER['REQUEST_TIME'];
+	}
+
+	return time();
+}
