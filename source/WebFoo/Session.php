@@ -35,7 +35,11 @@ class Session
 
 			if(isset($_SESSION['logged_in']) && $_SESSION['logged_in']){
 				$this->isLoggedIn(true);
+				return;
 			}
+
+			// Session has expired, remove the old session cookie
+			header('Location: /logout/');
 		}
 	}
 
