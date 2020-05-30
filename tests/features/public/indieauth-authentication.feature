@@ -126,15 +126,15 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		  | redirect_uri                      | client_id                    |
 		  | "https://example.com/"            | "HTTPS://example.com/"       |
 		  | "https://example.com:8081"        | "https://example.com:8081/"  |
-          | "http://localhost/"               | "http://localhost/"          |
-          | "http://127.0.0.1/"               | "http://127.0.0.1/"          |
-          | "http://[::1]/"                   | "http://[::1]/"              |
-          | "https://example.com"             | "https://example.com/?h"     |
-          | "https://example.com"             | "https://example.com/?h=h"   |
-          | "https://example.com"             | "https://example.com/?h=h&p" |
-          | "https://private-dns"             | "https://private-dns/"       |
-          | "https://stars.example.com"       | "https://example.com/"       |
-          | "https://deneb.stars.example.com" | "https://stars.example.com/" |
+		  | "http://localhost/"               | "http://localhost/"          |
+		  | "http://127.0.0.1/"               | "http://127.0.0.1/"          |
+		  | "http://[::1]/"                   | "http://[::1]/"              |
+		  | "https://example.com"             | "https://example.com/?h"     |
+		  | "https://example.com"             | "https://example.com/?h=h"   |
+		  | "https://example.com"             | "https://example.com/?h=h&p" |
+		  | "https://private-dns"             | "https://private-dns/"       |
+		  | "https://stars.example.com"       | "https://example.com/"       |
+		  | "https://deneb.stars.example.com" | "https://stars.example.com/" |
 
 	@user_exists
 	Scenario: Receiving an authentication request with missing state parameter
