@@ -130,5 +130,33 @@ trait WebContextTrait
 		$page->find('named', array('field', 'userkey'))->setValue($password);
 		$page->find('css', 'button[type=submit]')->submit();
 	}
+	
+    /**
+     * @Then there should be an HTTP :arg1 header with value :arg2
+     */
+    public function thereShouldBeAnHttpHeaderWithValue($arg1, $arg2)
+    {
+        $headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey($arg1, $headers);
+		assertEquals($headers[$arg1][0], $arg2);
+    }
+
+    /**
+     * @Then there should be a link element with rel :arg1 and href :arg2
+     */
+    public function thereShouldBeALinkElementWithRelAndHref($arg1, $arg2)
+    {
+        $auth_endpoint_link = $this->getSession()->getPage()->find('xpath', "//link[@rel='authorization_endpoint']");
+		assertNotNull($auth_endpoint_link);
+		assertEquals('/auth/', $auth_endpoint_link->getAttribute('href'));
+    }
+	
+    /**
+     * @Given I am logged in
+     */
+    public function iAmLoggedIn()
+    {
+        $this->doLogin("test", "test");
+    }	
 
 }

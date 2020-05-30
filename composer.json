@@ -26,7 +26,8 @@
 		"nette/neon": "^3.1",
 		"sensiolabs/security-checker": "^6.0",
 		"vimeo/psalm": "^3.11",
-		"rexxars/html-validator": "^2.2"
+		"rexxars/html-validator": "^2.2",
+		"indieauth/client": "^0.5.2"
 	},
 	"authors": [
 		{

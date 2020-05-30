@@ -32,6 +32,20 @@ class WebFoo
 	private $_session;
 
 	/**
+	 * The IndieAuth instance
+	 *
+	 * @var WebFoo\IndieAuth
+	 */
+	private $_indieauth;
+
+	/**
+	 * The Request instance
+	 *
+	 * @var WebFoo\Request
+	 */
+	private $_request;
+
+	/**
 	 * Construct the web stuff slinging thinger
 	 *
 	 * @param string $config_file The full path to the configuration file.
@@ -40,6 +54,8 @@ class WebFoo
 	{
 		$this->_config = new WebFoo\Config($config_file);
 		$this->_session = new WebFoo\Session($this->_config);
+		$this->_indieauth = new WebFoo\IndieAuth();
+		$this->_request = new WebFoo\Request();
 	}
 
 	/**
@@ -49,64 +65,84 @@ class WebFoo
 	 */
 	public function sling()
 	{
-		if('/login/' == filter_input(INPUT_SERVER, 'REQUEST_URI')){
+		switch($this->getRequest()->getPath()){
+			case '/auth/':
+				$this->_slingAuth();
+				break;
 
-			if('POST' == filter_input(INPUT_SERVER, 'REQUEST_METHOD')){
-				if($this->getSession()->doLogin()){
-					return;
-				}
-			}
+			case '/login/':
+				$this->_slingLogin();
+				break;
 
-			if(file_exists(TEMPLATES_LOCAL . 'login.php')){
-				/**
-				 * A file_exists check has succeeded at runtime.
-				 *
-				 * @psalm-suppress MissingFile
-				 */
-				include TEMPLATES_LOCAL . 'login.php';
+			case '/logout/':
+				$this->getSession()->doLogout();
+				return;
+
+			case '/':
+				$this->_includeTemplate('home.php', 'default.php');
+				break;
+
+			default:
+				$this->_sling404();
+				break;
+		}
+	}
+
+	/**
+	 * Control requests to /auth/
+	 *
+	 * @return void
+	 */
+	private function _slingAuth()
+	{
+		if(!$this->getSession()->isLoggedIn()){
+			if(!empty($this->getRequest()->getQuery())){
+				header('Location: /login/?redirect_to=' . urlencode($this->getRequest()->getQuery()));
 				return;
 			}
-
-			include TEMPLATES_DEFAULT . 'login.php';
+			header('Location: /login/');
 			return;
 		}
 
-		if('/logout/' == filter_input(INPUT_SERVER, 'REQUEST_URI')){
-			$this->getSession()->doLogout();
+		$this->getIndieAuth()->authenticationRequest($this->getRequest());
+
+		if($this->getIndieAuth()->isValid()){
+			$this->_includeTemplate('auth-good.php');
 			return;
 		}
 
-		if('/' != filter_input(INPUT_SERVER, 'REQUEST_URI')){
-			http_response_code(404);
-			$this->getConfig()->setTitle(
-				$this->getConfig()->getTitle() . ' - File Not Found'
-			);
+		$this->_includeTemplate('auth-not_good.php');
+	}
 
-			if(file_exists(TEMPLATES_LOCAL . '404.php')){
-				/**
-				 * A file_exists check has succeeded at runtime.
-				 *
-				 * @psalm-suppress MissingFile
-				 */
-				include TEMPLATES_LOCAL . '404.php';
+	/**
+	 * Control requests to /login/
+	 *
+	 * @return void
+	 */
+	private function _slingLogin()
+	{
+		if('POST' == $this->getRequest()->getMethod()){
+			if($this->getSession()->doLogin()){
 				return;
 			}
-
-			include TEMPLATES_DEFAULT . 'default.php';
-			return;
 		}
 
-		if(file_exists(TEMPLATES_LOCAL . 'home.php')){
-			/**
-			 * A file_exists check has succeeded at runtime.
-			 *
-			 * @psalm-suppress MissingFile
-			 */
-			include TEMPLATES_LOCAL . 'home.php';
-			return;
-		}
+		$this->_includeTemplate('login.php');
+	}
 
-		include TEMPLATES_DEFAULT . 'default.php';
+	/**
+	 * Control file not found requests
+	 *
+	 * @return void
+	 */
+	private function _sling404()
+	{
+		http_response_code(404);
+		$this->getConfig()->setTitle(
+			$this->getConfig()->getTitle() . ' - File Not Found'
+		);
+
+		$this->_includeTemplate('404.php', 'default.php');
 	}
 
 	/**
@@ -127,6 +163,26 @@ class WebFoo
 	public function getSession()
 	{
 		return $this->_session;
+	}
+
+	/**
+	 * Retrieve the IndieAuth server
+	 *
+	 * @return WebFoo\IndieAuth The IndieAuth server.
+	 */
+	public function getIndieAuth()
+	{
+		return $this->_indieauth;
+	}
+
+	/**
+	 * Retrieve the request
+	 *
+	 * @return WebFoo\Request The current request.
+	 */
+	public function getRequest()
+	{
+		return $this->_request;
 	}
 
 	/**
@@ -195,6 +251,8 @@ class WebFoo
 	 * Output the webfoo controls HTML.
 	 *
 	 * @return void
+	 *
+	 * @psalm-suppress PossiblyUnusedMethod
 	 */
 	public function webfooControls()
 	{
@@ -202,17 +260,38 @@ class WebFoo
 			return;
 		}
 
-		if(file_exists(TEMPLATES_LOCAL . 'webfoo_controls.php')){
+		$this->_includeTemplate('webfoo_controls.php');
+	}
+
+	/**
+	 * Send HTML to the client from a template file
+	 *
+	 * @param string $template  The filename to load.
+	 * @param string $alternate The filename to load from default templates when the requested
+	 *                          template is missing from the local templates.
+	 *
+	 * @return void
+	 *
+	 * @psalm-suppress UnresolvableInclude
+	 */
+	private function _includeTemplate(string $template, string $alternate = '')
+	{
+		if(file_exists(TEMPLATES_LOCAL . $template)){
 			/**
 			 * A file_exists check has succeeded at runtime.
 			 *
 			 * @psalm-suppress MissingFile
 			 */
-			include TEMPLATES_LOCAL . 'webfoo_controls.php';
+			include TEMPLATES_LOCAL . $template;
 			return;
 		}
 
-		include TEMPLATES_DEFAULT . 'webfoo_controls.php';
+		if(!empty($alternate)){
+			include TEMPLATES_DEFAULT . $alternate;
+			return;
+		}
+
+		include TEMPLATES_DEFAULT . $template;
 	}
 
 }

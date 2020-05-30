@@ -15,6 +15,7 @@
 		<directory name="source" />
 		<directory name="public" />
 		<directory name="bin" />
+		<directory name="templates" />
 		<ignoreFiles>
 			<directory name="vendor" />
 		</ignoreFiles>
