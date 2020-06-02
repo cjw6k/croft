@@ -145,3 +145,11 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And I should see "The authentication request was missing some stuff that makes it good."
 		And I should see "missing required state parameter"
 		And I should not see "Continue"
+
+	@user_exists
+	Scenario: Receiving an authentication request while not logged in, logging in and seeing the request
+		Given I am not logged in
+		And I receive an authentication request
+		When I login
+		Then I should be on "/auth/"
+		And I should see "Continue"

@@ -99,6 +99,12 @@ class Session
 		$_SESSION['started'] = now();
 		$_SESSION['logged_in'] = true;
 
+		if(isset($_GET['redirect_to'])){
+			$redirect_to = urldecode(filter_input(INPUT_GET, 'redirect_to'));
+			header('Location: /auth/?' . $redirect_to);
+			return true;
+		}
+
 		header('Location: /');
 
 		return true;

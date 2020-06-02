@@ -159,4 +159,15 @@ trait WebContextTrait
         $this->doLogin("test", "test");
     }	
 
+    /**
+     * @When I login
+     */
+    public function iLogin()
+    {
+		$page = $this->getSession()->getPage();
+		$page->find('named', array('field', 'username'))->setValue("test");
+		$page->find('named', array('field', 'userkey'))->setValue("test");
+		$page->find('css', 'button[type=submit]')->submit();
+    }
+
 }

@@ -63,6 +63,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
      */
     public function iAmNotLoggedIn()
     {
+		$this->getSession()->visit('/');
         $this->getSession()->setCookie('webfoo', null);
     }
 	
