@@ -4,7 +4,6 @@
     errorLevel="5"
     resolveFromConfigFile="false"
     findUnusedVariablesAndParams="true"
-    findUnusedCode="true"
     ensureArrayStringOffsetsExist="true"
     skipChecksOnUnresolvableIncludes="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
