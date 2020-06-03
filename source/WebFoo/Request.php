@@ -43,6 +43,30 @@ class Request
 	}
 
 	/**
+	 * Provide data from $_SESSION at specified index
+	 *
+	 * @param string $index The index of the data in $_SESSION.
+	 * @param mixed  $data  The data to store in $_SESSION at specified index.
+	 *
+	 * @return mixed The data from $_SESSION or null if not set.
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 */
+	public function session(string $index, $data = null)
+	{
+		if(null !== $data){
+			$_SESSION[$index] = $data;
+			return $data;
+		}
+
+		if(!isset($_SESSION[$index])){
+			return null;
+		}
+
+		return $_SESSION[$index];
+	}
+
+	/**
 	 * Provide data from $_SERVER at specified index
 	 *
 	 * @param string $index The index of the data in $_SERVER.
@@ -76,6 +100,42 @@ class Request
 		}
 
 		return filter_input(INPUT_GET, $index);
+	}
+
+	/**
+	 * Filter and provide data from $_POST at specified index
+	 *
+	 * @param string $index The index of the data in $_POST.
+	 *
+	 * @return mixed The data from $_POST or null if not set.
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 */
+	public function post(string $index)
+	{
+		if(!isset($_POST[$index])){
+			return null;
+		}
+
+		return filter_input(INPUT_POST, $index);
+	}
+
+	/**
+	 * Filter and provide data from $_COOKIE at specified index
+	 *
+	 * @param string $index The index of the data in $_COOKIE.
+	 *
+	 * @return mixed The data from $_COOKIE or null if not set.
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 */
+	public function cookie(string $index)
+	{
+		if(!isset($_COOKIE[$index])){
+			return null;
+		}
+
+		return filter_input(INPUT_COOKIE, $index);
 	}
 
 }
