@@ -53,9 +53,9 @@ class WebFoo
 	public function __construct(string $config_file = PACKAGE_ROOT . 'config.yml')
 	{
 		$this->_config = new WebFoo\Config($config_file);
-		$this->_session = new WebFoo\Session($this->_config);
-		$this->_indieauth = new WebFoo\IndieAuth();
 		$this->_request = new WebFoo\Request();
+		$this->_session = new WebFoo\Session($this->_config, $this->_request);
+		$this->_indieauth = new WebFoo\IndieAuth();
 	}
 
 	/**
@@ -97,7 +97,7 @@ class WebFoo
 	{
 		if(!$this->getSession()->isLoggedIn()){
 			if(!empty($this->getRequest()->getQuery())){
-				header('Location: /login/?redirect_to=' . urlencode($this->getRequest()->getQuery()));
+				header('Location: /login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
 				return;
 			}
 			header('Location: /login/');
@@ -251,8 +251,6 @@ class WebFoo
 	 * Output the webfoo controls HTML.
 	 *
 	 * @return void
-	 *
-	 * @psalm-suppress PossiblyUnusedMethod
 	 */
 	public function webfooControls()
 	{

@@ -10,7 +10,8 @@ class SessionSpec extends ObjectBehavior
 	function let()
 	{
 		$config = new \cjw6k\WebFoo\Config( FIXTURES_ROOT . 'config-basic.yml' );
-		$this->beConstructedWith($config);
+		$request = new \cjw6k\WebFoo\Request();
+		$this->beConstructedWith($config, $request);
 	}
 	
     function it_is_initializable()

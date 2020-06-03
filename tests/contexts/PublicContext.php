@@ -66,7 +66,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$this->getSession()->visit('/');
         $this->getSession()->setCookie('webfoo', null);
     }
-	
+
     /**
      * @Given the authentication request has no client_id parameter
      */
@@ -129,14 +129,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
 			$this->base_url,
 			$arg1,
-			'https://example.com/',			
+			'https://example.com/',
 			'test',
 			'id',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
-    }	
-	
+    }
+
     /**
      * @Given the authentication request has redirect_uri parameter :arg1 with client_id :arg2
      */
@@ -146,14 +146,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
 			$this->base_url,
 			$arg1,
-			$arg2,			
+			$arg2,
 			'test',
 			'id',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
-    }	
-	
+    }
+
     /**
      * @Given the authentication request has no state parameter
      */
@@ -171,5 +171,22 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$authorization_url = str_replace('state=&', '&', $authorization_url);
 		$this->getSession()->visit($authorization_url);
     }
-	
+
+    /**
+     * @Given I receive an authentication request from :arg1
+     */
+    public function iReceiveAnAuthenticationRequestFrom($arg1)
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			$arg1,
+			$arg1,
+			'test',
+			'id',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+    }
+
 }

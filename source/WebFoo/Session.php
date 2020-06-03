@@ -20,21 +20,22 @@ class Session
 	/**
 	 * Construct the Session
 	 *
-	 * @param Config $config The active configuration.
-	 *
-	 * @SuppressWarnings(PHPMD.Superglobals)
+	 * @param Config  $config  The active configuration.
+	 * @param Request $request The current request.
 	 */
-	public function __construct(Config $config)
+	public function __construct(Config $config, Request $request)
 	{
 		$this->setConfig($config);
+		$this->setRequest($request);
 
 		session_name($this->_getCookieName());
 
-		if(filter_input(INPUT_COOKIE, $this->_getCookieName())){
+		if($request->cookie($this->_getCookieName())){
 			$this->_sessionStart();
 
-			if(isset($_SESSION['logged_in']) && $_SESSION['logged_in']){
+			if($request->session('logged_in')){
 				$this->isLoggedIn(true);
+				$this->setSSRV($request->session('ssrv'));
 				return;
 			}
 
@@ -49,8 +50,6 @@ class Session
 	 * Updates a last access time so that active sessions are not garbage collected too soon.
 	 *
 	 * @return void
-	 *
-	 * @SuppressWarnings(PHPMD.Superglobals)
 	 */
 	private function _sessionStart()
 	{
@@ -62,7 +61,7 @@ class Session
 				)
 			);
 
-			$_SESSION['last_access'] = now();
+			$this->getRequest()->session('last_access', now());
 		}
 	}
 
@@ -71,18 +70,16 @@ class Session
 	 *
 	 * @return boolean True  The login is successful.
 	 *                 False The login is not successful.
-	 *
-	 * @SuppressWarnings(PHPMD.Superglobals)
 	 */
 	public function doLogin()
 	{
-		$username = filter_input(INPUT_POST, 'username');
-		if(!isset($username) || empty($username)){
+		$request = $this->getRequest();
+
+		if(!$request->post('username')){
 			$this->mergeErrors('Username is required');
 		}
 
-		$password = filter_input(INPUT_POST, 'userkey');
-		if(!isset($password) || empty($password)){
+		if(!$request->post('userkey')){
 			$this->mergeErrors('Password is required');
 		}
 
@@ -90,18 +87,19 @@ class Session
 			return false;
 		}
 
-		if(!password_verify($password, $this->getConfig()->getPassword()) || $username != $this->getConfig()->getUsername()){
+		if(!password_verify($request->post('userkey'), $this->getConfig()->getPassword()) || $request->post('username') != $this->getConfig()->getUsername()){
 			$this->mergeErrors('The username and password entered did not match the config. Please double-check and try again');
 			return false;
 		}
 
 		$this->_sessionStart();
-		$_SESSION['started'] = now();
-		$_SESSION['logged_in'] = true;
+		$request->session('started', now());
+		$request->session('logged_in', true);
+		$request->session('ssrv', bin2hex(openssl_random_pseudo_bytes(16)));
 
-		if(isset($_GET['redirect_to'])){
-			$redirect_to = urldecode(filter_input(INPUT_GET, 'redirect_to'));
-			header('Location: /auth/?' . $redirect_to);
+		if($request->get('redirect_to')){
+			$redirect_to = urldecode($request->get('redirect_to'));
+			header('Location: /' . $redirect_to);
 			return true;
 		}
 
@@ -114,12 +112,10 @@ class Session
 	 * Logout a user
 	 *
 	 * @return void
-	 *
-	 * @SuppressWarnings(PHPMD.Superglobals)
 	 */
 	public function doLogout()
 	{
-		unset($_SESSION['logged_in']);
+		$this->getRequest()->session('logged_in', false);
 		setcookie($this->_getCookieName(), '', -1, '/', '', true, true);
 		header('Location: /');
 	}

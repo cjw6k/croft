@@ -153,3 +153,10 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		When I login
 		Then I should be on "/auth/"
 		And I should see "Continue"
+
+	@user_exists
+	Scenario: Approving an authentication request
+		Given I am logged in
+		And I receive an authentication request from "http://localhost/fake/"
+		When I press "Continue"
+		Then I should be on "http://localhost/fake/"
