@@ -53,6 +53,7 @@ class Config
 	private function _makeDefaultConfig()
 	{
 		$this->setTitle('WebFoo');
+		$this->setMe('http://localhost/');
 	}
 
 }

@@ -15,7 +15,7 @@ class CLIContext implements Context, SnippetAcceptingContext
 {
 	private $_cli_output = null;
 	private $_cli_status = null;
-	
+
 	/**
 	 * @BeforeScenario @make_config
 	 */
@@ -24,7 +24,7 @@ class CLIContext implements Context, SnippetAcceptingContext
 		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
 		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array());
 	}
-	
+
 	/**
 	 * @AfterScenario
 	 */
@@ -33,24 +33,26 @@ class CLIContext implements Context, SnippetAcceptingContext
 		$this->_cli_output = null;
 		$this->_cli_status = null;
 	}
-	
+
 	/**
 	 * @AfterScenario @cleanup_config
 	 */
 	public function removeConfig()
 	{
-		unlink(PACKAGE_ROOT . 'config.yml');
+		if(file_exists(PACKAGE_ROOT . 'config.yml')){
+			unlink(PACKAGE_ROOT . 'config.yml');
+		}
 		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file was not removed');
 	}
-	
+
 	/**
 	 * @Given there is no config file
 	 */
 	public function thereIsNoConfigFile()
 	{
 		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file exists');
-	}	
-	
+	}
+
 	/**
 	 * @Given there is a config file
 	 */
@@ -58,15 +60,15 @@ class CLIContext implements Context, SnippetAcceptingContext
 	{
 		assertFileExists(PACKAGE_ROOT . 'config.yml', 'config.yml file does not exist');
 	}
-	
+
 	/**
 	 * @When I run the setup script with no arguments
 	 */
 	public function iRunTheSetupScriptWithNoArguments()
 	{
 		exec('php ' . PACKAGE_ROOT . 'bin/setup.php', $this->_cli_output, $this->_cli_status);
-	}	
-	
+	}
+
 	/**
 	 * @When I run the setup script with arguments :arg1
 	 */
@@ -74,7 +76,16 @@ class CLIContext implements Context, SnippetAcceptingContext
 	{
 		exec('php ' . PACKAGE_ROOT . 'bin/setup.php ' . $arg1, $this->_cli_output, $this->_cli_status);
 	}
-	
+
+    /**
+     * @When I run the setup script with user :arg1 and URL :arg2
+     */
+    public function iRunTheSetupScriptWithUserAndUrl($arg1, $arg2)
+    {
+		exec('php ' . PACKAGE_ROOT . 'bin/setup.php ' . $arg1 . ' ' . $arg2, $this->_cli_output, $this->_cli_status);
+    }
+
+
     /**
      * @Then I should see :arg1
      */
@@ -83,14 +94,14 @@ class CLIContext implements Context, SnippetAcceptingContext
 		assertNotEmpty($this->_cli_output);
         assertStringContainsString($arg1, implode(PHP_EOL, $this->_cli_output));
     }
-	
+
     /**
      * @Then the exit status should be :arg1
      */
     public function theExitStatusShouldBe($arg1)
     {
         assertEquals($arg1, $this->_cli_status);
-    }	
+    }
 
     /**
      * @Then the config file should have key :arg1 with value :arg2
@@ -108,9 +119,9 @@ class CLIContext implements Context, SnippetAcceptingContext
     public function iShouldSeeATemporaryPassword()
     {
         assertStringContainsString("Your temporary password is: ", implode(PHP_EOL, $this->_cli_output));
-		
+
     }
-	
+
     /**
      * @Then the config file should contain the password hash
      */
@@ -119,7 +130,7 @@ class CLIContext implements Context, SnippetAcceptingContext
         assertEquals(1, preg_match('/^Your temporary password is: (.*)/m', implode(PHP_EOL, $this->_cli_output), $matches));
         $config = yaml_parse_file(PACKAGE_ROOT . 'config.yml');
 		assertArrayHasKey('password', $config);
-		assertTrue(password_verify($matches[1], $config['password']));		
+		assertTrue(password_verify($matches[1], $config['password']));
     }
-	
+
 }

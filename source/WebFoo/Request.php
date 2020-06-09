@@ -33,6 +33,7 @@ class Request
 		}
 
 		$url_parts = parse_url($this->server('REQUEST_URI'));
+
 		if(isset($url_parts['path'])){
 			$this->setPath(rawurldecode($url_parts['path']));
 		}

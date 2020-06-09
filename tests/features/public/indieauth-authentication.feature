@@ -160,3 +160,88 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And I receive an authentication request from "http://localhost/fake/"
 		When I press "Continue"
 		Then I should be on "http://localhost/fake/"
+
+	@user_exists
+	Scenario: Receiving an authorization code verification that is missing the code parameter
+		Given I have approved an authentication request
+		When I receive an authorization verification request
+		But the authorization verification request has no code parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request was missing the code parameter"
+
+	@user_exists
+	Scenario: Receiving an authorization code verification that is missing the client_id parameter
+		Given I have approved an authentication request
+		When I receive an authorization verification request
+		But the authorization verification request has no client_id parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request was missing the client_id parameter"
+
+	@user_exists
+	Scenario: Receiving an authorization code verification that is missing the redirect_uri parameter
+		Given I have approved an authentication request
+		When I receive an authorization verification request
+		But the authorization verification request has no redirect_uri parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request was missing the redirect_uri parameter"
+
+	Scenario: Receiving an authorization code verification when no authentication request was authorized
+		Given I have not approved an authentication request
+		When I receive an authorization verification request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request could not be matched to an approved authentication response"
+
+	@user_exists
+	Scenario: Receiving an authorization code verification that has been previously authorized
+		Given I have approved an authentication request
+		When I receive an authorization verification request
+		Then the response status code should be 200
+		And the response should be json
+		And the json should not have an "error" parameter
+		And the json should not have an "error_description" parameter
+		And the json should have a "me" parameter
+		And the json "me" parameter should be "http://localhost/"
+		And the the authorization code should be marked as having been used
+
+	@user_exists
+	Scenario: Receiving a duplicate authorization code verification that has been previously authorized
+		Given I have approved an authentication request
+		When I receive an authorization verification request
+		And I receive an authorization verification request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request matched an approved authentication response that has already been used"
+		And the json should not have a "me" parameter
+		And the the authorization code should be marked as having been used twice
+
+	@user_exists
+	Scenario: Receiving an authorization code verification when authorization has already expired
+		Given I have approved an authentication request more than ten minutes ago
+		When I receive an authorization verification request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the authorization code verification request matched an approved authentication response that has already expired (10 mins)"
+		And the json should not have a "me" parameter
+		And the the authorization code should not be marked as having been used

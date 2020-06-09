@@ -36,7 +36,7 @@ trait WebContextTrait
 	public function makeConfigWithUsers()
 	{
 		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
-		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array('username' => 'test', 'password' => password_hash('test', PASSWORD_DEFAULT)));
+		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array('username' => 'test', 'password' => password_hash('test', PASSWORD_DEFAULT), 'me' => 'http://localhost/'));
 	}
 
 	/**
@@ -63,6 +63,16 @@ trait WebContextTrait
 	{
 		$html = $this->getSession()->getPage()->getHtml();
 		echo $html;
+	}
+
+	/**
+	 * @Then show json
+	 */
+	public function showJson()
+	{
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		var_dump($json);
 	}
 
 	/**
@@ -130,7 +140,7 @@ trait WebContextTrait
 		$page->find('named', array('field', 'userkey'))->setValue($password);
 		$page->find('css', 'button[type=submit]')->submit();
 	}
-	
+
     /**
      * @Then there should be an HTTP :arg1 header with value :arg2
      */
@@ -150,14 +160,14 @@ trait WebContextTrait
 		assertNotNull($auth_endpoint_link);
 		assertEquals('/auth/', $auth_endpoint_link->getAttribute('href'));
     }
-	
+
     /**
      * @Given I am logged in
      */
     public function iAmLoggedIn()
     {
         $this->doLogin("test", "test");
-    }	
+    }
 
     /**
      * @When I login
@@ -168,6 +178,50 @@ trait WebContextTrait
 		$page->find('named', array('field', 'username'))->setValue("test");
 		$page->find('named', array('field', 'userkey'))->setValue("test");
 		$page->find('css', 'button[type=submit]')->submit();
+    }
+
+    /**
+     * @Then the response should be json
+     */
+    public function theResponseShouldBeJson()
+    {
+        $headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Content-Type', $headers);
+		assertEquals($headers['Content-Type'][0], 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * @Then the json should have an :arg1 parameter
+     * @Then the json should have a :arg1 parameter
+     */
+    public function theJsonShouldHaveAnParameter($arg1)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotFalse($json);
+		assertObjectHasAttribute($arg1, $json);
+    }
+
+    /**
+     * @Then the json should not have an :arg1 parameter
+     * @Then the json should not have a :arg1 parameter
+     */
+    public function theJsonShouldNotHaveAnParameter($arg1)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotFalse($json);
+		assertObjectNotHasAttribute($arg1, $json);
+    }
+
+    /**
+     * @Then the json :arg1 parameter should be :arg2
+     */
+    public function theJsonParameterShouldBe($arg1, $arg2)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertEquals($json->$arg1, $arg2);
     }
 
 }

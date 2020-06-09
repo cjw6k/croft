@@ -55,7 +55,7 @@ class WebFoo
 		$this->_config = new WebFoo\Config($config_file);
 		$this->_request = new WebFoo\Request();
 		$this->_session = new WebFoo\Session($this->_config, $this->_request);
-		$this->_indieauth = new WebFoo\IndieAuth();
+		$this->_indieauth = new WebFoo\IndieAuth($this->_config);
 	}
 
 	/**
@@ -96,6 +96,14 @@ class WebFoo
 	private function _slingAuth()
 	{
 		if(!$this->getSession()->isLoggedIn()){
+			if('POST' == $this->getRequest()->getMethod()){
+				if(!$this->getIndieAuth()->authorizationCodeVerificationRequest($this->getRequest())){
+					http_response_code(400);
+				}
+				echo json_encode($this->getIndieAuth()->getResponse());
+				return;
+			}
+
 			if(!empty($this->getRequest()->getQuery())){
 				header('Location: /login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
 				return;
@@ -200,51 +208,14 @@ class WebFoo
 			return 1;
 		}
 
-		if(1 == count($argv)){
-			echo 'Usage: setup.php [OPTIONS]... USERNAME', PHP_EOL,
+		if(3 > count($argv)){
+			echo 'Usage: setup.php [OPTIONS]... USERNAME URL', PHP_EOL,
 				 'Try \'setup.php --help\' for more information.', PHP_EOL;
 			return 1;
 		}
 
-		$username = null;
-
-		foreach($argv as $idx => $arg){
-			if(0 == $idx){
-				continue;
-			}
-
-			switch($arg){
-				default:
-					if(null != $username){
-						echo 'Usage: setup.php [OPTIONS]... USERNAME', PHP_EOL,
-							 'Try \'setup.php --help\' for more information.', PHP_EOL;
-						return 1;
-					}
-					$username = $arg;
-			}
-		}
-
-		if(empty($username)){
-			echo 'Usage: setup.php [OPTIONS]... USERNAME', PHP_EOL,
-				 'Try \'setup.php --help\' for more information.', PHP_EOL;
-			return 1;
-		}
-
-		$password = substr(base64_encode(random_bytes(12)), 0, 16);
-		$password_hash = password_hash($password, PASSWORD_DEFAULT);
-
-		$config = array(
-			'username' => $username,
-			'password' => $password_hash
-		);
-
-		if(!yaml_emit_file(PACKAGE_ROOT . 'config.yml', $config)){
-			echo 'setup.php: An error occured writing the config to ' . PACKAGE_ROOT . 'config.yml.';
-			return 1;
-		}
-
-		echo 'setup.php: Done! Enjoy WebFoo!', PHP_EOL, 'Your temporary password is: ', $password, PHP_EOL;
-		return 0;
+		$setup = new WebFoo\Setup($this->getIndieAuth(), $this->getRequest());
+		return $setup->configure($argv);
 	}
 
 	/**
