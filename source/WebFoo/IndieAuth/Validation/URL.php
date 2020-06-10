@@ -96,6 +96,7 @@ class URL
 	{
 		if(!isset($url_parts['path'])){
 			$this->mergeErrors("$name must include a path");
+			return;
 		}
 
 		$path = '/' . trim($url_parts['path'], '/') . '/';
