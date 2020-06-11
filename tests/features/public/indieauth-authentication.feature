@@ -32,6 +32,32 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And I should see "Continue"
 
 	@user_exists
+	Scenario: Receiving an authentication request with missing user profile URL
+		Given I am logged in
+		And I receive an authentication request
+		But the authentication request has no me parameter
+		Then I should see "Nope"
+		And I should see "The authentication request was missing some stuff that makes it good."
+		And I should see "missing required user profile URL (me) parameter"
+		And I should not see "Continue"
+
+	@user_exists
+	Scenario: Receiving an authentication request with unmatched user profile URL
+		Given I am logged in
+		And I receive an authentication request
+		But the authentication request has me parameter "http://localhost/nope/"
+		Then I should see "Nope"
+		And I should see "The authentication request was missing some stuff that makes it good."
+		And I should see "the requested user profile URL (me) is not valid here"
+		And I should not see "Continue"
+
+	@user_exists
+	Scenario: Receiving an authentication request with matched user profile URL
+		Given I am logged in
+		And I receive an authentication request
+		Then I should see "Continue"
+
+	@user_exists
 	Scenario: Receiving an authentication request with missing client_id
 		Given I am logged in
 		And I receive an authentication request
@@ -144,6 +170,16 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		Then I should see "Nope"
 		And I should see "The authentication request was missing some stuff that makes it good."
 		And I should see "missing required state parameter"
+		And I should not see "Continue"
+
+	@user_exists
+	Scenario: Receiving an authentication request with scope parameter
+		Given I am logged in
+		And I receive an authentication request
+		And the authentication request has scope parameter "create update delete"
+		Then I should see "Nope"
+		And I should see "The authentication request was missing some stuff that makes it good."
+		And I should see "scope is for authorization but this is authentication"
 		And I should not see "Continue"
 
 	@user_exists

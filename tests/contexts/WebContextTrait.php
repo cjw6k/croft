@@ -148,7 +148,13 @@ trait WebContextTrait
     {
         $headers = $this->getSession()->getResponseHeaders();
 		assertArrayHasKey($arg1, $headers);
-		assertEquals($headers[$arg1][0], $arg2);
+
+		foreach(explode(',', $headers[$arg1][0]) as $header){
+			if(trim($header) == $arg2){
+				$found = true;
+			}
+		}
+		assertTrue($found);
     }
 
     /**
@@ -156,9 +162,9 @@ trait WebContextTrait
      */
     public function thereShouldBeALinkElementWithRelAndHref($arg1, $arg2)
     {
-        $auth_endpoint_link = $this->getSession()->getPage()->find('xpath', "//link[@rel='authorization_endpoint']");
-		assertNotNull($auth_endpoint_link);
-		assertEquals('/auth/', $auth_endpoint_link->getAttribute('href'));
+        $link = $this->getSession()->getPage()->find('xpath', "//link[@rel='$arg1']");
+		assertNotNull($link);
+		assertEquals($arg2, $link->getAttribute('href'));
     }
 
     /**
@@ -222,6 +228,15 @@ trait WebContextTrait
 		$content = $this->getSession()->getPage()->getContent();
         $json = json_decode($content);
 		assertEquals($json->$arg1, $arg2);
+    }
+
+    /**
+     * @Then the :arg1 checkbox with value :arg2 should be checked
+     */
+    public function theCheckboxWithValueShouldBeChecked($arg1, $arg2)
+    {
+        $checkbox = $this->getSession()->getPage()->find('xpath', '//input[@type="checkbox" and @name="' . $arg1 . '" and @value="' . $arg2 . '"]');
+		assertTrue($checkbox->isChecked());
     }
 
 }

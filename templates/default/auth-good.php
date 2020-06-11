@@ -10,6 +10,30 @@ include 'header.php';
 	<input type="hidden" name="state" value="<?= $this->getIndieAuth()->getState() ?>">
 	<input type="hidden" name="client_id" value="<?= $this->getIndieAuth()->getClientId() ?>">
 	<input type="hidden" name="redirect_uri" value="<?= $this->getIndieAuth()->getRedirectUri() ?>">
+	<?php
+
+	if('code' == $this->getIndieAuth()->getResponseType()){
+
+		?>
+		<p>The client requests the following access:</p>
+		<ul>
+			<?php
+
+			foreach($this->getIndieAuth()->getScopes() as $idx => $scope){
+
+				?>
+				<li><label for="scope_<?= $idx ?>"><input id="scope_<?= $idx ?>" type="checkbox" name="scopes[]" checked="checked" value="<?= $scope ?>"><?= $scope ?></label></li>
+				<?php
+
+			}
+
+			?>
+		</ul>
+		<?php
+
+	}
+
+	?>
 	<button type="submit">Continue</button>
 </form>
 <?php

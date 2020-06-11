@@ -26,7 +26,7 @@ class IndieAuth
 	{
 		$this->setConfig($config);
 
-		header('Link: </auth/>; rel="authorization_endpoint"');
+		header('Link: </auth/>; rel="authorization_endpoint", </token/>; rel="token_endpoint"');
 	}
 
 	/**
@@ -61,7 +61,7 @@ class IndieAuth
 	{
 		$validation = $this->getValidation();
 
-		$validation->authenticationRequest();
+		$validation->authenticationRequest($this->getConfig()->getMe());
 		$this->isValid($validation->isValid());
 
 		if(!$this->isValid()){
@@ -73,6 +73,7 @@ class IndieAuth
 		$this->setRedirectUri($validation->getRedirectUri());
 		$this->setState($validation->getState());
 		$this->setResponseType($validation->getResponseType());
+		$this->setScopes($validation->getScopes());
 	}
 
 	/**

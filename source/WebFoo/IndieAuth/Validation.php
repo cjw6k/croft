@@ -30,27 +30,29 @@ class Validation
 	/**
 	 * Ensure the authentication request matches requirements of the spec
 	 *
+	 * @param string $config_me The configured user profile URL.
+	 *
 	 * @return void
 	 */
-	public function authenticationRequest()
+	public function authenticationRequest(string $config_me)
 	{
-		$this->isValid(false);
+		$this->setConfigMe($config_me);
 
 		$this->setURL(new Validation\URL());
 
-		$request = $this->getRequest();
-		$this->setMe($request->get('me'));
-		$this->setClientId($request->get('client_id'));
-		$this->setRedirectUri($request->get('redirect_uri'));
-		$this->setState($request->get('state'));
+		$this->isValid(false);
 
-		$response_type = $request->get('response_type');
-		if(!$response_type){
-			$response_type = 'id';
+		$this->_setupAuthenticationRequest();
+
+		if(!$this->_responseType()){
+			return;
 		}
-		$this->setResponseType($response_type);
 
 		if(!$this->_clientId()){
+			return;
+		}
+
+		if(!$this->_userProfileURL()){
 			return;
 		}
 
@@ -67,6 +69,50 @@ class Validation
 		}
 
 		$this->isValid(true);
+	}
+
+	/**
+	 * Collect the request parameters related to the authentication request
+	 *
+	 * @return void
+	 */
+	private function _setupAuthenticationRequest()
+	{
+		$request = $this->getRequest();
+		$this->setMe($request->get('me'));
+		$this->setClientId($request->get('client_id'));
+		$this->setRedirectUri($request->get('redirect_uri'));
+		$this->setState($request->get('state'));
+
+		$response_type = $request->get('response_type');
+		if(!$response_type){
+			$response_type = 'id';
+		}
+		$this->setResponseType($response_type);
+
+		$scopes = $request->get('scope');
+		if(!$scopes && 'id' != $response_type){
+			$scopes = 'identity';
+		}
+		$this->setScopes(explode(' ', $scopes));
+	}
+
+	/**
+	 * Ensure the provided response_type is compatible with other parameters
+	 *
+	 * @return boolean True  The response_type is valid.
+	 *                 False The response_type is not valid.
+	 */
+	private function _responseType()
+	{
+		if('id' == $this->getResponseType()){
+			if(array('identity') != $this->getScopes()){
+				$this->mergeErrors('scope is for authorization but this is authentication');
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -89,6 +135,27 @@ class Validation
 
 		if(!$this->getURL()->simple($this->getClientId(), 'client_id')){
 			$this->setErrors($this->getURL()->getErrors());
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Ensure the provided user profile URL (me) matches requirements of the spec
+	 *
+	 * @return boolean True  The me is valid.
+	 *                 False The me is not valid.
+	 */
+	private function _userProfileURL()
+	{
+		if(null == $this->getMe()){
+			$this->mergeErrors('missing required user profile URL (me) parameter');
+			return false;
+		}
+
+		if($this->getMe() != $this->getConfigMe()){
+			$this->mergeErrors('the requested user profile URL (me) is not valid here');
 			return false;
 		}
 

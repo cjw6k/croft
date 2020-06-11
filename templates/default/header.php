@@ -4,5 +4,6 @@
 	<meta charset="utf-8">
 	<title><?= $this->getConfig()->getTitle() ?></title>
 	<link rel="authorization_endpoint" href="/auth/">
+	<link rel="token_endpoint" href="/token/">
 </head>
 <body>

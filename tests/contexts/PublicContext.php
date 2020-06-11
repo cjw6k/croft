@@ -42,6 +42,23 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @When the client tries to discover the token endpoint
+     */
+    public function theClientTriesToDiscoverTheTokenEndpoint()
+    {
+        $this->_token_url = IndieAuth\Client::discoverTokenEndpoint($this->base_url);
+		assertNotEmpty($this->_token_url);
+    }
+
+    /**
+     * @Then the token_endpoint is base_url plus :arg1
+     */
+    public function theTokenEndpointIsBaseUrlPlus($arg1)
+    {
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_token_url);
+    }
+
+    /**
      * @Given I receive an authentication request
      */
     public function iReceiveAnAuthenticationRequest()
@@ -65,6 +82,41 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     {
 		$this->getSession()->visit('/');
         $this->getSession()->setCookie('webfoo', null);
+    }
+
+    /**
+     * @Given the authentication request has no me parameter
+     */
+    public function theAuthenticationRequestHasNoMeParameter()
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			'',
+			'https://example.com/',
+			'https://example.com/',
+			'test',
+			'id',
+			'secret'
+		);
+		$authorization_url = str_replace('me=&', '&', $authorization_url);
+		$this->getSession()->visit($authorization_url);
+    }
+
+    /**
+     * @Given the authentication request has me parameter :arg1
+     */
+    public function theAuthenticationRequestHasMeParameter($arg1)
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$arg1,
+			'https://example.com/',
+			'https://example.com/',
+			'test',
+			'id',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
     }
 
     /**
@@ -107,7 +159,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
      */
     public function theAuthenticationRequestHasNoRedirectUriParameter()
     {
- 		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
 			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
 			$this->base_url,
 			'',
@@ -169,6 +221,24 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'secret'
 		);
 		$authorization_url = str_replace('state=&', '&', $authorization_url);
+		$this->getSession()->visit($authorization_url);
+    }
+
+    /**
+     * @Given the authentication request has scope parameter :arg1
+     */
+    public function theAuthenticationRequestHasScopeParameter($arg1)
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'https://example.com/',
+			'https://example.com/',
+			'test',
+			$arg1,
+			'secret'
+		);
+		$authorization_url = str_replace('response_type=code', 'response_type=id', $authorization_url);
 		$this->getSession()->visit($authorization_url);
     }
 
@@ -344,5 +414,57 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		assertEquals(0, $approval['used']);
     }
 
+    /**
+     * @Given I receive an authorization request
+     */
+    public function iReceiveAnAuthorizationRequest()
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'test',
+			'identity',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+    }
+
+    /**
+     * @Given the authorization request is missing the scope parameter
+     */
+    public function theAuthorizationRequestIsMissingTheScopeParameter()
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'test',
+			'',
+			'secret'
+		);
+		$authorization_url = str_replace('scope=&', '&', $authorization_url);
+		$authorization_url = str_replace('response_type=id', 'response_type=code', $authorization_url);
+		$this->getSession()->visit($authorization_url);
+    }
+
+    /**
+     * @Given I receive an authorization request with scope parameter :arg1
+     */
+    public function iReceiveAnAuthorizationRequestWithScopeParameter($arg1)
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'test',
+			$arg1,
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+    }
 
 }
