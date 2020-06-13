@@ -69,7 +69,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			'https://example.com/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -95,7 +95,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			'https://example.com/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$authorization_url = str_replace('me=&', '&', $authorization_url);
@@ -113,7 +113,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			'https://example.com/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -130,7 +130,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			'',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$authorization_url = str_replace('client_id=&', '&', $authorization_url);
@@ -148,7 +148,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			$arg1,
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -165,7 +165,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'',
 			'https://example.com/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$authorization_url = str_replace('redirect_uri=&', '&', $authorization_url);
@@ -183,7 +183,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			$arg1,
 			'https://example.com/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -200,7 +200,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			$arg1,
 			$arg2,
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -217,7 +217,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'https://example.com/',
 			'https://example.com/',
 			'',
-			'id',
+			'',
 			'secret'
 		);
 		$authorization_url = str_replace('state=&', '&', $authorization_url);
@@ -253,7 +253,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			$arg1,
 			$arg1,
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);
@@ -300,7 +300,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'http://localhost/fake/',
 			'http://localhost/fake/',
 			'test',
-			'id',
+			'',
 			'secret'
 		);
 		$this->getSession()->visit($authorization_url);

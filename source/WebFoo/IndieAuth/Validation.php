@@ -91,7 +91,7 @@ class Validation
 		$this->setResponseType($response_type);
 
 		$scopes = $request->get('scope');
-		if(!$scopes && 'id' != $response_type){
+		if(!$scopes){
 			$scopes = 'identity';
 		}
 		$this->setScopes(explode(' ', $scopes));
