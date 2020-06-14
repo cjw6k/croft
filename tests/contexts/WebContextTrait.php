@@ -72,7 +72,6 @@ trait WebContextTrait
 	{
 		$content = $this->getSession()->getPage()->getContent();
         $json = json_decode($content);
-		var_dump($json);
 	}
 
 	/**
@@ -238,5 +237,15 @@ trait WebContextTrait
         $checkbox = $this->getSession()->getPage()->find('xpath', '//input[@type="checkbox" and @name="' . $arg1 . '" and @value="' . $arg2 . '"]');
 		assertTrue($checkbox->isChecked());
     }
+
+    /**
+     * @When I uncheck the :arg1 checkbox with value :arg2
+     */
+    public function iUncheckTheCheckboxWithValue($arg1, $arg2)
+    {
+        $checkbox = $this->getSession()->getPage()->find('xpath', '//input[@type="checkbox" and @name="' . $arg1 . '" and @value="' . $arg2 . '"]');
+		$checkbox->uncheck();
+    }
+
 
 }

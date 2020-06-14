@@ -118,7 +118,7 @@ class Request
 			return null;
 		}
 
-		return filter_input(INPUT_POST, $index);
+		return is_array($_POST[$index]) ? filter_input(INPUT_POST, $index, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY) : filter_input(INPUT_POST, $index);
 	}
 
 	/**

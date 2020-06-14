@@ -65,31 +65,42 @@ class WebFoo
 	 */
 	public function sling()
 	{
-		switch($this->getRequest()->getPath()){
-			case '/auth/':
-				$this->_slingAuth();
-				break;
+		try{
+			switch($this->getRequest()->getPath()){
+				case '/auth/':
+					$this->_slingAuth();
+					break;
 
-			case '/login/':
-				$this->_slingLogin();
-				break;
+				case '/token/':
+					$this->_slingToken();
+					break;
 
-			case '/logout/':
-				$this->getSession()->doLogout();
-				return;
+				case '/login/':
+					$this->_slingLogin();
+					break;
 
-			case '/':
-				$this->_includeTemplate('home.php', 'default.php');
-				break;
+				case '/logout/':
+					$this->getSession()->doLogout();
+					return;
 
-			default:
-				$this->_sling404();
-				break;
+				case '/':
+					$this->_includeTemplate('home.php', 'default.php');
+					break;
+
+				default:
+					$this->_sling404();
+					break;
+			}
+		} catch (WebFoo\Exception\Redirect $redirect){
+			header('Location: ' . $redirect->getMessage());
+			return;
 		}
 	}
 
 	/**
 	 * Control requests to /auth/
+	 *
+	 * @throws WebFoo\Exception\Redirect A HTTP redirect is required.
 	 *
 	 * @return void
 	 */
@@ -105,11 +116,9 @@ class WebFoo
 			}
 
 			if(!empty($this->getRequest()->getQuery())){
-				header('Location: /login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
-				return;
+				throw new WebFoo\Exception\Redirect('/login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
 			}
-			header('Location: /login/');
-			return;
+			throw new WebFoo\Exception\Redirect('/login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
 		}
 
 		$this->getIndieAuth()->authenticationRequest($this->getRequest());
@@ -120,6 +129,24 @@ class WebFoo
 		}
 
 		$this->_includeTemplate('auth-not_good.php');
+	}
+
+	/**
+	 * Control requests to /token/
+	 *
+	 * @return void
+	 */
+	private function _slingToken()
+	{
+		if('POST' == $this->getRequest()->getMethod()){
+			if(!$this->getIndieAuth()->tokenRequest($this->getRequest())){
+				http_response_code(400);
+			}
+			echo json_encode($this->getIndieAuth()->getResponse());
+			return;
+		}
+
+		$this->_sling404();
 	}
 
 	/**

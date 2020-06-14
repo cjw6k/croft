@@ -22,6 +22,8 @@ class Session
 	 *
 	 * @param Config  $config  The active configuration.
 	 * @param Request $request The current request.
+	 *
+	 * @throws Exception\Redirect A HTTP redirect is required.
 	 */
 	public function __construct(Config $config, Request $request)
 	{
@@ -40,7 +42,7 @@ class Session
 			}
 
 			// Session has expired, remove the old session cookie
-			header('Location: /logout/');
+			throw new Exception\Redirect('/logout/');
 		}
 	}
 
@@ -67,6 +69,8 @@ class Session
 
 	/**
 	 * Login a user
+	 *
+	 * @throws Exception\Redirect A HTTP redirect is required.
 	 *
 	 * @return boolean True  The login is successful.
 	 *                 False The login is not successful.
@@ -99,17 +103,16 @@ class Session
 
 		if($request->get('redirect_to')){
 			$redirect_to = urldecode($request->get('redirect_to'));
-			header('Location: /' . $redirect_to);
-			return true;
+			throw new Exception\Redirect('/' . $redirect_to);
 		}
 
-		header('Location: /');
-
-		return true;
+		throw new Exception\Redirect('/');
 	}
 
 	/**
 	 * Logout a user
+	 *
+	 * @throws Exception\Redirect A HTTP redirect is required.
 	 *
 	 * @return void
 	 */
@@ -117,7 +120,7 @@ class Session
 	{
 		$this->getRequest()->session('logged_in', false);
 		setcookie($this->_getCookieName(), '', -1, '/', '', true, true);
-		header('Location: /');
+		throw new Exception\Redirect('/');
 	}
 
 	/**

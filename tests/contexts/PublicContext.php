@@ -360,9 +360,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
-     * @Then the the authorization code should be marked as having been used
+     * @Then the authorization code should be marked as having been used
      */
-    public function theTheAuthorizationCodeShouldBeMarkedAsHavingBeenUsed()
+    public function theAuthorizationCodeShouldBeMarkedAsHavingBeenUsed()
     {
         $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
 		assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
@@ -372,9 +372,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
-     * @Then the the authorization code should be marked as having been used twice
+     * @Then the authorization code should be marked as having been used twice
      */
-    public function theTheAuthorizationCodeShouldBeMarkedAsHavingBeenUsedTwice()
+    public function theAuthorizationCodeShouldBeMarkedAsHavingBeenUsedTwice()
     {
         $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
 		assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
@@ -403,9 +403,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
-     * @Then the the authorization code should not be marked as having been used
+     * @Then the authorization code should not be marked as having been used
      */
-    public function theTheAuthorizationCodeShouldNotBeMarkedAsHavingBeenUsed()
+    public function theAuthorizationCodeShouldNotBeMarkedAsHavingBeenUsed()
     {
 		$client_id = $redirect_uri = 'http://localhost/fake/';
 		$filename = hash('sha1', "[$client_id][$redirect_uri][{$this->_indieauth_code}]");
@@ -467,4 +467,256 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$this->getSession()->visit($authorization_url);
     }
 
+    /**
+     * @Then the authorization record should have scope :arg1
+     */
+    public function theAuthorizationRecordShouldHaveScope($arg1)
+    {
+		$redirect_url = parse_url($this->getSession()->getCurrentUrl());
+		parse_str($redirect_url['query'], $params);
+		$this->_indieauth_code = $params['code'];
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
+		assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
+		$approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+		assertNotFalse($approval);
+		assertContains($arg1, $approval['scopes']);
+    }
+
+    /**
+     * @Then the authorization record should not have scope :arg1
+     */
+    public function theAuthorizationRecordShouldNotHaveScope($arg1)
+    {
+		$redirect_url = parse_url($this->getSession()->getCurrentUrl());
+		parse_str($redirect_url['query'], $params);
+		$this->_indieauth_code = $params['code'];
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
+		assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
+		$approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+		assertNotFalse($approval);
+		assertNotContains($arg1, $approval['scopes']);
+    }
+
+    /**
+     * @Given I have approved an authorization request with scope parameter :arg1
+     */
+    public function iHaveApprovedAnAuthorizationRequestWithScopeParameter($arg1)
+    {
+		$this->iAmLoggedIn();
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'test',
+			$arg1,
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+		$this->getSession()->getPage()->findButton('Continue')->press();
+		$redirect_url = parse_url($this->getSession()->getCurrentUrl());
+		parse_str($redirect_url['query'], $params);
+		$this->_indieauth_code = $params['code'];
+		$this->resetSession();
+    }
+
+    /**
+     * @When the client requests a token
+     */
+    public function theClientRequestsAToken()
+    {
+		$token_endpoint = IndieAuth\Client::discoverTokenEndpoint($this->base_url);
+        $token = IndieAuth\Client::getAccessToken(
+			$token_endpoint,
+			$this->_indieauth_code,
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'secret'
+		);
+    }
+
+    /**
+     * @Then the json :arg1 parameter should match the recorded access token
+     */
+    public function theJsonParameterShouldMatchTheRecordedAccessToken($arg1)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotFalse($json);
+		assertObjectHasAttribute($arg1, $json);
+		$response_token = $json->$arg1;
+		assertFileExists(VAR_ROOT . 'indieauth/token-' . $response_token);
+		$auth = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $response_token);
+		assertFileExists(VAR_ROOT . 'indieauth/auth-' . $auth['auth']);
+		$approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $auth['auth']);
+		assertTrue(password_verify($this->_indieauth_code, $approval['code']));
+    }
+
+    /**
+     * @Given I receive a token request with no grant_type parameter
+     */
+    public function iReceiveATokenRequestWithNoGrantTypeParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				// 'grant_type' => 'authorization_code',
+				'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				'code' => 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a token request with grant_type parameter :arg1
+     */
+    public function iReceiveATokenRequestWithGrantTypeParameter($arg1)
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => $arg1,
+				'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				'code' => 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+    }
+
+
+    /**
+     * @Given I receive a token request with no client_id parameter
+     */
+    public function iReceiveATokenRequestWithNoClientIdParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				//'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				'code' => 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a token request with no redirect_uri parameter
+     */
+    public function iReceiveATokenRequestWithNoRedirectUriParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				'client_id' => 'http://localhost/fake/',
+				//'redirect_uri' => 'http://localhost/fake/',
+				'code' => 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a token request with no code parameter
+     */
+    public function iReceiveATokenRequestWithNoCodeParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				//'code' => 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a token request with no me parameter
+     */
+    public function iReceiveATokenRequestWithNoMeParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				'code' => 'test',
+				//'me' => 'http://localhost/'
+			)
+		);
+    }
+
+    /**
+     * @Given I have not approved an authorization request
+     */
+    public function iHaveNotApprovedAnAuthorizationRequest()
+    {
+        $this->iHaveNotApprovedAnAuthenticationRequest();
+    }
+
+    /**
+     * @When I receive a token request
+     */
+    public function iReceiveATokenRequest()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				'client_id' => 'http://localhost/fake/',
+				'redirect_uri' => 'http://localhost/fake/',
+				'code' => isset($this->_indieauth_code) ? $this->_indieauth_code : 'test',
+				'me' => 'http://localhost/'
+			)
+		);
+		$this->showJson();
+    }
+
+    /**
+     * @Given I have approved an authorization request more than ten minutes ago
+     */
+    public function iHaveApprovedAnAuthorizationRequestMoreThanTenMinutesAgo()
+    {
+		$this->iHaveApprovedAnAuthenticationRequestMoreThanTenMinutesAgo();
+    }
+
+    /**
+     * @Given I have approved an authorization request
+     */
+    public function iHaveApprovedAnAuthorizationRequest()
+    {
+		$this->iAmLoggedIn();
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'http://localhost/fake/',
+			'http://localhost/fake/',
+			'test',
+			'create update delete',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+		$this->getSession()->getPage()->findButton('Continue')->press();
+		$redirect_url = parse_url($this->getSession()->getCurrentUrl());
+		parse_str($redirect_url['query'], $params);
+		$this->_indieauth_code = $params['code'];
+		$this->resetSession();
+    }
 }

@@ -253,7 +253,7 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And the json should not have an "error_description" parameter
 		And the json should have a "me" parameter
 		And the json "me" parameter should be "http://localhost/"
-		And the the authorization code should be marked as having been used
+		And the authorization code should be marked as having been used
 
 	@user_exists
 	Scenario: Receiving a duplicate authorization code verification that has been previously authorized
@@ -267,7 +267,7 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And the json should have an "error_description" parameter
 		And the json "error_description" parameter should be "the authorization code verification request matched an approved authentication response that has already been used"
 		And the json should not have a "me" parameter
-		And the the authorization code should be marked as having been used twice
+		And the authorization code should be marked as having been used twice
 
 	@user_exists
 	Scenario: Receiving an authorization code verification when authorization has already expired
@@ -280,4 +280,4 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And the json should have an "error_description" parameter
 		And the json "error_description" parameter should be "the authorization code verification request matched an approved authentication response that has already expired (10 mins)"
 		And the json should not have a "me" parameter
-		And the the authorization code should not be marked as having been used
+		And the authorization code should not be marked as having been used

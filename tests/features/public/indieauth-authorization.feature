@@ -81,3 +81,156 @@ Feature: WebFoo provides an indieauth server for clients to interact with a WebF
 		And the "scopes[]" checkbox with value "media" should be checked
 		And the "scopes[]" checkbox with value "cashew:rope" should be checked
 		And I should see "Continue"
+
+	@user_exists
+	Scenario: Approving an authorization request with all requested scopes
+		Given I am logged in
+		And I receive an authorization request with scope parameter "create update delete"
+		When I press "Continue"
+		Then I should be on "http://localhost/fake/"
+		And the authorization record should have scope "create"
+		And the authorization record should have scope "update"
+		And the authorization record should have scope "delete"
+
+	@user_exists
+	Scenario: Approving an authorization request with not all of the requested scopes
+		Given I am logged in
+		And I receive an authorization request with scope parameter "create update delete"
+		When I uncheck the "scopes[]" checkbox with value "delete"
+		And I press "Continue"
+		Then I should be on "http://localhost/fake/"
+		And the authorization record should have scope "create"
+		And the authorization record should have scope "update"
+		And the authorization record should not have scope "delete"
+
+	@user_exists
+	Scenario: Receiving a token request with a missing grant_type parameter
+		Given I receive a token request with no grant_type parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request was missing the grant_type parameter"
+
+	@user_exists
+	Scenario Outline: Receiving a token request with an invalid grant_type parameter
+		Given I receive a token request with grant_type parameter <grant_type>
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "unsupported_grant_type"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the requested grant type is not supported here"
+
+		Examples:
+		  | grant_type    |
+		  | "example"     |
+		  | "sample"      |
+		  | "cashew_rope" |
+
+	@user_exists
+	Scenario: Receiving a token request with a missing client_id parameter
+		Given I receive a token request with no client_id parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request was missing the client_id parameter"
+
+	@user_exists
+	Scenario: Receiving a token request with a missing redirect_uri parameter
+		Given I receive a token request with no redirect_uri parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request was missing the redirect_uri parameter"
+
+	@user_exists
+	Scenario: Receiving a token request with a missing code parameter
+		Given I receive a token request with no code parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request was missing the code parameter"
+
+	@user_exists
+	Scenario: Receiving a token request with a missing user profile URL (me) parameter
+		Given I receive a token request with no me parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request was missing the user profile URL (me) parameter"
+
+	@user_exists
+	Scenario: Receiving a token request with no matching authorization record
+		Given I have not approved an authorization request
+		When I receive a token request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request could not be matched to an approved authorization response"
+
+	@user_exists
+	Scenario: Receiving a token request when authorization has already expired
+		Given I have approved an authorization request more than ten minutes ago
+		When I receive a token request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request matched an approved authorization response that has already expired (10 mins)"
+		And the json should not have a "access_token" parameter
+		And the authorization code should not be marked as having been used
+
+	@user_exists
+	Scenario: Receiving a token request when the params match an approved authentication request with no specified scope
+		Given I have approved an authentication request
+		When I receive a token request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request matched an approved authentication response which authorizes no scopes"
+		And the json should not have a "access_token" parameter
+		And the authorization code should be marked as having been used
+
+	@user_exists
+	Scenario: Issuing a token
+		Given I have approved an authorization request
+		When I receive a token request
+		Then the response status code should be 200
+		And the response should be json
+		And the json should have an "access_token" parameter
+		And the json "access_token" parameter should match the recorded access token
+		And the json should have an "token_type" parameter
+		And the json "token_type" parameter should be "Bearer"
+		And the json should have an "scope" parameter
+		And the json "scope" parameter should be "create update delete"
+		And the json should have an "me" parameter
+		And the json "me" parameter should be "http://localhost/"
+
+	@user_exists
+	Scenario: Receiving a duplicate token request when authorization has already been used
+		Given I have approved an authorization request
+		When I receive a token request
+		And I receive a token request
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token request matched an approved authorization response that has already been used"
+		And the json should not have a "access_token" parameter
+		And the authorization code should be marked as having been used twice
