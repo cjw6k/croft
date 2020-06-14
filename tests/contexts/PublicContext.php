@@ -778,4 +778,28 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		assertNotFalse($token);
 		assertArrayHasKey('revoked', $token);
     }
+
+    /**
+     * @Given I use the indieauth-client library
+     */
+    public function iUseTheIndieauthClientLibrary()
+    {
+    }
+
+    /**
+     * @When the client tries to discover the micropub endpoint
+     */
+    public function theClientTriesToDiscoverTheMicropubEndpoint()
+    {
+        $this->_micropub_endpoint = IndieAuth\Client::discoverMicropubEndpoint($this->base_url);
+		assertNotEmpty($this->_micropub_endpoint);
+    }
+
+    /**
+     * @Then the micropub endpoint is base_url plus :arg1
+     */
+    public function theMicropubEndpointIsBaseUrlPlus($arg1)
+    {
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_micropub_endpoint);
+    }
 }

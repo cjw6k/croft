@@ -17,33 +17,7 @@ use \Exception;
 class WebFoo
 {
 
-	/**
-	 * The global configuration
-	 *
-	 * @var WebFoo\Config
-	 */
-	private $_config;
-
-	/**
-	 * The Session instance
-	 *
-	 * @var WebFoo\Session
-	 */
-	private $_session;
-
-	/**
-	 * The IndieAuth instance
-	 *
-	 * @var WebFoo\IndieAuth
-	 */
-	private $_indieauth;
-
-	/**
-	 * The Request instance
-	 *
-	 * @var WebFoo\Request
-	 */
-	private $_request;
+	use WebFoo\Aether;
 
 	/**
 	 * Construct the web stuff slinging thinger
@@ -52,10 +26,18 @@ class WebFoo
 	 */
 	public function __construct(string $config_file = PACKAGE_ROOT . 'config.yml')
 	{
-		$this->_config = new WebFoo\Config($config_file);
-		$this->_request = new WebFoo\Request();
-		$this->_session = new WebFoo\Session($this->_config, $this->_request);
-		$this->_indieauth = new WebFoo\IndieAuth($this->_config);
+		$this->setConfig(new WebFoo\Config($config_file));
+		$this->setRequest(new WebFoo\Request());
+		$this->setIndieAuth(new WebFoo\IndieAuth($this->getConfig()));
+		$this->setMicropub(new WebFoo\Micropub());
+
+		$links = array_merge(
+			$this->getIndieAuth()->getHTTPLinks(),
+			$this->getMicropub()->getHTTPLinks(),
+		);
+		if($links){
+			header('Link: ' . implode(',', $links));
+		}
 	}
 
 	/**
@@ -65,7 +47,9 @@ class WebFoo
 	 */
 	public function sling()
 	{
-		try{
+		try {
+			$this->setSession(new WebFoo\Session($this->getConfig(), $this->getRequest()));
+
 			switch($this->getRequest()->getPath()){
 				case '/auth/':
 					$this->_slingAuth();
@@ -75,13 +59,17 @@ class WebFoo
 					$this->_slingToken();
 					break;
 
+				case '/micropub/':
+					$this->_slingMicropub();
+					break;
+
 				case '/login/':
 					$this->_slingLogin();
 					break;
 
 				case '/logout/':
 					$this->getSession()->doLogout();
-					return;
+					break;
 
 				case '/':
 					$this->_includeTemplate('home.php', 'default.php');
@@ -155,6 +143,15 @@ class WebFoo
 	}
 
 	/**
+	 * Control requests to /micropub/
+	 *
+	 * @return void
+	 */
+	private function _slingMicropub()
+	{
+	}
+
+	/**
 	 * Control requests to /login/
 	 *
 	 * @return void
@@ -183,46 +180,6 @@ class WebFoo
 		);
 
 		$this->_includeTemplate('404.php', 'default.php');
-	}
-
-	/**
-	 * Retrieve the global config
-	 *
-	 * @return WebFoo\Config The active configuration.
-	 */
-	public function getConfig()
-	{
-		return $this->_config;
-	}
-
-	/**
-	 * Retrieve the user session
-	 *
-	 * @return WebFoo\Session The active session.
-	 */
-	public function getSession()
-	{
-		return $this->_session;
-	}
-
-	/**
-	 * Retrieve the IndieAuth server
-	 *
-	 * @return WebFoo\IndieAuth The IndieAuth server.
-	 */
-	public function getIndieAuth()
-	{
-		return $this->_indieauth;
-	}
-
-	/**
-	 * Retrieve the request
-	 *
-	 * @return WebFoo\Request The current request.
-	 */
-	public function getRequest()
-	{
-		return $this->_request;
 	}
 
 	/**

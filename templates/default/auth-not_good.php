@@ -9,11 +9,11 @@ include 'header.php';
 <?php
 
 foreach($this->getIndieAuth()->getErrors() as $error){
-	
+
 	?>
 	<li><?= $error ?></li>
 	<?php
-	
+
 }
 
 ?>

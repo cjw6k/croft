@@ -42,7 +42,7 @@ class Session
 			}
 
 			// Session has expired, remove the old session cookie
-			throw new Exception\Redirect('/logout/');
+			$this->doLogout();
 		}
 	}
 

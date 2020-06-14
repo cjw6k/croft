@@ -26,7 +26,8 @@ class IndieAuth
 	{
 		$this->setConfig($config);
 
-		header('Link: </auth/>; rel="authorization_endpoint", </token/>; rel="token_endpoint"');
+		$this->mergeHTTPLinks('</auth/>; rel="authorization_endpoint"');
+		$this->mergeHTTPLinks('</token/>; rel="token_endpoint"');
 	}
 
 	/**

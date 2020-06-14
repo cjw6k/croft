@@ -7,24 +7,24 @@ include 'header.php';
 <?php
 
 if($this->getSession()->hasErrors()){
-	
+
 	?>
 	<p>Log In Error</p>
 	<ul>
 	<?php
-		
+
 	foreach($this->getSession()->getErrors() as $error){
-		
+
 		?>
 		<li><?= $error ?></li>
 		<?php
-		
+
 	}
-		
+
 	?>
 	</ul>
 	<?php
-	
+
 }
 
 ?>
