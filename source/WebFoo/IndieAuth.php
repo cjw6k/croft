@@ -337,6 +337,9 @@ class IndieAuth
 		 */
 		yaml_emit_file(VAR_ROOT . 'indieauth/token-' . $token, array('auth' => $filename));
 
+		header('Cache-Control: no-store');
+		header('Pragma: no-cache');
+
 		$this->setResponse(
 			array(
 				'access_token' => $token,

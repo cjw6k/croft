@@ -220,6 +220,8 @@ Feature: WebFoo provides an indieauth server for clients to interact with a WebF
 		And the json "scope" parameter should be "create update delete"
 		And the json should have an "me" parameter
 		And the json "me" parameter should be "http://localhost/"
+		And there should be an HTTP "Cache-Control" header with value "no-store"
+		And there should be an HTTP "Pragma" header with value "no-cache"
 
 	@user_exists
 	Scenario: Receiving a duplicate token request when authorization has already been used
