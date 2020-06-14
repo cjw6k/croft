@@ -33,7 +33,7 @@ class WebFoo
 
 		$links = array_merge(
 			$this->getIndieAuth()->getHTTPLinks(),
-			$this->getMicropub()->getHTTPLinks(),
+			$this->getMicropub()->getHTTPLinks()
 		);
 		if($links){
 			header('Link: ' . implode(',', $links));
