@@ -139,6 +139,11 @@ class WebFoo
 	private function _slingToken()
 	{
 		if('POST' == $this->getRequest()->getMethod()){
+			if('revoke' == $this->getRequest()->post('action')){
+				$this->getIndieAuth()->tokenRevocation($this->getRequest());
+				return;
+			}
+
 			if(!$this->getIndieAuth()->tokenRequest($this->getRequest())){
 				http_response_code(400);
 			}

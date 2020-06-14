@@ -686,7 +686,11 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 				'me' => 'http://localhost/'
 			)
 		);
-		$this->showJson();
+		$response = json_decode($this->getSession()->getPage()->getContent());
+		assertNotFalse($response);
+		if(isset($response->access_token)){
+			$this->_indieauth_token = $response->access_token;
+		}
     }
 
     /**
@@ -718,5 +722,60 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		parse_str($redirect_url['query'], $params);
 		$this->_indieauth_code = $params['code'];
 		$this->resetSession();
+    }
+
+    /**
+     * @Given no tokens have been issued
+     */
+    public function noTokensHaveBeenIssued()
+    {
+        $files = glob(VAR_ROOT . 'indieauth/token-*');
+		foreach($files as $file){
+			if(is_file($file)){
+				unlink($file);
+			}
+		}
+    }
+
+    /**
+     * @When I receive a token revocation request
+     */
+    public function iReceiveATokenRevocationRequest()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'action' => 'revoke',
+				'token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+    }
+
+    /**
+     * @Then the response should be empty
+     */
+    public function theResponseShouldBeEmpty()
+    {
+        assertEmpty($this->getSession()->getPage()->getContent());
+    }
+
+    /**
+     * @Given an access token has been issued
+     */
+    public function anAccessTokenHasBeenIssued()
+    {
+        $this->iReceiveATokenRequest();
+		assertFileExists(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+    }
+
+    /**
+     * @Then the token should be marked as revoked
+     */
+    public function theTokenShouldBeMarkedAsRevoked()
+    {
+        $token = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+		assertNotFalse($token);
+		assertArrayHasKey('revoked', $token);
     }
 }

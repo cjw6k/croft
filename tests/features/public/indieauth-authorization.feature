@@ -234,3 +234,20 @@ Feature: WebFoo provides an indieauth server for clients to interact with a WebF
 		And the json "error_description" parameter should be "the token request matched an approved authorization response that has already been used"
 		And the json should not have a "access_token" parameter
 		And the authorization code should be marked as having been used twice
+
+	@user_exists
+	Scenario: Receiving a token revocation request with no matching token record
+		Given I have not approved an authorization request
+		And no tokens have been issued
+		When I receive a token revocation request
+		Then the response status code should be 200
+		And the response should be empty
+
+	@user_exists
+	Scenario: Receiving a token revocation request
+		Given I have approved an authorization request
+		And an access token has been issued
+		When I receive a token revocation request
+		Then the response status code should be 200
+		And the response should be empty
+		And the token should be marked as revoked

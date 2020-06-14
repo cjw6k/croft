@@ -396,4 +396,39 @@ class IndieAuth
 		return true;
 	}
 
+	/**
+	 * Revoke an access token if it exists
+	 *
+	 * @param Request $request The current HTTP request.
+	 *
+	 * @return void
+	 */
+	public function tokenRevocation(Request $request)
+	{
+		$token = $request->post('token');
+
+		if(!$token){
+			return;
+		}
+
+		if(!file_exists(VAR_ROOT . 'indieauth/token-' . $token)){
+			return;
+		}
+
+		$access_token = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $token);
+
+		if(!$access_token){
+			return;
+		}
+
+		$access_token['revoked'] = now();
+
+		/**
+		 * This is actually needed lol. Remove the suppression if you don't believe it.
+		 *
+		 * @psalm-suppress UnusedFunctionCall
+		 */
+		yaml_emit_file(VAR_ROOT . 'indieauth/token-' . $token, $access_token);
+	}
+
 }
