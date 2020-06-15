@@ -42,6 +42,13 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 		And I should not see "Continue"
 
 	@user_exists
+	Scenario: Receiving an authentication request with missing path component user profile URL
+		Given I am logged in
+		And I receive an authentication request
+		But the authentication request has me parameter "http://localhost"
+		Then I should see "Continue"
+
+	@user_exists
 	Scenario: Receiving an authentication request with unmatched user profile URL
 		Given I am logged in
 		And I receive an authentication request

@@ -154,7 +154,7 @@ class Validation
 			return false;
 		}
 
-		if($this->getMe() != $this->getConfigMe()){
+		if(rtrim($this->getMe(), '/') != rtrim($this->getConfigMe(), '/')){
 			$this->mergeErrors('the requested user profile URL (me) is not valid here');
 			return false;
 		}
