@@ -170,10 +170,6 @@ class Micropub
 	 */
 	private function _postRequest()
 	{
-		if('config' == $this->getRequest()->post('q')){
-			$this->_configQuery();
-			return;
-		}
 	}
 
 	/**
