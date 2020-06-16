@@ -16,3 +16,52 @@ Feature: Managing content using third-party client applications with the Micropu
 		Given I use the indieauth-client library
 		When the client tries to discover the micropub endpoint
 		Then the micropub endpoint is base_url plus "/micropub/"
+
+	@user_exists
+	Scenario: Receiving a micropub request with no matching token record
+		Given I have not approved an authorization request
+		And no tokens have been issued
+		When I receive a micropub request
+		Then the response status code should be 403
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the micropub request could not be matched to an authorized access token"
+
+	Scenario: Receiving a micropub request via GET that is missing an access token
+		Given I receive a micropub request via get that has no access token
+		Then the response status code should be 401
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the micropub request did not provide an access token"
+
+	Scenario: Receiving a micropub request via POST that is missing an access token
+		Given I receive a micropub request via post that has no access token
+		Then the response status code should be 401
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the micropub request did not provide an access token"
+
+	Scenario: Receiving a micropub request that has both header and parameter access tokens
+		Given I receive a micropub request that has both header and parameter access tokens
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the micropub request provided both header and parameter access tokens"
+
+	@micropub_authorized
+	Scenario: Responding to a configuration query
+		Given I receive a configuration query
+		Then the response status code should be 200
+		And the response should be json
+		And the json should have an "media-endpoint" parameter
+		And the json "media-endpoint" parameter should be the empty string
+		And the json should have an "syndicate-to" parameter
+		And the json "syndicate-to" parameter should be the empty array

@@ -15,6 +15,24 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 
 	private $_auth_url;
 
+	/**
+	 * @BeforeScenario @micropub_authorized
+	 */
+	public function micropubAuthorizedBefore()
+	{
+		$this->makeConfigWithUsers();
+		$this->iHaveApprovedAnAuthorizationRequest();
+		$this->iReceiveATokenRequest();
+	}
+
+	/**
+	 * @AfterScenario @micropub_authorized
+	 */
+	public function micropubAuthorizedAfter()
+	{
+		$this->removeConfig();
+	}
+
     /**
      * @Given I start an IndieAuth authorization flow
      */
@@ -802,4 +820,53 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     {
         assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_micropub_endpoint);
     }
+
+    /**
+     * @When I receive a micropub request
+     */
+    public function iReceiveAMicropubRequest()
+    {
+        $this->getSession()->visit('/micropub/?access_token=' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'));
+    }
+
+    /**
+     * @Given I receive a micropub request via get that has no access token
+     */
+    public function iReceiveAMicropubRequestViaGetThatHasNoAccessToken()
+    {
+        $this->getSession()->visit('/micropub/');
+    }
+
+    /**
+     * @Given I receive a micropub request via post that has no access token
+     */
+    public function iReceiveAMicropubRequestViaPostThatHasNoAccessToken()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'GET',
+			'/micropub/'
+		);
+    }
+
+    /**
+     * @Given I receive a micropub request that has both header and parameter access tokens
+     */
+    public function iReceiveAMicropubRequestThatHasBothHeaderAndParameterAccessTokens()
+    {
+		$this->getSession()->setRequestHeader('Authorization', 'Bearer test');
+		$this->getSession()->visit('/micropub/?access_token=test');
+    }
+
+    /**
+     * @Given I receive a configuration query
+     */
+    public function iReceiveAConfigurationQuery()
+    {
+		$this->getSession()->setRequestHeader(
+			'Authorization',
+			'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test')
+		);
+		$this->getSession()->visit('/micropub/?q=config');
+    }
+
 }

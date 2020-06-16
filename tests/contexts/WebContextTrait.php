@@ -61,17 +61,13 @@ trait WebContextTrait
 	 */
 	public function showMe()
 	{
-		$html = $this->getSession()->getPage()->getHtml();
-		echo $html;
-	}
-
-	/**
-	 * @Then show json
-	 */
-	public function showJson()
-	{
 		$content = $this->getSession()->getPage()->getContent();
-        $json = json_decode($content);
+		$json = json_decode($content);
+		if($json){
+			var_dump($json);
+			return;
+		}
+		echo $content, PHP_EOL;
 	}
 
 	/**
@@ -247,5 +243,27 @@ trait WebContextTrait
 		$checkbox->uncheck();
     }
 
+    /**
+     * @Then the json :arg1 parameter should be base_url plus :arg2
+     */
+    public function theJsonParameterShouldBeBaseUrlPlus($arg1, $arg2)
+    {
+		$this->theJsonParameterShouldBe($arg1, rtrim($this->base_url, '/') . $arg2);
+    }
 
+    /**
+     * @Then the json :arg1 parameter should be the empty string
+     */
+    public function theJsonParameterShouldBeTheEmptyString($arg1)
+    {
+        $this->theJsonParameterShouldBe($arg1, '');
+    }
+
+    /**
+     * @Then the json :arg1 parameter should be the empty array
+     */
+    public function theJsonParameterShouldBeTheEmptyArray($arg1)
+    {
+        $this->theJsonParameterShouldBe($arg1, array());
+    }
 }

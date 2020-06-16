@@ -29,7 +29,7 @@ class WebFoo
 		$this->setConfig(new WebFoo\Config($config_file));
 		$this->setRequest(new WebFoo\Request());
 		$this->setIndieAuth(new WebFoo\IndieAuth($this->getConfig()));
-		$this->setMicropub(new WebFoo\Micropub());
+		$this->setMicropub(new WebFoo\Micropub($this->getConfig()));
 
 		$links = array_merge(
 			$this->getIndieAuth()->getHTTPLinks(),
@@ -149,6 +149,10 @@ class WebFoo
 	 */
 	private function _slingMicropub()
 	{
+		$this->getMicropub()->handleRequest($this->getRequest());
+		if($this->getMicropub()->hasResponse()){
+			echo json_encode($this->getMicropub()->getResponse());
+		}
 	}
 
 	/**
