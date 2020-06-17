@@ -34,7 +34,7 @@ Feature: Managing content using third-party client applications with the Micropu
 		Then the response status code should be 401
 		And the response should be json
 		And the json should have an "error" parameter
-		And the json "error" parameter should be "invalid_request"
+		And the json "error" parameter should be "unauthorized"
 		And the json should have an "error_description" parameter
 		And the json "error_description" parameter should be "the micropub request did not provide an access token"
 
@@ -43,7 +43,7 @@ Feature: Managing content using third-party client applications with the Micropu
 		Then the response status code should be 401
 		And the response should be json
 		And the json should have an "error" parameter
-		And the json "error" parameter should be "invalid_request"
+		And the json "error" parameter should be "unauthorized"
 		And the json should have an "error_description" parameter
 		And the json "error_description" parameter should be "the micropub request did not provide an access token"
 

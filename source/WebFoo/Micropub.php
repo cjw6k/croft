@@ -99,7 +99,7 @@ class Micropub
 		http_response_code(401);
 		$this->setResponse(
 			array(
-				'error' => 'invalid_request',
+				'error' => 'unauthorized',
 				'error_description' => 'the micropub request did not provide an access token',
 			)
 		);
