@@ -869,4 +869,85 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$this->getSession()->visit('/micropub/?q=config');
     }
 
+    /**
+     * @When I receive a micropub request to create a post
+     */
+    public function iReceiveAMicropubRequestToCreateAPost()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'content' => 'hello world',
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a micropub request to create a post that has no content parameter
+     */
+    public function iReceiveAMicropubRequestToCreateAPostThatHasNoContentParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+    }
+
+    /**
+     * @Given I receive a micropub request to create a post that has no h parameter
+     */
+    public function iReceiveAMicropubRequestToCreateAPostThatHasNoHParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'content' => 'hello world',
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+    }
+
+    /**
+     * @Then there should be a HTTP location header with the post permalink
+     */
+    public function thereShouldBeAHttpLocationHeaderWithThePostPermalink()
+    {
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$permalink = $headers['Location'][0];
+		assertEquals(1, preg_match('/[0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/$/', $permalink));
+    }
+
+    /**
+     * @Given I create a new micropub post with content :arg1
+     */
+    public function iCreateANewMicropubPostWithContent($arg1)
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'content' => $arg1,
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_micropub_post_permalink = $headers['Location'][0];
+    }
+
+    /**
+     * @When I visit the post permalink
+     */
+    public function iVisitThePostPermalink()
+    {
+		$this->getSession()->visit($this->_micropub_post_permalink);
+    }
+
 }

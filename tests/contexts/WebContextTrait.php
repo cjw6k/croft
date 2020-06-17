@@ -36,7 +36,7 @@ trait WebContextTrait
 	public function makeConfigWithUsers()
 	{
 		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
-		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array('username' => 'test', 'password' => password_hash('test', PASSWORD_DEFAULT), 'me' => 'http://localhost/'));
+		yaml_emit_file(PACKAGE_ROOT . 'config.yml', array('title' => 'WebFoo', 'username' => 'test', 'password' => password_hash('test', PASSWORD_DEFAULT), 'me' => 'http://localhost/'));
 	}
 
 	/**
@@ -150,6 +150,15 @@ trait WebContextTrait
 			}
 		}
 		assertTrue($found);
+    }
+
+    /**
+     * @Then there should not be a HTTP :arg1 header
+     */
+    public function thereShouldNotBeAHttpHeader($arg1)
+    {
+        $headers = $this->getSession()->getResponseHeaders();
+		assertArrayNotHasKey($arg1, $headers);
     }
 
     /**

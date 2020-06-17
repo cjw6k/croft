@@ -65,3 +65,43 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the json "media-endpoint" parameter should be the empty string
 		And the json should have an "syndicate-to" parameter
 		And the json "syndicate-to" parameter should be the empty array
+
+	@user_exists
+	Scenario: Receiving a request to create a post without create scope
+		Given I have approved an authorization request with scope parameter "update"
+		And an access token has been issued
+		When I receive a micropub request to create a post
+		Then the response status code should be 401
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "insufficient_scope"
+		And the json should have an "scope" parameter
+		And the json "scope" parameter should be "create"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the access token must have 'create' scope to create a post"
+		And there should not be a HTTP "Location" header
+
+	@micropub_authorized
+	Scenario: Receiving a request to create a post, that is missing the content parameter
+		Given I receive a micropub request to create a post that has no content parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the content parameter is required to create a post"
+		And there should not be a HTTP "Location" header
+
+	@micropub_authorized
+	Scenario: Receiving a request to create a post, that is missing the h parameter
+		Given I receive a micropub request to create a post that has no h parameter
+		Then the response status code should be 201
+		And there should be a HTTP location header with the post permalink
+
+	@micropub_authorized
+	Scenario: Visiting a post permalink after authoring it with micropub
+		Given I create a new micropub post with content "cashew rope"
+		When I visit the post permalink
+		Then the response status code should be 200
+		And the HTML should be valid
+		And I should see "cashew rope"

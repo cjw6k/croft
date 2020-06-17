@@ -76,7 +76,9 @@ class WebFoo
 					break;
 
 				default:
-					$this->_sling404();
+					if(!$this->_slingContent()){
+						$this->_sling404();
+					}
 					break;
 			}
 		} catch (WebFoo\Exception\Redirect $redirect){
@@ -169,6 +171,25 @@ class WebFoo
 		}
 
 		$this->_includeTemplate('login.php');
+	}
+
+	/**
+	 * Control contents requests
+	 *
+	 * @return boolean True  If the request matches content.
+	 *                 False If the request does not match any content.
+	 */
+	private function _slingContent()
+	{
+		$matches = array();
+		if(!preg_match('/^\/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)/', $this->getRequest()->getPath(), $matches)){
+			return false;
+		}
+
+		$this->setContent(file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo'));
+		$this->_includeTemplate('content.php');
+
+		return true;
 	}
 
 	/**
