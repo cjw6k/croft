@@ -299,7 +299,7 @@ class Micropub
 			return false;
 		}
 
-		$yaml = fopen($this->getContentPath() . 'thisday.yaml', 'c+');
+		$yaml = fopen($this->getContentPath() . 'thisday.yml', 'c+');
 		if(!flock($yaml, LOCK_EX)){
 			fclose($yaml);
 			http_response_code(500);
@@ -340,7 +340,7 @@ class Micropub
 	 */
 	private function _takeNextPostId()
 	{
-		$yaml = fopen($this->getContentPath() . 'thisday.yaml', 'c+');
+		$yaml = fopen($this->getContentPath() . 'thisday.yml', 'c+');
 		if(!$yaml){
 			$this->setResponse(
 				array(
@@ -364,7 +364,7 @@ class Micropub
 		}
 
 		rewind($yaml);
-		$this_day_raw = fread($yaml, filesize($this->getContentPath() . 'thisday.yaml'));
+		$this_day_raw = fread($yaml, filesize($this->getContentPath() . 'thisday.yml'));
 		$this_day = yaml_parse($this_day_raw);
 		ftruncate($yaml, 0);
 		rewind($yaml);
