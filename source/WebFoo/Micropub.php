@@ -205,17 +205,6 @@ class Micropub
 			return;
 		}
 
-		if(!$this->getRequest()->post('content')){
-			http_response_code(400);
-			$this->setResponse(
-				array(
-					'error' => 'invalid_request',
-					'error_description' => "the content parameter is required to create a post"
-				)
-			);
-			return;
-		}
-
 		if(!$this->_makeContentPath(now())){
 			return;
 		}

@@ -82,17 +82,6 @@ Feature: Managing content using third-party client applications with the Micropu
 		And there should not be a HTTP "Location" header
 
 	@micropub_authorized
-	Scenario: Receiving a request to create a post, that is missing the content parameter
-		Given I receive a micropub request to create a post that has no content parameter
-		Then the response status code should be 400
-		And the response should be json
-		And the json should have an "error" parameter
-		And the json "error" parameter should be "invalid_request"
-		And the json should have an "error_description" parameter
-		And the json "error_description" parameter should be "the content parameter is required to create a post"
-		And there should not be a HTTP "Location" header
-
-	@micropub_authorized
 	Scenario: Receiving a request to create a post, that is missing the h parameter
 		Given I receive a micropub request to create a post that has no h parameter
 		Then the response status code should be 201
