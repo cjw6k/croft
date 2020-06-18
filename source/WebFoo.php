@@ -186,6 +186,10 @@ class WebFoo
 			return false;
 		}
 
+		if(!file_exists(CONTENT_ROOT . $matches[1] . 'web.foo')){
+			return false;
+		}
+
 		$this->setContent(file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo'));
 		$this->_includeTemplate('content.php');
 

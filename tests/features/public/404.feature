@@ -14,3 +14,7 @@ Feature: The 404 page provides information about file not found results
 		Given I am on a random path that doesn't exist
 		And I click on the link to "/"
 		Then I should be on the homepage 
+
+	Scenario: Requesting content which matches the expected pattern but does not exist
+		Given I am on "/1969/07/20/11/"
+		Then the response status code should be 404
