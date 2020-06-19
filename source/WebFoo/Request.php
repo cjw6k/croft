@@ -106,14 +106,24 @@ class Request
 	/**
 	 * Filter and provide data from $_POST at specified index
 	 *
-	 * @param string $index The index of the data in $_POST.
+	 * If no index is specified, returns the full $_POST array.
+	 *
+	 * @param string|null $index The index of the data in $_POST.
 	 *
 	 * @return mixed The data from $_POST or null if not set.
 	 *
 	 * @SuppressWarnings(PHPMD.Superglobals)
 	 */
-	public function post(string $index)
+	public function post(string $index = null)
 	{
+		if(is_null($index)){
+			$set = array();
+			foreach(array_keys($_POST) as $key){
+				$set[$key] = $this->post($key);
+			}
+			return $set;
+		}
+
 		if(!isset($_POST[$index])){
 			return null;
 		}

@@ -190,7 +190,16 @@ class WebFoo
 			return false;
 		}
 
-		$this->setContent(file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo'));
+		$content = file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo');
+
+		$yaml = array();
+		if(!preg_match('/^(?m)(---$.*^...)$/Us', $content, $yaml)){
+			return false;
+		}
+
+		$this->setFrontMatter(yaml_parse($yaml[1]));
+		$this->setContent(trim(substr($content, strlen($yaml[1]))));
+
 		$this->_includeTemplate('content.php');
 
 		return true;

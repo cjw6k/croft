@@ -88,9 +88,43 @@ Feature: Managing content using third-party client applications with the Micropu
 		And there should be a HTTP location header with the post permalink
 
 	@micropub_authorized
+	Scenario: Creating a new h-entry with many specified properties
+		Given I have received a micropub request to create:
+		  | parameter  | value                     |
+		  | h          | entry                     |
+		  | name       | the name                  |
+		  | summary    | the summary               |
+		  | content    | the content               |
+		  | published  | 2020-01-01T00:00:00-04:00 |
+		  | updated    | 2020-03-01T00:00:00-04:00 |
+		  | category   | the category              |
+		  | location   | geo:46.397180,-63.783277  |
+		  | extension  | the extended property     |
+		  | slug       | the-slug                  |
+		Then the response status code should be 201
+		And the post record should have yaml front matter
+		And the yaml should have a "client_id" key with value "http://localhost/fake/"
+		And the yaml should have a "media_type" key with value "text/plain"
+		And the yaml should have a "slug" key with value "the-slug"
+		And the yaml should have a nested array in "item" with a nested array in "type" with an element "h-entry"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "name" with an element "the name"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "published" with an element "2020-01-01T00:00:00-04:00"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "updated" with an element "2020-03-01T00:00:00-04:00"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "location" with an element "geo:46.397180,-63.783277"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "summary" with an element "the summary"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "category" with an element "the category"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "extension" with an element "the extended property"
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "access_token"
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "content"
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "h"
+		And the post record should have content following the front matter
+		And the post record content should be "the content"
+
+	@micropub_authorized
 	Scenario: Visiting a post permalink after authoring it with micropub
 		Given I create a new micropub post with content "cashew rope"
 		When I visit the post permalink
 		Then the response status code should be 200
 		And the HTML should be valid
 		And I should see "cashew rope"
+		And I should not see "h-entry"

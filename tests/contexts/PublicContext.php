@@ -950,4 +950,104 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$this->getSession()->visit($this->_micropub_post_permalink);
     }
 
+    /**
+     * @Given I have received a micropub request to create:
+     */
+    public function iHaveReceivedAMicropubRequestToCreate(TableNode $table)
+    {
+		$post_params = array(
+			'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+		);
+
+		foreach($table->getHash() as $row){
+			$post_params[$row['parameter']] = $row['value'];
+		}
+
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			$post_params
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_micropub_post_permalink = $headers['Location'][0];
+    }
+
+    /**
+     * @Then the post record should have yaml front matter
+     */
+    public function thePostRecordShouldHaveYamlFrontMatter()
+    {
+        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
+		assertFileExists(CONTENT_ROOT . $matches[1] . 'web.foo');
+		$post_record = file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo');
+		assertEquals(1, preg_match('/^(?m)(---$.*^...)$/Us', $post_record, $yaml));
+		$this->_front_matter = yaml_parse($yaml[1]);
+		$this->_post_content = trim(substr($post_record, strlen($yaml[1])));
+		assertNotFalse($this->_front_matter);
+    }
+
+    /**
+     * @Then the yaml should have a :arg1 key with value :arg2
+     */
+    public function theYamlShouldHaveAKeyWithValue($arg1, $arg2)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+        assertEquals($arg2, $this->_front_matter[$arg1]);
+    }
+
+    /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with an element :arg3
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithAnElement($arg1, $arg2, $arg3)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+		assertIsArray($this->_front_matter[$arg1]);
+        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
+		assertIsArray($this->_front_matter[$arg1][$arg2]);
+		assertContains($arg3, $this->_front_matter[$arg1][$arg2]);
+    }
+
+    /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element :arg4
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElement($arg1, $arg2, $arg3, $arg4)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+		assertIsArray($this->_front_matter[$arg1]);
+        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
+		assertIsArray($this->_front_matter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
+		assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
+		assertContains($arg4, $this->_front_matter[$arg1][$arg2][$arg3]);
+    }
+
+    /**
+     * @Then the yaml nested array in :arg1 with a nested array in :arg2 should not have a key :arg3
+     */
+    public function theYamlNestedArrayInWithANestedArrayInShouldNotHaveAKey($arg1, $arg2, $arg3)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+		assertIsArray($this->_front_matter[$arg1]);
+        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
+		assertIsArray($this->_front_matter[$arg1][$arg2]);
+		assertArrayNotHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
+    }
+
+    /**
+     * @Then the post record should have content following the front matter
+     */
+    public function thePostRecordShouldHaveContentFollowingTheFrontMatter()
+    {
+        assertNotEmpty($this->_post_content);
+    }
+
+    /**
+     * @Then the post record content should be :arg1
+     */
+    public function thePostRecordContentShouldBe($arg1)
+    {
+        assertEquals($arg1, $this->_post_content);
+    }
+
 }
