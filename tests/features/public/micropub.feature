@@ -128,3 +128,33 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the HTML should be valid
 		And I should see "cashew rope"
 		And I should not see "h-entry"
+
+	@micropub_authorized
+	Scenario: Authoring a micropub post with multiple categories
+		Given I have received a micropub request to create:
+		  | parameter  | value               |
+		  | h          | entry               |
+		  | content    | the content         |
+		  | category[] | category the first  |
+		  | category[] | category the second |
+		  | category[] | category the third  |
+		Then the post record should have yaml front matter
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "category" with an element "category the first"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "category" with an element "category the second"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "category" with an element "category the third"
+
+	@micropub_authorized
+	Scenario: Visiting the URL of a micropub post with multiple categories
+		Given I have received a micropub request to create:
+		  | parameter  | value               |
+		  | h          | entry               |
+		  | content    | the content         |
+		  | category[] | category the first  |
+		  | category[] | category the second |
+		  | category[] | category the third  |
+		When I visit the post permalink
+		Then the response status code should be 200
+		And I should see "the content"
+		And I should see "category the first"
+		And I should see "category the second"
+		And I should see "category the third"

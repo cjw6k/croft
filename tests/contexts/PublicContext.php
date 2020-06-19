@@ -960,6 +960,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		);
 
 		foreach($table->getHash() as $row){
+			if('[]' == substr($row['parameter'], -2)){
+				$post_params[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = $row['value'];
+				continue;
+			}
 			$post_params[$row['parameter']] = $row['value'];
 		}
 

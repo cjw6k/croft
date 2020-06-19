@@ -236,6 +236,20 @@ class Post
 			$front_matter['slug'] = $this->getRequest()->post('slug');
 		}
 
+		$this->setFrontMatter($front_matter);
+
+		$this->_setFrontMatterProperties();
+	}
+
+	/**
+	 * Capture optional front matter properties from the POST parameters
+	 *
+	 * @return void
+	 */
+	private function _setFrontMatterProperties()
+	{
+		$front_matter = $this->getFrontMatter();
+
 		foreach($this->getRequest()->post() as $key => $value){
 			switch($key){
 				case 'access_token':
@@ -244,6 +258,14 @@ class Post
 				case 'published':
 				case 'content':
 					continue 2;
+			}
+
+			if(is_array($value)){
+				if(!isset($front_matter['item']['properties'][$key])){
+					$front_matter['item']['properties'][$key] = array();
+				}
+				$front_matter['item']['properties'][$key] = array_merge($front_matter['item']['properties'][$key], $value);
+				continue;
 			}
 
 			$front_matter['item']['properties'][$key][] = $value;
