@@ -174,7 +174,7 @@ class WebFoo
 	}
 
 	/**
-	 * Control contents requests
+	 * Control content requests
 	 *
 	 * @return boolean True  If the request matches content.
 	 *                 False If the request does not match any content.
@@ -182,8 +182,12 @@ class WebFoo
 	private function _slingContent()
 	{
 		$matches = array();
-		if(!preg_match('/^\/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)/', $this->getRequest()->getPath(), $matches)){
+		if(!preg_match('/^\/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)(?:media\/(.*))?/', $this->getRequest()->getPath(), $matches)){
 			return false;
+		}
+
+		if(isset($matches[2])){
+			return $this->_slingMedia(CONTENT_ROOT . $matches[1] . 'media/' . $matches[2]);
 		}
 
 		if(!file_exists(CONTENT_ROOT . $matches[1] . 'web.foo')){
@@ -201,6 +205,26 @@ class WebFoo
 		$this->setContent(trim(substr($content, strlen($yaml[1]))));
 
 		$this->_includeTemplate('content.php');
+
+		return true;
+	}
+
+	/**
+	 * Control content-media requests
+	 *
+	 * @param string $path The local file-system path to the requested content.
+	 *
+	 * @return boolean True  If the media exists and has been sent to the client.
+	 *                 False If the media does not exist.
+	 */
+	private function _slingMedia(string $path)
+	{
+		if(!file_exists($path)){
+			return false;
+		}
+
+		header('Content-Type: ' . mime_content_type($path));
+		readfile($path);
 
 		return true;
 	}

@@ -149,4 +149,28 @@ class Request
 		return filter_input(INPUT_COOKIE, $index);
 	}
 
+	/**
+	 * Provide data from $_FILES at specified index
+	 *
+	 * If no index is specified, returns the full $_FILES array.
+	 *
+	 * @param string|null $index The index of the data in $_FILES.
+	 *
+	 * @return mixed The data from $_FILES or null if not set.
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 */
+	public function files(string $index = null)
+	{
+		if(is_null($index)){
+			return $_FILES;
+		}
+
+		if(!isset($_FILES[$index])){
+			return null;
+		}
+
+		return $_FILES[$index];
+	}
+
 }

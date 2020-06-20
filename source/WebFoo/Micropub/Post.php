@@ -42,6 +42,7 @@ class Post
 		}
 
 		$this->_setFrontMatter();
+		$this->_embeddedMedia();
 
 		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($this->getFrontMatter()) . $this->getRequest()->post('content'));
 
@@ -270,6 +271,94 @@ class Post
 
 			$front_matter['item']['properties'][$key][] = $value;
 		}
+
+		$this->setFrontMatter($front_matter);
+	}
+
+	/**
+	 * Capture the embedded media in a post
+	 *
+	 * @return void
+	 */
+	private function _embeddedMedia()
+	{
+		$files = $this->getRequest()->files();
+		if(!$files){
+			return;
+		}
+
+		foreach($files as $name => $set){
+			switch($name){
+				case 'photo':
+				case 'video':
+				case 'audio':
+					break;
+
+				default:
+					continue 2;
+			}
+
+			if(is_array($set['error'])){
+				foreach(array_keys($set['error']) as $key){
+					$this->_storeMedia(
+						$name,
+						array(
+							'error' => $set['error'][$key],
+							'name' => $set['name'][$key],
+							'tmp_name' => $set['tmp_name'][$key],
+							'size' => $set['size'][$key],
+						)
+					);
+				}
+				continue;
+			}
+
+			$this->_storeMedia($name, $set);
+		}
+	}
+
+	/**
+	 * Store one media item from the post locally
+	 *
+	 * @param string $name The property name of the media item.
+	 * @param mixed  $file The relevant parameters from $_FILE.
+	 *
+	 * @return void
+	 *
+	 * This will suppress UndefinedVariable warnings. It is necessary because PHPMD misses that the
+	 * variable $counters has been defined with the static keyword at the top of this method.
+	 *
+	 * @SuppressWarnings(PHPMD.UndefinedVariable)
+	 */
+	private function _storeMedia(string $name, $file)
+	{
+		static $counters = array(
+			'photo' => 1,
+			'video' => 1,
+			'audio' => 1,
+		);
+
+		static $media_folder_made = false;
+
+		$front_matter = $this->getFrontMatter();
+
+		if(UPLOAD_ERR_OK != $file['error']){
+			return;
+		}
+
+		if(!is_uploaded_file($file['tmp_name'])){
+			return;
+		}
+
+		if(!$media_folder_made && !mkdir($this->getContentPath() . $this->getContentId() . '/media/')){
+			return;
+		}
+		$media_folder_made = true;
+
+		$destination_file = $name . $counters[$name]++ . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+		move_uploaded_file($file['tmp_name'], $this->getContentPath() . $this->getContentId() . '/media/' . $destination_file);
+
+		$front_matter['item']['properties'][$name][] = rtrim($this->getConfig()->getMe(), '/') . '/' . $this->getUrlPath() . $this->getContentId() . '/media/' . $destination_file;
 
 		$this->setFrontMatter($front_matter);
 	}

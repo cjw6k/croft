@@ -170,6 +170,37 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Moai_at_Rano_Raraku_%28Easter_Island%29.jpg/160px-Moai_at_Rano_Raraku_%28Easter_Island%29.jpg"
 
 	@micropub_authorized
+	Scenario: Authoring a micropub post with included photo provided as binary data
+		Given I have received a micropub request with embedded media to create:
+		  | parameter  | value              |
+		  | h          | entry              |
+		  | content    | the content        |
+		  | photo      | from_file: 0-1.jpg |
+		Then the post record should have yaml front matter
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element that ends with "media/photo1.jpg"
+
+	@micropub_authorized
+	Scenario: Viewing a photo that has been published via micropub post with included photo provided as binary data
+		Given I have received a micropub request with embedded photo
+		When I visit the photo url
+		Then the response status code should be 200
+		And there should be an HTTP "Content-Type" header with value "image/jpeg"
+
+	@micropub_authorized
+	Scenario: Authoring a micropub post with multiple included photos provided as binary data
+		Given I have received a micropub request with embedded media to create:
+		  | parameter  | value              |
+		  | h          | entry              |
+		  | content    | the content        |
+		  | photo[]    | from_file: 0-1.jpg |
+		  | photo[]    | from_file: 1-0.gif |
+		  | photo[]    | from_file: 1-1.png |
+		Then the post record should have yaml front matter
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element that ends with "media/photo1.jpg"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element that ends with "media/photo2.gif"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element that ends with "media/photo3.png"
+
+	@micropub_authorized
 	Scenario: Responding to a source content query that is missing the URL parameter
 		Given I create a new micropub post with content "cashew rope"
 		When I receive a source query that is missing the URL parameter

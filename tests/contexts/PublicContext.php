@@ -1027,6 +1027,27 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element that ends with :arg4
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThatEndsWith($arg1, $arg2, $arg3, $arg4)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+		assertIsArray($this->_front_matter[$arg1]);
+        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
+		assertIsArray($this->_front_matter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
+		assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
+		$found = false;
+		$arg4 = strrev($arg4);
+		foreach($this->_front_matter[$arg1][$arg2][$arg3] as $value){
+			if(0 === strpos(strrev($value), $arg4)){
+				$found = true;
+			}
+		}
+		assertTrue($found);
+    }
+
+    /**
      * @Then the yaml nested array in :arg1 with a nested array in :arg2 should not have a key :arg3
      */
     public function theYamlNestedArrayInWithANestedArrayInShouldNotHaveAKey($arg1, $arg2, $arg3)
@@ -1104,6 +1125,70 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			$url .= '&properties[]=' . $property;
 		}
 		$this->getSession()->visit($url);
+    }
+
+    /**
+     * @Given I have received a micropub request with embedded media to create:
+     */
+    public function iHaveReceivedAMicropubRequestWithEmbeddedMediaToCreate(TableNode $table)
+    {
+		$post_params = array(
+			'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+		);
+
+		foreach($table->getHash() as $row){
+			if('[]' == substr($row['parameter'], -2)){
+				if(0 === strpos($row['value'], 'from_file:')){
+					$value = trim(substr($row['value'], 10));
+					$files[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = FIXTURES_ROOT . 'media/' . $value;
+					continue;
+				}
+				$post_params[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = $row['value'];
+				continue;
+			}
+			if(0 === strpos($row['value'], 'from_file:')){
+				$value = trim(substr($row['value'], 10));
+				$files[$row['parameter']] = FIXTURES_ROOT . 'media/' . $value;
+				continue;
+			}
+			$post_params[$row['parameter']] = $row['value'];
+		}
+
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			$post_params,
+			isset($files) ? $files : array(),
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_micropub_post_permalink = $headers['Location'][0];
+    }
+
+    /**
+     * @Given I have received a micropub request with embedded photo
+     */
+    public function iHaveReceivedAMicropubRequestWithEmbeddedPhoto()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			),
+			array('photo' => FIXTURES_ROOT . 'media/0-1.jpg'),
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_micropub_post_permalink = $headers['Location'][0];
+    }
+
+    /**
+     * @When I visit the photo url
+     */
+    public function iVisitThePhotoUrl()
+    {
+        $this->getSession()->visit($this->_micropub_post_permalink . 'media/photo1.jpg');
     }
 
 }
