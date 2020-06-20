@@ -22,6 +22,19 @@ $mf2ish = $this->getFrontMatter();
 	<div class="e-content">
 		<?= $this->getContent() ?>
 	</div>
+	<?php
+
+	if(isset($mf2ish['item']['properties']['photo'])){
+		foreach($mf2ish['item']['properties']['photo'] as $photo){
+
+			?>
+			<a href="<?= $photo ?>"><img class="u-photo" src="<?= $photo ?>"></a>
+			<?php
+
+		}
+	}
+
+	?>
 	<footer>
 		<?php
 

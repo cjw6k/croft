@@ -158,3 +158,13 @@ Feature: Managing content using third-party client applications with the Micropu
 		And I should see "category the first"
 		And I should see "category the second"
 		And I should see "category the third"
+
+	@micropub_authorized
+	Scenario: Authoring a micropub post with included photo specified as a URL
+		Given I have received a micropub request to create:
+		  | parameter  | value                                                                                                                                                   |
+		  | h          | entry                                                                                                                                                   |
+		  | content    | the content                                                                                                                                             |
+		  | photo      | https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Moai_at_Rano_Raraku_%28Easter_Island%29.jpg/160px-Moai_at_Rano_Raraku_%28Easter_Island%29.jpg |
+		Then the post record should have yaml front matter
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Moai_at_Rano_Raraku_%28Easter_Island%29.jpg/160px-Moai_at_Rano_Raraku_%28Easter_Island%29.jpg"
