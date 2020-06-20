@@ -168,3 +168,67 @@ Feature: Managing content using third-party client applications with the Micropu
 		  | photo      | https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Moai_at_Rano_Raraku_%28Easter_Island%29.jpg/160px-Moai_at_Rano_Raraku_%28Easter_Island%29.jpg |
 		Then the post record should have yaml front matter
 		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "photo" with an element "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Moai_at_Rano_Raraku_%28Easter_Island%29.jpg/160px-Moai_at_Rano_Raraku_%28Easter_Island%29.jpg"
+
+	@micropub_authorized
+	Scenario: Responding to a source content query that is missing the URL parameter
+		Given I create a new micropub post with content "cashew rope"
+		When I receive a source query that is missing the URL parameter
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the source content query must include a post URL"
+
+	@micropub_authorized
+	Scenario Outline: Responding to a source content query that does not match any content URL
+		Given I create a new micropub post with content "cashew rope"
+		When I receive a source query for <url>
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "there is no post at the requested URL"
+
+		Examples:
+		  | url                              |
+		  | "http://localhost"               |
+		  | "http://localhost/"              |
+		  | "http://localhost/DNE/"          |
+		  | "http://localhost/1901/01/01/1/" |
+
+	@micropub_authorized
+	Scenario: Responding to a source content query
+		Given I have received a micropub request to create:
+		  | parameter  | value                |
+		  | h          | entry                |
+		  | content    | the content          |
+		  | published  | 2019-04-30T20:16:04Z |
+		When I receive a source query for the post
+		Then the response status code should be 200
+		And the response should be json
+		And the json should have an "type" parameter
+		And the json "type" parameter should be an array with an element "h-entry"
+		And the json should have an "properties" parameter
+		And the json "properties" parameter should have a nested array in "content" with an element "the content"
+		And the json "properties" parameter should have a nested array in "published" with an element "2019-04-30T20:16:04+00:00"
+
+	@micropub_authorized
+	Scenario: Responding to a source content query that includes a property list
+		Given I have received a micropub request to create:
+		  | parameter  | value              |
+		  | h          | entry              |
+		  | content    | the content        |
+		  | category[] | example the first  |
+		  | category[] | example the second |
+		  | extension  | the extension      |
+		When I receive a source query for the post properties "content extension"
+		Then the response status code should be 200
+		And the response should be json
+		And the json should not have an "type" parameter
+		And the json should have an "properties" parameter
+		And the json "properties" parameter should have a nested array in "content" with an element "the content"
+		And the json "properties" parameter should have a nested array in "extension" with an element "the extension"
+		And the json "properties" parameter should not have an "published" key
+		And the json "properties" parameter should not have an "category" key

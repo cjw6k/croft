@@ -210,7 +210,7 @@ trait WebContextTrait
     {
 		$content = $this->getSession()->getPage()->getContent();
         $json = json_decode($content);
-		assertNotFalse($json);
+		assertNotNull($json);
 		assertObjectHasAttribute($arg1, $json);
     }
 
@@ -222,7 +222,7 @@ trait WebContextTrait
     {
 		$content = $this->getSession()->getPage()->getContent();
         $json = json_decode($content);
-		assertNotFalse($json);
+		assertNotNull($json);
 		assertObjectNotHasAttribute($arg1, $json);
     }
 
@@ -277,4 +277,45 @@ trait WebContextTrait
     {
         $this->theJsonParameterShouldBe($arg1, array());
     }
+
+    /**
+     * @Then the json :arg1 parameter should be an array with an element :arg2
+     */
+    public function theJsonParameterShouldBeAnArrayWithAnElement($arg1, $arg2)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotNull($json);
+		assertObjectHasAttribute($arg1, $json);
+		assertIsArray($json->$arg1);
+		assertContains($arg2, $json->$arg1);
+    }
+
+    /**
+     * @Then the json :arg1 parameter should have a nested array in :arg2 with an element :arg3
+     */
+    public function theJsonParameterShouldHaveANestedArrayInWithAnElement($arg1, $arg2, $arg3)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotNull($json);
+		assertObjectHasAttribute($arg1, $json);
+		assertIsObject($json->$arg1);
+		assertObjectHasAttribute($arg2, $json->$arg1);
+		assertIsArray($json->$arg1->$arg2);
+		assertContains($arg3, $json->$arg1->$arg2);
+    }
+
+    /**
+     * @Then the json :arg1 parameter should not have an :arg2 key
+     */
+    public function theJsonParameterShouldNotHaveAnKey($arg1, $arg2)
+    {
+		$content = $this->getSession()->getPage()->getContent();
+        $json = json_decode($content);
+		assertNotNull($json);
+		assertObjectHasAttribute($arg1, $json);
+		assertObjectNotHasAttribute($arg2, $json->$arg1);
+    }
+
 }

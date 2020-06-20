@@ -100,7 +100,7 @@ class Request
 			return null;
 		}
 
-		return filter_input(INPUT_GET, $index);
+		return is_array($_GET[$index]) ? filter_input(INPUT_GET, $index, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY) : filter_input(INPUT_GET, $index);
 	}
 
 	/**

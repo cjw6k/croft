@@ -1054,4 +1054,56 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         assertEquals($arg1, $this->_post_content);
     }
 
+    /**
+     * @When I receive a source query for the post
+     */
+    public function iReceiveASourceQueryForThePost()
+    {
+		$this->getSession()->setRequestHeader(
+			'Authorization',
+			'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test')
+		);
+		$this->getSession()->visit('/micropub/?q=source&url=' . $this->_micropub_post_permalink);
+    }
+
+    /**
+     * @When I receive a source query that is missing the URL parameter
+     */
+    public function iReceiveASourceQueryThatIsMissingTheUrlParameter()
+    {
+		$this->getSession()->setRequestHeader(
+			'Authorization',
+			'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test')
+		);
+		$this->getSession()->visit('/micropub/?q=source');
+    }
+
+    /**
+     * @When I receive a source query for :arg1
+     */
+    public function iReceiveASourceQueryForUrl($arg1)
+    {
+		$this->getSession()->setRequestHeader(
+			'Authorization',
+			'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test')
+		);
+		$this->getSession()->visit('/micropub/?q=source&url=' . $arg1);
+    }
+
+    /**
+     * @When I receive a source query for the post properties :arg1
+     */
+    public function iReceiveASourceQueryForThePostProperties($arg1)
+    {
+		$this->getSession()->setRequestHeader(
+			'Authorization',
+			'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test')
+		);
+		$url = '/micropub/?q=source&url=' . $this->_micropub_post_permalink;
+		foreach(explode(' ', $arg1) as $property){
+			$url .= '&properties[]=' . $property;
+		}
+		$this->getSession()->visit($url);
+    }
+
 }
