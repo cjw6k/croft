@@ -229,6 +229,9 @@ class Post
 					'published' => array(
 						$this->getPublished()->format('c'),
 					),
+					'uid' => array(
+						rtrim($this->getConfig()->getMe(), '/') . '/' . $this->getUrlPath() . $this->getContentId() . '/',
+					),
 				),
 			),
 		);

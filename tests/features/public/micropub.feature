@@ -114,6 +114,7 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "summary" with an element "the summary"
 		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "category" with an element "the category"
 		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "extension" with an element "the extended property"
+		And the yaml should have a nested array in "item" with a nested array in "properties" with a nested array in "uid" with an element the post permalink
 		And the yaml nested array in "item" with a nested array in "properties" should not have a key "access_token"
 		And the yaml nested array in "item" with a nested array in "properties" should not have a key "content"
 		And the yaml nested array in "item" with a nested array in "properties" should not have a key "h"

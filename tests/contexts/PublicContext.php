@@ -1027,6 +1027,20 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element the post permalink
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThePostPermalink($arg1, $arg2, $arg3)
+    {
+        assertArrayHasKey($arg1, $this->_front_matter);
+		assertIsArray($this->_front_matter[$arg1]);
+        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
+		assertIsArray($this->_front_matter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
+		assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
+		assertContains($this->_micropub_post_permalink, $this->_front_matter[$arg1][$arg2][$arg3]);
+    }
+
+    /**
      * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element that ends with :arg4
      */
     public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThatEndsWith($arg1, $arg2, $arg3, $arg4)
