@@ -263,7 +263,7 @@ class Post
 	 *
 	 * @return void
 	 */
-	protected function _setFrontMatterProperties()
+	private function _setFrontMatterProperties()
 	{
 		$front_matter = $this->getFrontMatter();
 
@@ -277,18 +277,36 @@ class Post
 					continue 2;
 			}
 
-			if(is_array($value)){
+			$this->_setFrontMatterProperty($front_matter, $key, $value);
+		}
+
+		$this->setFrontMatter($front_matter);
+	}
+
+	/**
+	 * Capture one front matter property
+	 *
+	 * @param mixed  $front_matter The front matter of the post.
+	 * @param string $key          The index provided in POST.
+	 * @param mixed  $value        The value of POST at the given index.
+	 *
+	 * @return void
+	 */
+	protected function _setFrontMatterProperty(&$front_matter, string $key, $value)
+	{
+		if(is_array($value)){
+			if(!empty($value)){
 				if(!isset($front_matter['item']['properties'][$key])){
 					$front_matter['item']['properties'][$key] = array();
 				}
 				$front_matter['item']['properties'][$key] = array_merge($front_matter['item']['properties'][$key], $value);
-				continue;
 			}
-
-			$front_matter['item']['properties'][$key][] = $value;
+			return;
 		}
 
-		$this->setFrontMatter($front_matter);
+		if(!empty($value)){
+			$front_matter['item']['properties'][$key][] = $value;
+		}
 	}
 
 	/**

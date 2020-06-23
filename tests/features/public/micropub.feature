@@ -377,3 +377,28 @@ Feature: Managing content using third-party client applications with the Micropu
 		And I should see "this text within a strong element"
 		And I should not see "<strong>"
 		And there should be a "strong" element with text content "this text within a strong element"
+
+	@micropub_authorized
+	Scenario: Authoring a micropub post with an empty category specified
+		Given I have received a micropub request to create:
+		  | parameter | value         |
+		  | h         | "entry"       |
+		  | content   | "the content" |
+		  | category  |               |
+		Then the post record should have yaml front matter
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "category"
+
+	@micropub_authorized
+	Scenario: Authoring a JSON-encoded micropub post with an empty category specified
+		Given I have received a JSON-encoded micropub request to create:
+		  """
+		  {
+		    "type": ["h-entry"],
+			"properties": {
+				"content": ["the content"],
+				"category": []
+			}
+		  }
+		  """
+		Then the post record should have yaml front matter
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "category"

@@ -106,7 +106,9 @@ class Json extends \cjw6k\WebFoo\Micropub\Post
 					continue 2;
 			}
 
-			$front_matter['item']['properties'][$key] = obj2arr($set);
+			if(!empty($set)){
+				$front_matter['item']['properties'][$key] = obj2arr($set);
+			}
 		}
 
 		$this->setFrontMatter($front_matter);
