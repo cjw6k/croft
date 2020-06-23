@@ -59,3 +59,23 @@ function now()
 
 	return time();
 }
+
+/**
+ * Convert all stdClass in a mixed data structure to array, recursively
+ *
+ * @param mixed $data The data to be converted.
+ *
+ * @return mixed The data with no nested objects.
+ */
+function obj2arr($data)
+{
+	if(is_object($data)){
+		$data = get_object_vars($data);
+	}
+
+	if(is_array($data)){
+		return array_map('obj2arr', $data);
+	}
+
+	return $data;
+}
