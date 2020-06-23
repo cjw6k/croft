@@ -78,7 +78,7 @@ class Json extends \cjw6k\WebFoo\Micropub\Post
 			),
 		);
 
-		if($this->getMf2()->properties->slug[0]){
+		if(isset($this->getMf2()->properties->slug[0])){
 			$front_matter['slug'] = $this->getMf2()->properties->slug[0];
 		}
 
