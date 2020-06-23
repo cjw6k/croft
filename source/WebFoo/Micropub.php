@@ -345,9 +345,23 @@ class Micropub
 			return;
 		}
 
-		$post = new Micropub\Post();
+		$post = $this->_postFromContentType();
 		$post->createPost($this->getConfig(), $this->getRequest(), $this->getClientId());
 		$this->setResponse($post->getResponse());
+	}
+
+	/**
+	 * Initialize a new post of the JSON or standard type to match the HTTP Content-Type.
+	 *
+	 * @return Micropub\Post The post instance.
+	 */
+	private function _postFromContentType()
+	{
+		if('application/json' == $this->getRequest()->server('CONTENT_TYPE')){
+			return new Micropub\Post\Json();
+		}
+
+		return new Micropub\Post();
 	}
 
 	/**

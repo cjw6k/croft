@@ -43,8 +43,7 @@ class Post
 
 		$this->_setFrontMatter();
 		$this->_embeddedMedia();
-
-		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($this->getFrontMatter()) . $this->getRequest()->post('content'));
+		$this->_storePost();
 
 		http_response_code(201);
 		throw new Redirect(rtrim($this->getConfig()->getMe(), '/') . '/' . $this->getUrlPath() . $this->getContentId() . '/');
@@ -58,14 +57,7 @@ class Post
 	 */
 	private function _allocatePost()
 	{
-		$dt_published = null;
-		if($this->getRequest()->post('published')){
-			$dt_published = new DateTime($this->getRequest()->post('published'));
-		}
-
-		if(!$dt_published){
-			$dt_published = new DateTime();
-		}
+		$dt_published = $this->_getPublicationDateFromRequest();
 
 		$this->setPublished($dt_published);
 
@@ -82,6 +74,27 @@ class Post
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get the publication date of this post from the micropub request.
+	 *
+	 * Defaults to the current time if no publication date has been provided.
+	 *
+	 * @return DateTime The publication date.
+	 */
+	protected function _getPublicationDateFromRequest()
+	{
+		$dt_published = null;
+		if($this->getRequest()->post('published')){
+			$dt_published = new DateTime($this->getRequest()->post('published'));
+		}
+
+		if(!$dt_published){
+			return new DateTime();
+		}
+
+		return $dt_published;
 	}
 
 	/**
@@ -216,7 +229,7 @@ class Post
 	 *
 	 * @return void
 	 */
-	private function _setFrontMatter()
+	protected function _setFrontMatter()
 	{
 		$front_matter = array(
 			'client_id' => $this->getClientId(),
@@ -250,7 +263,7 @@ class Post
 	 *
 	 * @return void
 	 */
-	private function _setFrontMatterProperties()
+	protected function _setFrontMatterProperties()
 	{
 		$front_matter = $this->getFrontMatter();
 
@@ -364,6 +377,16 @@ class Post
 		$front_matter['item']['properties'][$name][] = rtrim($this->getConfig()->getMe(), '/') . '/' . $this->getUrlPath() . $this->getContentId() . '/media/' . $destination_file;
 
 		$this->setFrontMatter($front_matter);
+	}
+
+	/**
+	 * Store the post front matter and content into a post record on disk_free_space
+	 *
+	 * @return void
+	 */
+	protected function _storePost()
+	{
+		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($this->getFrontMatter()) . $this->getRequest()->post('content'));
 	}
 
 }

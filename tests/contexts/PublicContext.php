@@ -1205,4 +1205,48 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->visit($this->_micropub_post_permalink . 'media/photo1.jpg');
     }
 
+    /**
+     * @Given I receive a JSON-encoded micropub request to create a post that has no h parameter
+     */
+    public function iReceiveAJsonEncodedMicropubRequestToCreateAPostThatHasNoHParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(),
+			array(), // files
+			array(
+				'CONTENT_TYPE' => 'application/json',
+				'HTTP_AUTHORIZATION' => 'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'),
+			),
+			json_encode(
+				array(
+					'content' => 'hello world'
+				)
+			)
+		);
+    }
+
+    /**
+     * @Given I have received a JSON-encoded micropub request to create:
+     */
+    public function iHaveReceivedAJsonEncodedMicropubRequestToCreate(PyStringNode $string)
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(),
+			array(), // files
+			array(
+				'CONTENT_TYPE' => 'application/json',
+				'HTTP_AUTHORIZATION' => 'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'),
+			),
+			$string,
+
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_micropub_post_permalink = $headers['Location'][0];
+    }
+
 }
