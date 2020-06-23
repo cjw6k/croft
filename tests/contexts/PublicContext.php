@@ -1249,4 +1249,21 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		$this->_micropub_post_permalink = $headers['Location'][0];
     }
 
+    /**
+     * @Then there should be a :arg1 element with text content :arg2
+     */
+    public function thereShouldBeAElementWithTextContent($arg1, $arg2)
+    {
+        $results = $this->getSession()->getPage()->findAll('css', $arg1);
+		assertNotEmpty($results);
+		$found = false;
+		foreach($results as $node){
+			if($arg2 == $node->getText()){
+				$found = true;
+			}
+		}
+		assertTrue($found);
+    }
+
+
 }

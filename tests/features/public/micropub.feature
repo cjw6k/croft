@@ -337,3 +337,43 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the json "properties" parameter should have a nested array in "extension" with an element "the extension"
 		And the json "properties" parameter should not have an "published" key
 		And the json "properties" parameter should not have an "category" key
+
+	@micropub_authorized
+	Scenario: Authoring a micropub post with HTML content
+		Given I have received a JSON-encoded micropub request to create:
+		  """
+		  {
+		    "type": ["h-entry"],
+			"properties": {
+				"content": [
+					{
+						"html": "<strong>this text within a strong element</strong>"
+					}
+				]
+			}
+		  }
+		  """
+		Then the post record should have yaml front matter
+		And the yaml should have a "media_type" key with value "text/html"
+
+	@micropub_authorized
+	Scenario: Visiting the URL of a micropub post with HTML content
+		Given I have received a JSON-encoded micropub request to create:
+		  """
+		  {
+		    "type": ["h-entry"],
+			"properties": {
+				"content": [
+					{
+						"html": "<strong>this text within a strong element</strong>"
+					}
+				]
+			}
+		  }
+		  """
+		When I visit the post permalink
+		Then the response status code should be 200
+		And the HTML should be valid
+		And I should see "this text within a strong element"
+		And I should not see "<strong>"
+		And there should be a "strong" element with text content "this text within a strong element"
