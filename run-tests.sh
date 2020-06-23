@@ -2,28 +2,35 @@
 
 cd "$(dirname "$0")"
 
-###########
-# PHPSpec #
-###########
-echo -e "\nPHPSpec\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+function phpspec {
+	###########
+	# PHPSpec #
+	###########
+	echo -e "\nPHPSpec\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
 
-vendor/bin/phpspec run
-[[ $? -ne 0 ]] && exit
+	vendor/bin/phpspec run
+}
 
+function behat {
+	#########
+	# Behat #
+	#########
+	echo -e "\nBehat\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
 
-#########
-# Behat #
-#########
-echo -e "\nBehat\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+	if [[ ! -f ./behat.custom.yml ]]; then
+	  vendor/bin/behat --stop-on-failure
+	else
+	  vendor/bin/behat --stop-on-failure --config ./behat.custom.yml
+	fi
+}
 
-if [[ ! -f ./behat.custom.yml ]]; then
-  vendor/bin/behat --stop-on-failure
-else
-  vendor/bin/behat --stop-on-failure --config ./behat.custom.yml
+if [[ 'quick' != "$1" ]]; then
+	phpspec
+	[[ $? -ne 0 ]] && exit
+	behat
+	[[ $? -ne 0 ]] && exit
+
 fi
-
-[[ $? -ne 0 ]] && exit
-
 
 #########
 # PHPQA #
