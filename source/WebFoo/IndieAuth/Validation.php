@@ -21,10 +21,12 @@ class Validation
 	 * Store a local reference to the current request.
 	 *
 	 * @param \cjw6k\WebFoo\Request $request The current request.
+	 * @param \cjw6k\WebFoo\Config  $config  The active configuration.
 	 */
-	public function __construct(\cjw6k\WebFoo\Request $request)
+	public function __construct(\cjw6k\WebFoo\Request $request, \cjw6k\WebFoo\Config $config)
 	{
 		$this->setRequest($request);
+		$this->setConfig($config);
 	}
 
 	/**
@@ -38,7 +40,7 @@ class Validation
 	{
 		$this->setConfigMe($config_me);
 
-		$this->setURL(new Validation\URL());
+		$this->setURL(new Validation\URL($this->getConfig()));
 
 		$this->isValid(false);
 
@@ -262,7 +264,7 @@ class Validation
 	 */
 	public function userProfileURL(string $url)
 	{
-		$this->setURL(new Validation\URL());
+		$this->setURL(new Validation\URL($this->getConfig()));
 
 		if(!$this->getURL()->common($url, 'profile URL')){
 			$this->setErrors($this->getURL()->getErrors());

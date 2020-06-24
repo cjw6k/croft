@@ -450,6 +450,23 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @Given I receive an authorization request with client_id :arg1 and redirect_uri :arg2
+     */
+    public function iReceiveAnAuthorizationRequestWithClientIdAndRedirectUri($arg1, $arg2)
+    {
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			$arg2,
+			$arg1,
+			'test',
+			'identity',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+    }
+
+    /**
      * @Given the authorization request is missing the scope parameter
      */
     public function theAuthorizationRequestIsMissingTheScopeParameter()

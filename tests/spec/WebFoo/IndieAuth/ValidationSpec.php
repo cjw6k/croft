@@ -10,7 +10,8 @@ class ValidationSpec extends ObjectBehavior
 	function let()
 	{
 		$request = new \cjw6k\WebFoo\Request();
-		$this->beConstructedWith($request);
+		$config = new \cjw6k\WebFoo\Config( FIXTURES_ROOT . 'config-basic.yml' );
+		$this->beConstructedWith($request, $config);
 	}
 
     function it_is_initializable()

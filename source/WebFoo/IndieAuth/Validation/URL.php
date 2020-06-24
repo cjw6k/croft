@@ -18,6 +18,16 @@ class URL
 	use \cjw6k\WebFoo\Aether;
 
 	/**
+	 * Accept the Config and make it local expressly to permit exceptions to the indieauth spec.
+	 *
+	 * @param \cjw6k\WebFoo\Config $config The active configuration.
+	 */
+	public function __construct(\cjw6k\WebFoo\Config $config)
+	{
+		$this->setConfig($config);
+	}
+
+	/**
 	 * Ensure the URL has an acceptable format according to the spec.
 	 *
 	 * @param string $url  The URL to validate.
@@ -95,6 +105,12 @@ class URL
 	private function path($url_parts, string $name)
 	{
 		if(!isset($url_parts['path'])){
+			$config_indieauth = $this->getConfig()->getIndieauth();
+			if(isset($config_indieauth['exceptions']['client_id']['missing_path_component'])){
+				if(in_array($url_parts['host'], $config_indieauth['exceptions']['client_id']['missing_path_component'])){
+					return;
+				}
+			}
 			$this->mergeErrors("$name must include a path");
 			return;
 		}

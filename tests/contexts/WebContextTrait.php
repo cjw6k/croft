@@ -40,6 +40,33 @@ trait WebContextTrait
 	}
 
 	/**
+	 * @BeforeScenario @config_indieauth_exceptions
+	 */
+	public function makeConfigWithUsersAndIndieAuthExceptions()
+	{
+		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
+		yaml_emit_file(
+			PACKAGE_ROOT . 'config.yml',
+			array(
+				'title' => 'WebFoo',
+				'username' => 'test',
+				'password' => password_hash('test', PASSWORD_DEFAULT), 'me' => 'http://localhost/',
+				'indieauth' => array(
+					'exceptions' => array(
+						'client_id' => array(
+							'missing_path_component' => array(
+								'omnibear.com',
+								'indigenous.realize.be',
+								'indiebookclub.biz',
+							)
+						)
+					)
+				)
+			)
+		);
+	}
+
+	/**
 	 * @AfterScenario
 	 */
 	public function resetSession()
@@ -49,6 +76,7 @@ trait WebContextTrait
 
 	/**
 	 * @AfterScenario @user_exists
+	 * @AfterScenario @config_indieauth_exceptions
 	 */
 	public function removeConfig()
 	{

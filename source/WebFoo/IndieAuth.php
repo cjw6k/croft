@@ -40,7 +40,7 @@ class IndieAuth
 	public function authenticationRequest(Request $request)
 	{
 		$this->setRequest($request);
-		$this->setValidation(new IndieAuth\Validation($request));
+		$this->setValidation(new IndieAuth\Validation($request, $this->getConfig()));
 
 		if('GET' == $request->getMethod()){
 			$this->_startAuthentication();
@@ -248,7 +248,7 @@ class IndieAuth
 	 */
 	public function validateUserProfileURL(string $url, Request $request)
 	{
-		$validation = new IndieAuth\Validation($request);
+		$validation = new IndieAuth\Validation($request, $this->getConfig());
 		if(!$validation->userProfileURL($url)){
 			$this->setErrors($validation->getErrors());
 			return false;
