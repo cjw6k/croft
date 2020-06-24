@@ -67,6 +67,29 @@ trait WebContextTrait
 	}
 
 	/**
+	 * @BeforeScenario @config_micropub_exceptions
+	 */
+	public function makeConfigWithUsersAndMicropubExceptions()
+	{
+		assertFileNotExists(PACKAGE_ROOT . 'config.yml', 'config.yml file already exists');
+		yaml_emit_file(
+			PACKAGE_ROOT . 'config.yml',
+			array(
+				'title' => 'WebFoo',
+				'username' => 'test',
+				'password' => password_hash('test', PASSWORD_DEFAULT), 'me' => 'http://localhost/',
+				'micropub' => array(
+					'exceptions' => array(
+						'two_copies_of_access_token' => array(
+							'micropub.rocks'
+						)
+					)
+				)
+			)
+		);
+	}
+
+	/**
 	 * @AfterScenario
 	 */
 	public function resetSession()
@@ -77,6 +100,7 @@ trait WebContextTrait
 	/**
 	 * @AfterScenario @user_exists
 	 * @AfterScenario @config_indieauth_exceptions
+	 * @AfterScenario @config_micropub_exceptions
 	 */
 	public function removeConfig()
 	{

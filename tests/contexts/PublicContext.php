@@ -805,6 +805,30 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @Given an access token has been issued to micropub.rocks
+     */
+    public function anAccessTokenHasBeenIssuedToMicropubRocks()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/token/',
+			array(
+				'grant_type' => 'authorization_code',
+				'client_id' => 'https://micropub.rocks/fake/',
+				'redirect_uri' => 'https://micropub.rocks/fake/',
+				'code' => $this->_indieauth_code,
+				'me' => 'http://localhost/'
+			)
+		);
+		$response = json_decode($this->getSession()->getPage()->getContent());
+		assertNotFalse($response);
+		if(isset($response->access_token)){
+			$this->_indieauth_token = $response->access_token;
+		}
+		assertFileExists(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+    }
+
+    /**
      * @Then the token should be marked as revoked
      */
     public function theTokenShouldBeMarkedAsRevoked()
@@ -855,6 +879,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @When I receive a micropub request that has no access token from micropub.rocks
+     */
+    public function iReceiveAMicropubRequestThatHasNoAccessTokenFromMicropubRocks()
+    {
+        $this->iReceiveAMicropubRequestViaGetThatHasNoAccessToken();
+    }
+
+    /**
      * @Given I receive a micropub request via post that has no access token
      */
     public function iReceiveAMicropubRequestViaPostThatHasNoAccessToken()
@@ -872,6 +904,47 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     {
 		$this->getSession()->setRequestHeader('Authorization', 'Bearer test');
 		$this->getSession()->visit('/micropub/?access_token=test');
+    }
+
+    /**
+     * @Given I have authorized micropub.rocks
+     */
+    public function iHaveAuthorizedMicropubRocks()
+    {
+		$this->iAmLoggedIn();
+		$authorization_url = IndieAuth\Client::buildAuthorizationURL(
+			IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+			$this->base_url,
+			'https://micropub.rocks/fake/',
+			'https://micropub.rocks/fake/',
+			'test',
+			'create',
+			'secret'
+		);
+		$this->getSession()->visit($authorization_url);
+		$this->getSession()->getPage()->findButton('Continue')->press();
+		$redirect_url = parse_url($this->getSession()->getCurrentUrl());
+		parse_str($redirect_url['query'], $params);
+		$this->_indieauth_code = $params['code'];
+		$this->resetSession();
+    }
+    /**
+     * @When I receive a micropub request that has both header and parameter access tokens from micropub.rocks
+     */
+    public function iReceiveAMicropubRequestThatHasBothHeaderAndParameterAccessTokensFromMicropubRocks()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'access_token' => (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'),
+				'content' => 'the content'
+			),
+			array(), // files
+			array(
+				'HTTP_AUTHORIZATION' => 'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'),
+			),
+		);
     }
 
     /**
@@ -899,6 +972,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
 			)
 		);
+    }
+
+    /**
+     * @When I receive a micropub request from micropub.rocks
+     */
+    public function iReceiveAMicropubRequestFromMicropubRocks()
+    {
+		$this->iReceiveAMicropubRequestToCreateAPost();
     }
 
     /**
