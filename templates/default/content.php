@@ -12,7 +12,7 @@ $mf2ish = $this->getFrontMatter();
 
 		?>
 		<header>
-			<h2><?= $mf2ish['item']['properties']['name'][0] ?></h2>
+			<h2 class="p-name"><?= $mf2ish['item']['properties']['name'][0] ?></h2>
 		</header>
 		<?php
 
@@ -58,7 +58,10 @@ $mf2ish = $this->getFrontMatter();
 
 		}
 
+		$dt = new DateTime($mf2ish['item']['properties']['published'][0]);
+
 		?>
+		<p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a></p>
 	</footer>
 </article>
 <?php
