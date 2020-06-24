@@ -194,6 +194,7 @@ class WebFoo
 			return false;
 		}
 
+		$this->setContentSource(CONTENT_ROOT . $matches[1] . 'web.foo');
 		$content = file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo');
 
 		$yaml = array();
