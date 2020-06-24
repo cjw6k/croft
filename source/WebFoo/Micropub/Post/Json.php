@@ -134,6 +134,8 @@ class Json extends \cjw6k\WebFoo\Micropub\Post
 			$content = '';
 		}
 
+		$content = str_replace("\r\n", "\n", $content);
+
 		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($front_matter) . $content);
 	}
 

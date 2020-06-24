@@ -404,7 +404,8 @@ class Post
 	 */
 	protected function _storePost()
 	{
-		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($this->getFrontMatter()) . $this->getRequest()->post('content'));
+		$content = str_replace("\r\n", "\n", $this->getRequest()->post('content'));
+		file_put_contents($this->getContentPath() . $this->getContentId() . '/web.foo', yaml_emit($this->getFrontMatter()) . $content);
 	}
 
 }
