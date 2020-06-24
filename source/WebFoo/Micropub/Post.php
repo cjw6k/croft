@@ -398,7 +398,7 @@ class Post
 	}
 
 	/**
-	 * Store the post front matter and content into a post record on disk_free_space
+	 * Store the post front matter and content into a post record on disk
 	 *
 	 * @return void
 	 */
