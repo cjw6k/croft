@@ -73,7 +73,7 @@ include 'header.php';
 		$udt = new DateTime();
 		$udt->setTimestamp(filemtime($this->getContentSource()));
 		$edt = clone $dt;
-		$updated = $dt->modify('+30 seconds') < $udt;
+		$updated = $edt->modify('+30 seconds') < $udt;
 
 		?>
 		<p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a><?= $updated ? ('&mdash; Updated: <time class="dt-updated" datetime="' . $udt->format('c') .'">' . $udt->format('c') . '</time>') : '' ?></p>
