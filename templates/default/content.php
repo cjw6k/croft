@@ -1,8 +1,19 @@
 <?php
 
-include 'header.php';
-
 $mf2ish = $this->getFrontMatter();
+
+if(isset($mf2ish['item']['properties']['visibility'][0])){
+	switch($mf2ish['item']['properties']['visibility'][0]){
+		case 'private':
+		case 'draft':
+			if(!$this->getSession()->isLoggedIn()){
+				$this->_sling404();
+				return;
+			}
+	}
+}
+
+include 'header.php';
 
 ?>
 <article class="<?= implode(' ', $mf2ish['item']['type']) ?>">
