@@ -61,12 +61,11 @@ $mf2ish = $this->getFrontMatter();
 		$dt = new DateTime($mf2ish['item']['properties']['published'][0]);
 		$udt = new DateTime();
 		$udt->setTimestamp(filemtime($this->getContentSource()));
-
-		$interval = $dt->diff($udt, true);
-		$updated = 30 < $interval->format('s');
+		$edt = clone $dt;
+		$updated = $dt->modify('+30 seconds') < $udt;
 
 		?>
-		<p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a><?= $updated ? ('Updated: <time class="dt-updated" datetime="' . $udt->format('c') .'">' . $udt->format('c') . '</time>') : '' ?></p>
+		<p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a><?= $updated ? ('&mdash; Updated: <time class="dt-updated" datetime="' . $udt->format('c') .'">' . $udt->format('c') . '</time>') : '' ?></p>
 	</footer>
 </article>
 <?php
