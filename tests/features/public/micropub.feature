@@ -389,6 +389,16 @@ Feature: Managing content using third-party client applications with the Micropu
 		And the yaml nested array in "item" with a nested array in "properties" should not have a key "category"
 
 	@micropub_authorized
+	Scenario: Authoring a micropub post with an empty category specified
+		Given I have received a micropub request to create:
+		  | parameter  | value         |
+		  | h          | "entry"       |
+		  | content    | "the content" |
+		  | category[] |               |
+		Then the post record should have yaml front matter
+		And the yaml nested array in "item" with a nested array in "properties" should not have a key "category"
+
+	@micropub_authorized
 	Scenario: Authoring a JSON-encoded micropub post with an empty category specified
 		Given I have received a JSON-encoded micropub request to create:
 		  """

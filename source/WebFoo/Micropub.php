@@ -131,6 +131,9 @@ class Micropub
 		}
 
 		$url_parts = parse_url($this->getClientId());
+		if(!isset($url_parts['host'])){
+			return false;
+		}
 		if(!in_array($url_parts['host'], $config_micropub['exceptions']['two_copies_of_access_token'])){
 			return false;
 		}
@@ -209,22 +212,8 @@ class Micropub
 		}
 
 		$post = $this->_postFromContentType();
-		$post->createPost($this->getConfig(), $this->getRequest(), $this->getClientId());
+		$post->createPost($this->getRequest(), $this->getClientId());
 		$this->setResponse($post->getResponse());
-	}
-
-	/**
-	 * Initialize a new post of the JSON or standard type to match the HTTP Content-Type.
-	 *
-	 * @return Micropub\Post The post instance.
-	 */
-	private function _postFromContentType()
-	{
-		if('application/json' == $this->getRequest()->server('CONTENT_TYPE')){
-			return new Micropub\Post\Json();
-		}
-
-		return new Micropub\Post();
 	}
 
 	/**
@@ -252,6 +241,20 @@ class Micropub
 		);
 
 		return false;
+	}
+
+	/**
+	 * Initialize a new post of the JSON or standard type to match the HTTP Content-Type.
+	 *
+	 * @return Micropub\Post The post instance.
+	 */
+	private function _postFromContentType()
+	{
+		if('application/json' == $this->getRequest()->server('CONTENT_TYPE')){
+			return new Micropub\Post\Json(new Post($this->getConfig()));
+		}
+
+		return new Micropub\Post\Form(new Post($this->getConfig()));
 	}
 
 }

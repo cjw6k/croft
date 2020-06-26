@@ -3,9 +3,9 @@
 namespace spec\cjw6k\WebFoo\Micropub\Post;
 
 use PhpSpec\ObjectBehavior;
-use cjw6k\WebFoo\Micropub\Post\Json;
+use cjw6k\WebFoo\Micropub\Post\Form;
 
-class JsonSpec extends ObjectBehavior
+class FormSpec extends ObjectBehavior
 {
 	function let()
 	{
@@ -16,6 +16,6 @@ class JsonSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType(Json::class);
+        $this->shouldHaveType(Form::class);
     }
 }

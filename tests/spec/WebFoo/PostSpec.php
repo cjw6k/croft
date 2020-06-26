@@ -1,17 +1,16 @@
 <?php
 
-namespace spec\cjw6k\WebFoo\Micropub;
+namespace spec\cjw6k\WebFoo;
 
 use PhpSpec\ObjectBehavior;
-use cjw6k\WebFoo\Micropub\Post;
+use cjw6k\WebFoo\Post;
 
 class PostSpec extends ObjectBehavior
 {
 	function let()
 	{
 		$config = new \cjw6k\WebFoo\Config(FIXTURES_ROOT . 'config-basic.yml');
-		$post = new \cjw6k\WebFoo\Post($config);
-		$this->beConstructedWith($post);
+		$this->beConstructedWith($config);
 	}
 
     function it_is_initializable()
