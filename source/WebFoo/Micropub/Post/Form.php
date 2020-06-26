@@ -200,7 +200,11 @@ class Form extends \cjw6k\WebFoo\Micropub\Post
 	 */
 	protected function _storePost()
 	{
-		$this->setPostContent($this->getRequest()->post('content'));
+		$content = $this->getRequest()->post('content');
+		if(is_null($content)){
+			$content = '';
+		}
+		$this->setPostContent($content);
 		parent::_storePost();
 	}
 
