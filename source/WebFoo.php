@@ -183,7 +183,7 @@ class WebFoo
 	{
 		$matches = array();
 		if(!preg_match('/^\/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)(?:media\/(.*))?/', $this->getRequest()->getPath(), $matches)){
-			return false;
+			return $this->_slingPage();
 		}
 
 		if(isset($matches[2])){
@@ -227,6 +227,32 @@ class WebFoo
 		header('Content-Type: ' . mime_content_type($path));
 		readfile($path);
 
+		return true;
+	}
+
+	/**
+	 * Control page template requests
+	 *
+	 * @return boolean True  If the request matches a page template.
+	 *                 False If the request does not match any page template.
+	 */
+	private function _slingPage()
+	{
+		$matches = array();
+		if(!preg_match('/^\/([^\/]+)/', $this->getRequest()->getPath(), $matches)){
+			return false;
+		}
+
+		if(!isset($matches[1])){
+			return false;
+		}
+
+		$template = realpath(TEMPLATES_LOCAL . $matches[1] . '.php');
+		if(0 !== strpos($template, realpath(TEMPLATES_LOCAL))){
+			return false;
+		}
+
+		$this->_includeTemplate($matches[1] . '.php', '404.php');
 		return true;
 	}
 
