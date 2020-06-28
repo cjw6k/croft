@@ -188,7 +188,7 @@ class Form extends \cjw6k\WebFoo\Micropub\Post
 		$destination_file = $name . $counters[$name]++ . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
 		move_uploaded_file($file['tmp_name'], $this->getPost()->getContentPath() . $this->getPost()->getContentId() . '/media/' . $destination_file);
 
-		$front_matter['item']['properties'][$name][] = $this->getPost()->getUid() . '/media/' . $destination_file;
+		$front_matter['item']['properties'][$name][] = $this->getPost()->getUid() . 'media/' . $destination_file;
 
 		$this->setFrontMatter($front_matter);
 	}
