@@ -252,7 +252,11 @@ class WebFoo
 			return false;
 		}
 
-		$this->_includeTemplate($matches[1] . '.php', '404.php');
+		if(!file_exists(TEMPLATES_LOCAL . $matches[1] . '.php')){
+			return false;
+		}
+
+		$this->_includeTemplate($matches[1] . '.php', 'default.php');
 		return true;
 	}
 
