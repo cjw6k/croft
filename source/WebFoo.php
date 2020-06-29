@@ -247,16 +247,16 @@ class WebFoo
 			return false;
 		}
 
-		$template = realpath(TEMPLATES_LOCAL . $matches[1] . '.php');
+		$template = realpath(TEMPLATES_LOCAL . 'pages/' . $matches[1] . '.php');
 		if(0 !== strpos($template, realpath(TEMPLATES_LOCAL))){
 			return false;
 		}
 
-		if(!file_exists(TEMPLATES_LOCAL . $matches[1] . '.php')){
+		if(!file_exists($template)){
 			return false;
 		}
 
-		$this->_includeTemplate($matches[1] . '.php', 'default.php');
+		$this->_includeTemplate('pages/' . $matches[1] . '.php', 'default.php');
 		return true;
 	}
 
