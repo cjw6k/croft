@@ -24,6 +24,14 @@ function behat {
 	fi
 }
 
+function phpdox {
+	##########
+	# PHPDox #
+	##########
+	echo -e "\nPHPDox\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+	vendor/bin/phpdox
+}
+
 if [[ 'quick' != "$1" ]]; then
 	phpspec
 	[[ $? -ne 0 ]] && exit
@@ -40,13 +48,9 @@ echo -e "\nPHPQA\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
 vendor/bin/phpqa --analyzedDirs=source --buildDir=tests/build --report
 phpqa_result=$?
 
-
-##########
-# PHPDox #
-##########
-echo -e "\nPHPDox\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
-vendor/bin/phpdox
-
+if [[ 'quick' != "$1" ]]; then
+	phpdox
+fi
 
 # Given the public www root is ../public
 [[ ! -d public/docs ]] && mkdir public/docs
