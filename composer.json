@@ -5,6 +5,19 @@
 	"version": "0.1.0",
 	"type": "project",
 	"license": "MIT",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"authors": [
+		{
+			"name": "cjw6k",
+			"email": "chris@lot2k.com"
+		}
+	],
+	"require": {
+		"ext-yaml": "*@stable",
+		"nikic/fast-route": "*@stable",
+		"a6a/aether": "*@stable"
+	},
 	"require-dev": {
 		"behat/behat": "^3.6",
 		"behat/mink": "^1.8",
@@ -27,22 +40,15 @@
 		"sensiolabs/security-checker": "^6.0",
 		"vimeo/psalm": "^3.11",
 		"rexxars/html-validator": "^2.2",
-		"indieauth/client": "^0.5.2"
-	},
-	"authors": [
-		{
-			"name": "cjw6k",
-			"email": "chris@lot2k.com"
-		}
-	],
-	"require": {
-		"ext-yaml": "*"
+		"indieauth/client": "^0.5.2",
+		"indieweb/mention-client": "^1.2"
 	},
 	"autoload": {
 		"psr-4": {
 			"cjw6k\\": "source"
 		},
 		"files": [
+			"source/constants.php",
 			"source/utilities.php"
 		]
 	}

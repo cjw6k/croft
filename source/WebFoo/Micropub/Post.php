@@ -1,16 +1,21 @@
 <?php
 /**
- * The Micropub\Post class is herein defined.
+ * The Post class is herein defined.
  *
- * @package	webfoo
- * @author	cjw6k.ca
+ * @package	WebFoo\Micropub
+ * @author	cjw6k
  * @link	https://cj.w6k.ca/
  */
 
 namespace cjw6k\WebFoo\Micropub;
 
 use \DateTime;
+
+use \A6A\Aether\Aether;
 use \cjw6k\WebFoo\Exception\Redirect;
+use \cjw6k\WebFoo\Post\PostInterface;
+use \cjw6k\WebFoo\Request\RequestInterface;
+use \cjw6k\WebFoo\Response\ResponseInterface;
 
 /**
  * The Micropub\Post class handles post creation
@@ -18,31 +23,33 @@ use \cjw6k\WebFoo\Exception\Redirect;
 class Post
 {
 
-	use \cjw6k\WebFoo\Aether;
+	use Aether;
 
 	/**
 	 * Store a local reference to a model post
 	 *
-	 * @param \cjw6k\WebFoo\Post $post The model post.
+	 * @param PostInterface     $post     The model post.
+	 * @param RequestInterface  $request  The current request.
+	 * @param ResponseInterface $response The response.
 	 */
-	public function __construct(\cjw6k\WebFoo\Post $post)
+	public function __construct(PostInterface $post, RequestInterface $request, ResponseInterface $response)
 	{
 		$this->setPost($post);
+		$this->setRequest($request);
+		$this->setResponse($response);
 	}
 
 	/**
 	 * Create a new post
 	 *
-	 * @param \cjw6k\WebFoo\Request $request   The current request.
-	 * @param string                $client_id The client_id of the posting micropub client.
+	 * @param string $client_id The client_id of the posting micropub client.
 	 *
-	 * @throws \cjw6k\WebFoo\Exception\Redirect A HTTP redirect to the new post.
+	 * @throws Redirect A HTTP redirect to the new post.
 	 *
 	 * @return void
 	 */
-	public function createPost(\cjw6k\WebFoo\Request $request, string $client_id)
+	public function createPost(string $client_id)
 	{
-		$this->setRequest($request);
 		$this->setClientId($client_id);
 
 		if(!$this->_allocate()){
@@ -52,7 +59,7 @@ class Post
 		$this->_setFrontMatter();
 		$this->_storePost();
 
-		http_response_code(201);
+		$this->getResponse()->setCode(201);
 		throw new Redirect($this->getPost()->getUid());
 	}
 
@@ -86,9 +93,9 @@ class Post
 	 *
 	 * @param string|null $published The publication time.
 	 *
-	 * @return \DateTime The publication time.
+	 * @return DateTime The publication time.
 	 */
-	protected function _getPublicationDate(?string $published = null){
+	protected function _getPublicationDate($published = null){
 		$dt_published = new DateTime(is_null($published) ? 'now' : $published);
 		$this->setPublished($dt_published);
 		return $dt_published;

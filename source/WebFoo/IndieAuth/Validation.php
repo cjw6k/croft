@@ -2,12 +2,16 @@
 /**
  * The IndieAuth\Validation class is herein defined.
  *
- * @package	webfoo
- * @author	cjw6k.ca
+ * @package	WebFoo\IndieAuth
+ * @author	cjw6k
  * @link	https://cj.w6k.ca/
  */
 
 namespace cjw6k\WebFoo\IndieAuth;
+
+use \A6A\Aether\Aether;
+use \cjw6k\WebFoo\Config\ConfigInterface;
+use \cjw6k\WebFoo\Request\RequestInterface;
 
 /**
  * The Validation class provides data validation methods to match the IndieAuth spec
@@ -15,15 +19,15 @@ namespace cjw6k\WebFoo\IndieAuth;
 class Validation
 {
 
-	use \cjw6k\WebFoo\Aether;
+	use Aether;
 
 	/**
 	 * Store a local reference to the current request.
 	 *
-	 * @param \cjw6k\WebFoo\Request $request The current request.
-	 * @param \cjw6k\WebFoo\Config  $config  The active configuration.
+	 * @param ConfigInterface  $config  The active configuration.
+	 * @param RequestInterface $request The current request.
 	 */
-	public function __construct(\cjw6k\WebFoo\Request $request, \cjw6k\WebFoo\Config $config)
+	public function __construct(ConfigInterface $config, RequestInterface $request)
 	{
 		$this->setRequest($request);
 		$this->setConfig($config);
@@ -32,15 +36,23 @@ class Validation
 	/**
 	 * Ensure the authentication request matches requirements of the spec
 	 *
-	 * @param string $config_me The configured user profile URL.
+	 * @return void
+	 */
+	public function authenticationRequest()
+	{
+		$this->_authenticationRequest(new URL($this->getConfig()));
+	}
+
+	/**
+	 * Ensure the authentication request matches requirements of the spec
+	 *
+	 * @param URL $url Helper for validating URLs.
 	 *
 	 * @return void
 	 */
-	public function authenticationRequest(string $config_me)
+	private function _authenticationRequest(URL $url)
 	{
-		$this->setConfigMe($config_me);
-
-		$this->setURL(new Validation\URL($this->getConfig()));
+		$this->setURL($url);
 
 		$this->isValid(false);
 
@@ -156,7 +168,7 @@ class Validation
 			return false;
 		}
 
-		if(rtrim($this->getMe(), '/') != rtrim($this->getConfigMe(), '/')){
+		if(rtrim($this->getMe(), '/') != rtrim($this->getConfig()->getMe(), '/')){
 			$this->mergeErrors('the requested user profile URL (me) is not valid here');
 			return false;
 		}
@@ -264,7 +276,7 @@ class Validation
 	 */
 	public function userProfileURL(string $url)
 	{
-		$this->setURL(new Validation\URL($this->getConfig()));
+		$this->setURL(new URL($this->getConfig()));
 
 		if(!$this->getURL()->common($url, 'profile URL')){
 			$this->setErrors($this->getURL()->getErrors());
@@ -280,6 +292,51 @@ class Validation
 
 		if(isset($url_parts['port'])){
 			$this->mergeErrors("profile URL must not contain a port");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check that an authorization verfication or token request has required parameters
+	 *
+	 * @param string $name The name of the request for use in error messages.
+	 *
+	 * @return boolean True  If the request has required parameters.
+	 *                 False If the request is missing required parameters.
+	 */
+	public function indieAuthRequestHasParams(string $name)
+	{
+		$request = $this->getRequest();
+
+		if(!$request->post('code')){
+			$this->setResponseBody(
+				array(
+					'error' => 'invalid_request',
+					'error_description' => 'the ' . $name . ' request was missing the code parameter',
+				)
+			);
+			return false;
+		}
+
+		if(!$request->post('client_id')){
+			$this->setResponseBody(
+				array(
+					'error' => 'invalid_request',
+					'error_description' => 'the ' . $name . ' request was missing the client_id parameter',
+				)
+			);
+			return false;
+		}
+
+		if(!$request->post('redirect_uri')){
+			$this->setResponseBody(
+				array(
+					'error' => 'invalid_request',
+					'error_description' => 'the ' . $name . ' request was missing the redirect_uri parameter',
+				)
+			);
 			return false;
 		}
 

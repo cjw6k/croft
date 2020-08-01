@@ -198,6 +198,7 @@ trait WebContextTrait
         $headers = $this->getSession()->getResponseHeaders();
 		assertArrayHasKey($arg1, $headers);
 
+		$found = false;
 		foreach(explode(',', $headers[$arg1][0]) as $header){
 			if(trim($header) == $arg2){
 				$found = true;
@@ -368,6 +369,46 @@ trait WebContextTrait
 		assertNotNull($json);
 		assertObjectHasAttribute($arg1, $json);
 		assertObjectNotHasAttribute($arg2, $json->$arg1);
+    }
+
+    /**
+     * @Then the response body should be :arg1
+     */
+    public function theResponseBodyShouldBe($arg1)
+    {
+        assertEquals($arg1, $this->getSession()->getPage()->getContent());
+    }
+
+    /**
+     * @Then the response body should be the empty string
+     */
+    public function theResponseBodyShouldBeTheEmptyString()
+    {
+        assertEmpty($this->getSession()->getPage()->getContent());
+    }
+
+    /**
+     * @When I visit :arg1
+     */
+    public function iVisit($arg1)
+    {
+		$this->getSession()->visit($arg1);
+    }
+
+    /**
+     * @When I wait :arg1 seconds
+     */
+    public function iWaitSeconds($arg1)
+    {
+        sleep($arg1);
+    }
+
+    /**
+     * @Given I make a POST request to the home page
+     */
+    public function iMakeAPostRequestToTheHomePage()
+    {
+		$this->getSession()->getDriver()->getClient()->request('POST', '/');
     }
 
 }

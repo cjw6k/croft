@@ -1,6 +1,6 @@
 <?php
 
-$mf2ish = $this->getFrontMatter();
+$mf2ish = $this->getPost()->getFrontMatter();
 
 if(isset($mf2ish['item']['properties']['visibility'][0])){
 	switch($mf2ish['item']['properties']['visibility'][0]){
@@ -31,7 +31,7 @@ include 'header.php';
 
 	?>
 	<div class="e-content">
-		<?= $this->getContent() ?>
+		<?= $this->getPost()->getContent() ?>
 	</div>
 	<?php
 

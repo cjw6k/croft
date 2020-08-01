@@ -412,7 +412,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			'client_id' => $client_id,
 			'redirect_uri' => $redirect_uri,
 			'code' => password_hash($code, PASSWORD_DEFAULT),
-			'expires' => now() - 601,
+			'expires' => time() - 601,
 			'used' => 0,
 		);
 
@@ -1363,5 +1363,358 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 		assertTrue($found);
     }
 
+    /**
+     * @Given I use the mention-client library
+     */
+    public function iUseTheMentionClientLibrary()
+    {
+    }
 
+    /**
+     * @When the client tries to discover the webmention endpoint
+     */
+    public function theClientTriesToDiscoverTheWebmentionEndpoint()
+    {
+		$client = new IndieWeb\MentionClient();
+        $this->_webmention_url = $client->discoverWebmentionEndpoint($this->base_url);
+		assertNotEmpty($this->_webmention_url);
+    }
+
+    /**
+     * @Then the webmention endpoint is base_url plus :arg1
+     */
+    public function theWebmentionEndpointIsBaseUrlPlus($arg1)
+    {
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_webmention_url);
+    }
+	
+    /**
+     * @Given I receive a webmention that has no target parameter
+     */
+    public function iReceiveAWebmentionThatHasNoTargetParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/webmention/',
+			array(
+				// 'target' => 'http://localhost/',
+				'source' => 'http://localhost/',
+			),
+
+		);
+    }
+
+    /**
+     * @Given I receive a webmention that has no source parameter
+     */
+    public function iReceiveAWebmentionThatHasNoSourceParameter()
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/webmention/',
+			array(
+				'target' => 'http://localhost/',
+				// 'source' => 'http://localhost/',
+			),
+
+		);
+    }
+	
+    /**
+     * @Given I receive a webmention that has an empty target parameter
+     */
+    public function iReceiveAWebmentionThatHasAnEmptyTargetParameter()
+    {
+		$this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter('', 'http://localhost/');
+    }
+
+    /**
+     * @Given I receive a webmention that has an empty source parameter
+     */
+    public function iReceiveAWebmentionThatHasAnEmptySourceParameter()
+    {
+		$this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter('http://localhost/', '');
+    }	
+	
+    /**
+     * @Given I receive a webmention that has a target parameter :arg1
+     */
+    public function iReceiveAWebmentionThatHasATargetParameter($arg1)
+    {
+		$this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($arg1, 'http://localhost/');
+    }	
+	
+    /**
+     * @Given I receive a webmention that has a target parameter base_url plus :arg1
+     */
+    public function iReceiveAWebmentionThatHasATargetParameterBaseUrlPlus($arg1)
+    {
+		$this->iReceiveAWebmentionThatHasATargetParameter($this->base_url . $arg1);
+    }
+	
+    /**
+     * @Given I receive a webmention that has a source parameter :arg1
+     */
+    public function iReceiveAWebmentionThatHasASourceParameterSource($arg1)
+    {
+		$this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter('http://localhost/', $arg1);
+    }
+
+    /**
+     * @Given I receive a webmention that has target parameter :arg1 and source parameter :arg2
+     */
+    public function iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($arg1, $arg2)
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/webmention/',
+			array(
+				'target' => $arg1,
+				'source' => $arg2,
+			)
+		);
+    }
+	
+    /**
+     * @Given I have created a new post with content :arg1
+     */
+    public function iHaveCreatedANewPostWithContent($arg1)
+    {
+		$this->iCreateANewMicropubPostWithContent($arg1);
+    }
+
+    /**
+     * @When I receive a webmention that has the post permalink in the target and source :arg1
+     */
+    public function iReceiveAWebmentionThatHasThePostPermalinkInTheTargetAndSource($arg1)
+    {
+		$this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, $arg1);
+    }
+
+    /**
+     * @Given I have no incoming webmentions spooled for verification
+     */
+    public function iHaveNoIncomingWebmentionsSpooledForVerification()
+    {
+        $files = glob(VAR_ROOT . 'webmention/incoming-*');
+		foreach($files as $file){
+			if(is_file($file)){
+				unlink($file);
+			}
+		}
+    }
+
+    /**
+     * @When I receive a webmention from my own site that has the post permalink in the target
+     */
+    public function iReceiveAWebmentionFromMyOwnSiteThatHasThePostPermalinkInTheTarget()
+    {
+        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, 'http://localhost/fake/');
+    }
+
+    /**
+     * @When I receive a webmention from :arg1 that has the post permalink in the target
+     */
+    public function iReceiveAWebmentionFromThatHasThePostPermalinkInTheTarget($arg1)
+    {
+        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, $arg1);
+    }
+
+
+    /**
+     * @Then there should be an incoming webmention spooled for verification
+     */
+    public function thereShouldBeAnIncomingWebmentionSpooledForVerification()
+    {
+        $spooled = glob(VAR_ROOT . 'webmention/incoming-*');
+		assertNotEmpty($spooled);
+    }	
+	
+	private function _spoolIncomingWebmention($target, $source)
+	{
+		$webmention = array(
+			'target' => $target,
+			'source' => $source,
+			'request' => array(
+				'query_string' => '',
+				'referer' => '',
+				'user_agent' => '',
+				'remote_addr' => '',
+			),
+		);
+        yaml_emit_file(VAR_ROOT . 'webmention/incoming-' . uniqid(), $webmention);		
+	}	
+	
+    /**
+     * @Given I have an incoming webmention spooled for verification
+     */
+    public function iHaveAnIncomingWebmentionSpooledForVerification()
+    {
+		$this->_spoolIncomingWebmention('http://localhost/fake/', 'http://localhost/fake/');
+    }
+
+    /**
+     * @Then I should have no incoming webmentions spooled for verification
+     */
+    public function iShouldHaveNoIncomingWebmentionsSpooledForVerification()
+    {
+        $spooled = glob(VAR_ROOT . 'webmention/incoming-*');
+		assertEmpty($spooled);
+    }
+
+    /**
+     * @Given an async operation will start on the next visit
+     */
+    public function anAsyncOperationWillStartOnTheNextVisit()
+    {
+        assertFileNotExists(VAR_ROOT . 'async/.async-active');
+		if(file_exists(VAR_ROOT . 'async/.async-last')){
+			assertTrue(unlink(VAR_ROOT . 'async/.async-last'));
+		}
+		file_put_contents(VAR_ROOT . 'async/.async-last', time() - 30);
+		chmod(VAR_ROOT . 'async/.async-last', 0777);
+    }
+	
+    /**
+     * @Given an async operation will not start on the next visit
+     */
+    public function anAsyncOperationWillNotStartOnTheNextVisit()
+    {
+        assertFileNotExists(VAR_ROOT . 'async/.async-active');
+		if(file_exists(VAR_ROOT . 'async/.async-last')){
+			assertTrue(unlink(VAR_ROOT . 'async/.async-last'));
+		}
+		file_put_contents(VAR_ROOT . 'async/.async-last', time());
+		chmod(VAR_ROOT . 'async/.async-last', 0777);
+    }
+
+    /**
+     * @Given I have an incoming webmention spooled for verification with target base_url plus :arg1
+     */
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetBaseUrlPlus($arg1)
+    {
+		$this->_spoolIncomingWebmention($this->base_url . 'fake/', 'http://localhost/fake2/');
+    }
+	
+    /**
+     * @Given I have an incoming webmention spooled for verification with target the post permalink and source :arg1
+     */
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetThePostPermalinkAndSource($arg1)
+    {
+        assertNotEmpty($this->_micropub_post_permalink);
+		$this->_spoolIncomingWebmention($this->_micropub_post_permalink, $arg1);
+    }
+
+    /**
+     * @Then the post record should have no webmentions
+     */
+    public function thePostRecordShouldHaveNoWebmentions()
+    {
+        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
+		assertFileNotExists(CONTENT_ROOT . $matches[1] . 'web.mentions');
+    }	
+	
+    /**
+     * @Given I have created a webmention source post with content :arg1
+     */
+    public function iHaveCreatedAWebmentionSourcePostWithContent($arg1)
+    {
+		$this->getSession()->getDriver()->getClient()->request(
+			'POST',
+			'/micropub/',
+			array(
+				'content' => $arg1,
+				'access_token' => isset($this->_indieauth_token) ? $this->_indieauth_token : 'test',
+			)
+		);
+		$headers = $this->getSession()->getResponseHeaders();
+		assertArrayHasKey('Location', $headers);
+		$this->_webmention_source_permalink = $headers['Location'][0];
+    }
+
+    /**
+     * @Given I have created a webmention source post with content the post permalink
+     */
+    public function iHaveCreatedAWebmentionSourcePostWithContentThePostPermalink()
+    {
+		$this->iHaveCreatedAWebmentionSourcePostWithContent($this->_micropub_post_permalink);
+    }
+
+    /**
+     * @Then the post record should have webmentions
+     */
+    public function thePostRecordShouldHaveWebmentions()
+    {
+        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
+		assertFileExists(CONTENT_ROOT . $matches[1] . 'web.mentions');
+		$this->_post_webmentions = yaml_parse_file(CONTENT_ROOT . $matches[1] . 'web.mentions');
+		assertNotFalse($this->_post_webmentions);
+    }
+	
+    /**
+     * @Given I have an incoming webmention spooled for verification with target the post permalink and source the webmention source post permalink
+     */
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetThePostPermalinkAndSourceTheWebmentionSourcePostPermalink()
+    {
+        assertNotEmpty($this->_micropub_post_permalink);
+        assertNotEmpty($this->_webmention_source_permalink);
+		$this->_spoolIncomingWebmention($this->_micropub_post_permalink, $this->_webmention_source_permalink);
+    }	
+	
+    /**
+     * @Then there should be :arg1 generic webmentions
+     */
+    public function thereShouldBeGenericWebmentions($arg1)
+    {
+        assertEquals(1, $this->_post_webmentions['generic']['count']);
+    }
+
+    /**
+     * @Then the list of generic webmentions should contain the webmention source post permalink
+     */
+    public function theListOfGenericWebmentionsShouldContainTheWebmentionSourcePostPermalink()
+    {
+        assertContains($this->_webmention_source_permalink, $this->_post_webmentions['generic']['items']);
+    }
+
+    /**
+     * @Then there should be :arg1 repost webmentions
+     */
+    public function thereShouldBeRepostWebmentions($arg1)
+    {
+        assertEquals(0, $this->_post_webmentions['repost']['count']);
+    }
+
+    /**
+     * @Then there should be :arg1 response webmentions
+     */
+    public function thereShouldBeResponseWebmentions($arg1)
+    {
+        assertEquals(0, $this->_post_webmentions['response']['count']);
+    }
+	
+    /**
+     * @Then there should be :arg1 like webmentions
+     */
+    public function thereShouldBeLikeWebmentions($arg1)
+    {
+        assertEquals(0, $this->_post_webmentions['response']['items']['like']['count']);
+    }
+
+    /**
+     * @Then there should be :arg1 bookmark webmentions
+     */
+    public function thereShouldBeBookmarkWebmentions($arg1)
+    {
+        assertEquals(0, $this->_post_webmentions['response']['items']['bookmark']['count']);
+    }
+
+    /**
+     * @Then there should be :arg1 reply webmentions
+     */
+    public function thereShouldBeReplyWebmentions($arg1)
+    {
+        assertEquals(0, $this->_post_webmentions['response']['items']['reply']['count']);
+    }
+	
 }

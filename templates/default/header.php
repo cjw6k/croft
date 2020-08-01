@@ -6,5 +6,6 @@
 	<link rel="authorization_endpoint" href="/auth/">
 	<link rel="token_endpoint" href="/token/">
 	<link rel="micropub" href="/micropub/">
+	<link rel="webmention" href="/webmention/">
 </head>
 <body>

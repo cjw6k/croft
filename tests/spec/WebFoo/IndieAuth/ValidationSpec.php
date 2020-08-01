@@ -7,11 +7,11 @@ use cjw6k\WebFoo\IndieAuth\Validation;
 
 class ValidationSpec extends ObjectBehavior
 {
-	function let()
-	{
-		$request = new \cjw6k\WebFoo\Request();
-		$config = new \cjw6k\WebFoo\Config( FIXTURES_ROOT . 'config-basic.yml' );
-		$this->beConstructedWith($request, $config);
+	function let(
+		\cjw6k\WebFoo\Config\ConfigInterface $config,
+		\cjw6k\WebFoo\Request\RequestInterface $request
+	){
+		$this->beConstructedWith($config, $request);
 	}
 
     function it_is_initializable()

@@ -1,13 +1,17 @@
 <?php
 /**
- * The Micropub\Query class is herein defined.
+ * The Query class is herein defined.
  *
- * @package	webfoo
- * @author	cjw6k.ca
+ * @package	WebFoo\Micropub
+ * @author	cjw6k
  * @link	https://cj.w6k.ca/
  */
 
 namespace cjw6k\WebFoo\Micropub;
+
+use \A6A\Aether\Aether;
+use \cjw6k\WebFoo\Response\ResponseInterface;
+use \cjw6k\WebFoo\Request\RequestInterface;
 
 /**
  * The Micropub\Query class handles the GET queries of Micropub
@@ -15,20 +19,28 @@ namespace cjw6k\WebFoo\Micropub;
 class Query
 {
 
-	use \cjw6k\WebFoo\Aether;
+	use Aether;
+
+	/**
+	 * Store a local reference to the current request.
+	 *
+	 * @param RequestInterface  $request  The current request.
+	 * @param ResponseInterface $response The response.
+	 */
+	public function __construct(RequestInterface $request, ResponseInterface $response)
+	{
+		$this->setRequest($request);
+		$this->setResponse($response);
+	}
 
 	/**
 	 * Handle a GET request
 	 *
-	 * @param \cjw6k\WebFoo\Request $request The current request.
-	 *
 	 * @return void
 	 */
-	public function handleRequest(\cjw6k\WebFoo\Request $request)
+	public function handleRequest()
 	{
-		$this->setRequest($request);
-
-		switch($request->get('q')){
+		switch($this->getRequest()->get('q')){
 			case 'config':
 				$this->_configQuery();
 				return;
@@ -46,7 +58,7 @@ class Query
 	 */
 	private function _configQuery()
 	{
-		$this->setResponse(
+		$this->setResponseBody(
 			array(
 				'syndicate-to' => array(),
 				'media-endpoint' => '',
@@ -67,8 +79,8 @@ class Query
 
 		$yaml = array();
 		if(!preg_match('/^(?m)(---$.*^...)$/Us', $this->getContent(), $yaml)){
-			http_response_code(500);
-			$this->setResponse(
+			$this->getResponse()->setCode(500);
+			$this->setResponseBody(
 				array(
 					'error' => 'broken',
 					'error_description' => "the server encountered an unspecified internal error and could not complete the request"
@@ -92,8 +104,8 @@ class Query
 	private function _checkSourceQueryURLContent()
 	{
 		if(!$this->getRequest()->get('url')){
-			http_response_code(400);
-			$this->setResponse(
+			$this->getResponse()->setCode(400);
+			$this->setResponseBody(
 				array(
 					'error' => 'invalid_request',
 					'error_description' => 'the source content query must include a post URL',
@@ -104,8 +116,8 @@ class Query
 
 		$url_parts = parse_url($this->getRequest()->get('url'));
 		if(!isset($url_parts['path'])){
-			http_response_code(400);
-			$this->setResponse(
+			$this->getResponse()->setCode(400);
+			$this->setResponseBody(
 				array(
 					'error' => 'invalid_request',
 					'error_description' => 'there is no post at the requested URL',
@@ -116,8 +128,8 @@ class Query
 
 		$matches = array();
 		if(!preg_match('/^\/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)/', $url_parts['path'], $matches)){
-			http_response_code(400);
-			$this->setResponse(
+			$this->getResponse()->setCode(400);
+			$this->setResponseBody(
 				array(
 					'error' => 'invalid_request',
 					'error_description' => 'there is no post at the requested URL',
@@ -128,8 +140,8 @@ class Query
 		}
 
 		if(!file_exists(CONTENT_ROOT . $matches[1] . 'web.foo')){
-			http_response_code(400);
-			$this->setResponse(
+			$this->getResponse()->setCode(400);
+			$this->setResponseBody(
 				array(
 					'error' => 'invalid_request',
 					'error_description' => 'there is no post at the requested URL',
@@ -160,7 +172,7 @@ class Query
 
 			$response['properties']['content'][] = $this->getContent();
 
-			$this->setResponse($response);
+			$this->setResponseBody($response);
 
 			return;
 		}
@@ -181,13 +193,13 @@ class Query
 					$response['properties'][$property] = $front_matter['item']['properties'][$property];
 				}
 			}
-			$this->setResponse($response);
+			$this->setResponseBody($response);
 			return;
 		}
 		if(isset($front_matter['item']['properties'][$this->getRequest()->get('properties')])){
 			$response['properties'][$this->getRequest()->get('properties')] = $front_matter['item']['properties'][$this->getRequest()->get('properties')];
 		}
-		$this->setResponse($response);
+		$this->setResponseBody($response);
 	}
 
 }
