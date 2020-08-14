@@ -45,6 +45,7 @@ class Page implements PageInterface, Routable
 	{
 		return array(
 			new Route('GET', '/', 'home'),
+			new Route('GET', '/{page}/{category}[/]', 'sling', array('use_vars' => true), null, 0),
 			new Route('GET', '/{page}[/]', 'sling', array('use_vars' => true), null, 0),
 		);
 	}
@@ -74,6 +75,9 @@ class Page implements PageInterface, Routable
 		 * @psalm-suppress PossiblyUndefinedStringArrayOffset
 		 */
 		$page = $vars['page'];
+		$category = isset($vars['category']) ? $vars['category'] : null;
+
+		$this->setCategory($category);
 
 		$template = realpath(TEMPLATES_LOCAL . 'pages/' . $page . '.php');
 		if(0 !== strpos($template, realpath(TEMPLATES_LOCAL))){
