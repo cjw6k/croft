@@ -253,3 +253,67 @@ Feature: WebFoo provides an indieauth server for clients to interact with a WebF
 		Then the response status code should be 200
 		And the response should be empty
 		And the token should be marked as revoked
+
+	@user_exists
+	Scenario: Receiving a token verification request that is missing the bearer token
+		Given I have approved an authorization request
+		And an access token has been issued
+		When I receive a token verification request that is missing the bearer token
+		Then the response status code should be 400
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_request"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token verification request did not provided a bearer token"
+
+	@user_exists
+	Scenario: Receiving a token verification request with no matching token record
+		Given I have not approved an authorization request
+		And no tokens have been issued
+		When I receive a token verification request
+		Then the response status code should be 401
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token verification request could not be matched to an issued token"
+
+	@user_exists
+	Scenario: Receiving a token verification request with a revoked token
+		Given I have approved an authorization request
+		And an access token has been issued
+		And the access token has been revoked
+		When I receive a token verification request
+		Then the response status code should be 403
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token verification request included a bearer token which has been revoked"
+
+	@user_exists
+	Scenario: Receiving a token verification request with a cancelled authorization
+		Given I have approved an authorization request
+		And an access token has been issued
+		And a duplicate access token request was made
+		When I receive a token verification request
+		Then the response status code should be 403
+		And the response should be json
+		And the json should have an "error" parameter
+		And the json "error" parameter should be "invalid_grant"
+		And the json should have an "error_description" parameter
+		And the json "error_description" parameter should be "the token verification request included a bearer token which originates from a cancelled authorization"
+
+	@user_exists
+	Scenario: Receiving a token verification request
+		Given I have approved an authorization request
+		And an access token has been issued
+		When I receive a token verification request
+		Then the response status code should be 200
+		And the response should be json
+		And the json should have an "me" parameter
+		And the json "me" parameter should be "http://localhost/"
+		And the json should have an "client_id" parameter
+		And the json "client_id" parameter should be "http://localhost/fake/"
+		And the json should have an "scope" parameter
+		And the json "scope" parameter should be "create update delete"

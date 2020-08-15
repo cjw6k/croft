@@ -729,6 +729,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /**
+     * @Given a duplicate access token request was made
+     */
+    public function aDuplicateAccessTokenRequestWasMade()
+    {
+        $this->iReceiveATokenRequest();
+    }
+
+    /**
      * @Given I have approved an authorization request more than ten minutes ago
      */
     public function iHaveApprovedAnAuthorizationRequestMoreThanTenMinutesAgo()
@@ -786,6 +794,32 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
 			)
 		);
     }
+
+    /**
+     * @Given the access token has been revoked
+     */
+    public function theAccessTokenHasBeenRevoked()
+    {
+        $this->iReceiveATokenRevocationRequest();
+    }
+
+    /**
+     * @When I receive a token verification request that is missing the bearer token
+     */
+    public function iReceiveATokenVerificationRequestThatIsMissingTheBearerToken()
+    {
+		$this->getSession()->visit('/token/');
+    }
+
+    /**
+     * @When I receive a token verification request
+     */
+    public function iReceiveATokenVerificationRequest()
+    {
+		$this->getSession()->setRequestHeader('Authorization', 'Bearer ' . (isset($this->_indieauth_token) ? $this->_indieauth_token : 'test'));
+		$this->getSession()->visit('/token/');
+    }
+
 
     /**
      * @Then the response should be empty

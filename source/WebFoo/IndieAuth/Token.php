@@ -234,4 +234,102 @@ class Token
 		yaml_emit_file(VAR_ROOT . 'indieauth/token-' . $token, $access_token);
 	}
 
+	/**
+	 * Provide authorization details in response to requests with a valid bearer token
+	 *
+	 * @return void
+	 */
+	public function handleVerificationRequest()
+	{
+		$response = $this->getResponse();
+		$response->mergeHeaders('Cache-Control: no-store');
+		$response->mergeHeaders('Pragma: no-cache');
+		$response->mergeHeaders('Content-Type: application/json; charset=UTF-8');
+
+		$auth_header = $this->getRequest()->server('HTTP_AUTHORIZATION');
+		if(!$auth_header){
+			$response->setCode(400);
+			echo json_encode(
+				array(
+					'error' => 'invalid_request',
+					'error_description' => 'the token verification request did not provided a bearer token',
+				)
+			);
+			return;
+		}
+
+		if(!$this->_verifyToken(str_replace('Bearer ', '', $auth_header))){
+			return;
+		}
+
+		echo json_encode(
+			array(
+				'me' => $this->getConfig()->getMe(),
+				'client_id' => $this->getClientId(),
+				'scope' => implode(' ', $this->getScopes()),
+			)
+		);
+	}
+
+	/**
+	 * Verify that the supplied token matches a token issued here
+	 *
+	 * @param string $token The supplied access token.
+	 *
+	 * @return boolean True  If the access token is valid here.
+	 *                 False If the access token is not valid here.
+	 */
+	private function _verifyToken(string $token)
+	{
+		if(!file_exists(VAR_ROOT . 'indieauth/token-' . $token)){
+			$this->getResponse()->setCode(401);
+			echo json_encode(
+				array(
+					'error' => 'invalid_grant',
+					'error_description' => 'the token verification request could not be matched to an issued token',
+				)
+			);
+			return false;
+		}
+
+		$token_record = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $token);
+		if(!$token_record){
+			$this->getResponse()->setCode(500);
+			return false;
+		}
+
+		if(isset($token_record['revoked'])){
+			$this->getResponse()->setCode(403);
+			echo json_encode(
+				array(
+					'error' => 'invalid_grant',
+					'error_description' => 'the token verification request included a bearer token which has been revoked',
+				)
+			);
+			return false;
+		}
+
+		$auth = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $token_record['auth']);
+		if(!$auth){
+			$this->getResponse()->setCode(500);
+			return false;
+		}
+
+		if(1 != $auth['used']){
+			$this->getResponse()->setCode(403);
+			echo json_encode(
+				array(
+					'error' => 'invalid_grant',
+					'error_description' => 'the token verification request included a bearer token which originates from a cancelled authorization',
+				)
+			);
+			return false;
+		}
+
+		$this->setScopes($auth['scopes']);
+		$this->setClientId($auth['client_id']);
+
+		return true;
+	}
+
 }

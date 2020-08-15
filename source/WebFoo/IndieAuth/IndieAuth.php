@@ -59,6 +59,7 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 		return array(
 			new Route(array('GET', 'POST'), '/auth/', "handleRequest"),
 			new Route('POST', '/token/', 'handleTokenRequest'),
+			new Route('GET', '/token/', 'handleTokenVerificationRequest'),
 		);
 	}
 
@@ -180,6 +181,17 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 		$token = new Token($this->getConfig(), $this->getRequest(), $this->getResponse());
 		$token->handleRequest();
 		$this->setResponseBody($token->getResponseBody());
+	}
+
+	/**
+	 * Handle a token verification request
+	 *
+	 * @return void
+	 */
+	public function handleTokenVerificationRequest()
+	{
+		$token = new Token($this->getConfig(), $this->getRequest(), $this->getResponse());
+		$token->handleVerificationRequest();
 	}
 
 }
