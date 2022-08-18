@@ -16,40 +16,29 @@
 	"require": {
 		"ext-yaml": "*@stable",
 		"nikic/fast-route": "*@stable",
-		"a6a/aether": "*@stable"
+		"a6a/aether": "*@stable",
+		"level-2/dice": "^4.0"
 	},
 	"require-dev": {
-		"behat/behat": "^3.6",
-		"behat/mink": "^1.8",
-		"behat/mink-extension": "^2.3",
-		"behat/mink-goutte-driver": "^1.2",
-		"edgedesign/phpqa": "^1.23",
-		"pdepend/pdepend": "^2.7",
-		"php-parallel-lint/php-console-highlighter": "^0.4.0",
-		"php-parallel-lint/php-parallel-lint": "^1.2",
-		"phploc/phploc": "^5.0",
-		"phpmd/phpmd": "^2.8",
-		"phpmetrics/phpmetrics": "^2.6",
-		"phpspec/phpspec": "^6.1",
-		"phpstan/phpstan": "^0.12.18",
-		"phpunit/phpunit": "^8.5",
-		"sebastian/phpcpd": "^4.1",
-		"squizlabs/php_codesniffer": "^3.5",
-		"theseer/phpdox": "^0.12.0",
-		"nette/neon": "^3.1",
-		"sensiolabs/security-checker": "^6.0",
-		"vimeo/psalm": "^3.11",
-		"rexxars/html-validator": "^2.2",
 		"indieauth/client": "^0.5.2",
-		"indieweb/mention-client": "^1.2"
+		"indieweb/mention-client": "^1.2",
+		"vimeo/psalm": "^4.26",
+		"phpunit/phpunit": "^9.5",
+		"a6a/coding-standards": "^0.1.4"
 	},
 	"autoload": {
 		"psr-4": {
-			"cjw6k\\": "source"
+			"cjw6k\\": "src"
 		},
 		"files": [
-			"source/constants.php",
-			"source/utilities.php"
+			"src/constants.php",
+			"src/utilities.php"
 		]
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/package-versions-deprecated": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	}
 }

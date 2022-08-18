@@ -1,7 +1,0 @@
-bootstrap: "tests/fixtures/bootstrap.php"
-suites:
-  default:
-    namespace: cjw6k
-    psr4_prefix: cjw6k
-    spec_path: "%paths.config%/tests"
-    src_path: "%paths.config%/source"
