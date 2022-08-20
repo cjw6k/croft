@@ -1,13 +1,6 @@
 <?php
-/**
- * The Asyncable interface is herein defined.
- *
- * @package WebFoo\Async
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Async;
+namespace a6a\a6a\Async;
 
 /**
  * The Asyncable interface
@@ -17,7 +10,6 @@ namespace cjw6k\WebFoo\Async;
  */
 interface Asyncable
 {
-
     /**
      * Do some work after the current HTTP response has been sent and the connection closed.
      *
@@ -25,9 +17,6 @@ interface Asyncable
      * already running, a new one will not be started.
      *
      * It is better to do big things in small chunks, than all in one long-running async task.
-     *
-     * @return void
      */
-    public function async();
-
+    public function async(): void;
 }

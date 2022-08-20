@@ -1,22 +1,14 @@
 <?php
-/**
- * The RequestInterface interface is herein defined.
- *
- * @package WebFoo\Request
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Request;
+namespace a6a\a6a\Request;
 
-use \cjw6k\WebFoo\Service\ServiceInterface;
+use a6a\a6a\Service\ServiceInterface;
 
 /**
  * The Request service interface
  */
 interface RequestInterface extends ServiceInterface
 {
-
     /**
      * Parse the request URI
      */
@@ -28,11 +20,11 @@ interface RequestInterface extends ServiceInterface
      * If no index is specified, returns the full $_SESSION array.
      *
      * @param string|null $index The index of the data in $_SESSION.
-     * @param mixed       $data  The data to store in $_SESSION at specified index.
+     * @param mixed $data The data to store in $_SESSION at specified index.
      *
      * @return mixed|null The data from $_SESSION or null if not set.
      */
-    public function session(string $index = null, $data = null);
+    public function session(?string $index = null, mixed $data = null): mixed;
 
     /**
      * Provide data from $_SERVER at specified index
@@ -43,7 +35,7 @@ interface RequestInterface extends ServiceInterface
      *
      * @return mixed|null The data from $_SERVER or null if not set.
      */
-    public function server(string $index = null);
+    public function server(?string $index = null): mixed;
 
     /**
      * Provide data from $_GET at specified index
@@ -54,7 +46,7 @@ interface RequestInterface extends ServiceInterface
      *
      * @return mixed|null The data from $_GET or null if not set.
      */
-    public function get(string $index = null);
+    public function get(?string $index = null): mixed;
 
     /**
      * Provide data from $_POST at specified index
@@ -65,7 +57,7 @@ interface RequestInterface extends ServiceInterface
      *
      * @return mixed|null The data from $_POST or null if not set.
      */
-    public function post(string $index = null);
+    public function post(?string $index = null): mixed;
 
     /**
      * Provide data from $_COOKIE at specified index
@@ -76,7 +68,7 @@ interface RequestInterface extends ServiceInterface
      *
      * @return mixed|null The data from $_COOKIE or null if not set.
      */
-    public function cookie(string $index = null);
+    public function cookie(?string $index = null): mixed;
 
     /**
      * Provide data from $_FILES at specified index
@@ -87,6 +79,5 @@ interface RequestInterface extends ServiceInterface
      *
      * @return mixed|null The data from $_FILES or null if not set.
      */
-    public function files(string $index = null);
-
+    public function files(?string $index = null): mixed;
 }

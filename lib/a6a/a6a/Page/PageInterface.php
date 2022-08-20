@@ -1,30 +1,21 @@
 <?php
-/**
- * The PageInterface interface is herein defined.
- *
- * @package WebFoo\Page
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Page;
+namespace a6a\a6a\Page;
 
-use \cjw6k\WebFoo\Response\ResponseInterface;
-use \cjw6k\WebFoo\Service\ServiceInterface;
-use \cjw6k\WebFoo\Storage\StorageInterface;
+use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Storage\StorageInterface;
 
 /**
  * The Page service interface
  */
 interface PageInterface extends ServiceInterface
 {
-
     /**
      * Store a local reference to the response
      *
      * @param ResponseInterface $response The response.
-     * @param StorageInterface  $storage  The storage service.
+     * @param StorageInterface $storage The storage service.
      */
     public function __construct(ResponseInterface $response, StorageInterface $storage);
-
 }

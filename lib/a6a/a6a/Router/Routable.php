@@ -1,13 +1,6 @@
 <?php
-/**
- * The Router\Routable interface is herein defined.
- *
- * @package WebFoo\Router
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Router;
+namespace a6a\a6a\Router;
 
 /**
  * The Routable interface
@@ -17,12 +10,10 @@ namespace cjw6k\WebFoo\Router;
  */
 interface Routable
 {
-
     /**
      * Provides a list of routes to register with the Router to be serviced by this object.
      *
      * @return mixed|null The list of routes to register or null if there are none.
      */
-    public function getRoutes();
-
+    public function getRoutes(): mixed;
 }

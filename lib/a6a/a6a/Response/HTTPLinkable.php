@@ -1,13 +1,6 @@
 <?php
-/**
- * The HTTPLinkable interface is herein defined.
- *
- * @package WebFoo\Response
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Response;
+namespace a6a\a6a\Response;
 
 /**
  * The HTTPLinkable interface
@@ -16,12 +9,10 @@ namespace cjw6k\WebFoo\Response;
  */
 interface HTTPLinkable
 {
-
     /**
      * Provide HTTP link header configuration to the Response\HTTP
      *
-     * @return mixed[] An array of HTTP link headers.
+     * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks();
-
+    public function getHTTPLinks(): array;
 }

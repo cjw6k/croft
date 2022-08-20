@@ -1,8 +1,7 @@
 <?php
 
-namespace cjw6k\WebFoo\Exception;
+namespace a6a\a6a\Exception;
 
 interface ExceptionInterface
 {
-
 }

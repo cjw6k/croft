@@ -1,28 +1,20 @@
 <?php
-/**
- * The RouterInterface interface is herein defined.
- *
- * @package WebFoo\Router
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Router;
+namespace a6a\a6a\Router;
 
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Service\ServiceInterface;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Service\ServiceInterface;
 
 /**
  * The Router service interface.
  */
 interface RouterInterface extends ServiceInterface
 {
-
     /**
      * Store a local reference to the active configuration and current request
      *
-     * @param ConfigInterface  $config  The active configuration.
+     * @param ConfigInterface $config The active configuration.
      * @param RequestInterface $request The current request.
      */
     public function __construct(ConfigInterface $config, RequestInterface $request);
@@ -32,6 +24,5 @@ interface RouterInterface extends ServiceInterface
      *
      * @return mixed The class, method and parameters that are matched to the request.
      */
-    public function route();
-
+    public function route(): mixed;
 }

@@ -1,24 +1,16 @@
 <?php
-/**
- * The AsyncInterface interface is herein defined.
- *
- * @package WebFoo\Async
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Async;
+namespace a6a\a6a\Async;
 
-use \cjw6k\WebFoo\Extension\ExtensionInterface;
-use \cjw6k\WebFoo\Service\ServiceInterface;
-use \cjw6k\WebFoo\Storage\StorageInterface;
+use a6a\a6a\Extension\ExtensionInterface;
+use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Storage\StorageInterface;
 
 /**
  * The Async service interface.
  */
 interface AsyncInterface extends ServiceInterface
 {
-
     /**
      * Store a local reference to the storage service
      *
@@ -30,16 +22,11 @@ interface AsyncInterface extends ServiceInterface
      * Register a service or extension that implements the async interface
      *
      * @param ServiceInterface|ExtensionInterface $extension A webfoo extension.
-     *
-     * @return void
      */
-    public function register(object $extension);
+    public function register(object $extension): void;
 
     /**
      * Complete queued tasks from earlier, after the current request has completed
-     *
-     * @return void
      */
-    public function run();
-
+    public function run(): void;
 }

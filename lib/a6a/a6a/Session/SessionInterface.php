@@ -1,37 +1,26 @@
 <?php
-/**
- * The SessionInterface interface is herein defined.
- *
- * @package WebFoo\Session
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Session;
+namespace a6a\a6a\Session;
 
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Service\ServiceInterface;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Service\ServiceInterface;
 
 /**
  * The Session service interface.
  */
 interface SessionInterface extends ServiceInterface
 {
-
     /**
      * Construct the Session
      *
-     * @param ConfigInterface  $config  The active configuration.
+     * @param ConfigInterface $config The active configuration.
      * @param RequestInterface $request The current request.
      */
     public function __construct(ConfigInterface $config, RequestInterface $request);
 
     /**
      * Setup the session and start the session handler
-     *
-     * @return void
      */
-    public function start();
-
+    public function start(): void;
 }

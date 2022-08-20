@@ -1,116 +1,159 @@
 <?php
-/**
- * The WebFoo class is herein defined.
- *
- * @package WebFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo;
+namespace a6a\a6a;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Service\ServiceInterface;
-use \cjw6k\WebFoo\Exception\Redirect;
-use \cjw6k\WebFoo\Extension\ExtensionInterface;
-use \cjw6k\WebFoo\Response\HTTPLinkable;
-use \cjw6k\WebFoo\Router\Routable;
-use \cjw6k\WebFoo\Router\Route;
-use \cjw6k\WebFoo\Setup\Setup;
-use \cjw6k\WebFoo\Setup\Setupable;
-use \cjw6k\WebFoo\Storage\Storable;
-use \cjw6k\WebFoo\Storage\Store;
+use a6a\a6a\Async\AsyncInterface;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Exception\Redirect;
+use a6a\a6a\Extension\ExtensionInterface;
+use a6a\a6a\Media\MediaInterface;
+use a6a\a6a\Page\PageInterface;
+use a6a\a6a\Post\PostInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Response\HTTPLinkable;
+use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Router\Routable;
+use a6a\a6a\Router\Route;
+use a6a\a6a\Router\RouterInterface;
+use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Setup\Setupable;
+use a6a\a6a\Setup\SetupInterface;
+use a6a\a6a\Storage\Storable;
+use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Store;
+use A6A\Aether\Aether;
+use League\CLImate\CLImate;
 
+use function is_string;
+use function explode;
+use function get_class;
+use function array_pop;
+use function is_null;
+use function is_array;
+use function file_exists;
 
-/**
- * The WebFoo Class is the main slingin' thinger.
- */
-class WebFoo
+class Aetheria
 {
-
     use Aether;
 
     /**
      * Construct the web stuff slinging thinger
      *
-     * @param ServiceInterface[]        $services   Core services of WebFoo.
-     * @param ExtensionInterface[]|null $extensions Optional extensions to WebFoo.
+     * @param array<ExtensionInterface>|null $extensions Optional extensions to WebFoo.
      */
-    public function __construct(array $services, $extensions = null)
-    {
-        foreach($services as $service_name => $service){
-            $this->_service($service_name, $service);
-        }
+    public function __construct(
+        AsyncInterface $async,
+        ConfigInterface $config,
+        MediaInterface $media,
+        PageInterface $page,
+        PostInterface $post,
+        RequestInterface $request,
+        ResponseInterface $response,
+        RouterInterface $router,
+        SessionInterface $session,
+        StorageInterface $storage,
+        //        $extensions = null
+    ) {
+        //        $services = compact(
+        ////            'async',
+        ////            'config',
+        ////            'media',
+        ////            'page',
+        ////            'post',
+        ////            'request',
+        ////            'response',
+        ////            'router',
+        ////            'session',
+        ////            'storage',
+        //        );
+        //        $services = [];
+        //        foreach($services as $service_name => $service){
+        //            $this->_service($service_name, $service);
+        //        }
+        //
+        //        foreach($this->getServices() as $service){
+        //            $this->_serviceRoutes($service);
+        //            $this->_serviceStores($service);
+        //        }
+        //
+        //        if(!empty($extensions)) {
+        //            foreach($extensions as $extension){
+        //                $this->_extend($extension);
+        //            }
+        //        }
+        //
+        //        if($this->hasHTTPLinks()) {
+        //            $this->getResponse()->mergeHeaders('Link: ' . implode(',', $this->getHTTPLinks()));
+        //        }
+        $this->_service('config', $config);
+        $this->_service('request', $request);
+        $this->_service('response', $response);
+        $this->_service('router', $router);
+        $this->_service('session', $session);
+        $this->_service('storage', $storage);
+        $this->_service('async', $async);
+        $this->_service('media', $media);
+        $this->_service('post', $post);
+        $this->_service('page', $page);
 
-        foreach($this->getServices() as $service){
+        foreach ($this->getServices() as $service) {
             $this->_serviceRoutes($service);
             $this->_serviceStores($service);
-        }
-
-        // Throw exception if core services are missing
-
-        if(!empty($extensions)) {
-            foreach($extensions as $extension){
-                $this->_extend($extension);
-            }
-        }
-
-        if($this->hasHTTPLinks()) {
-            $this->getResponse()->mergeHeaders('Link: ' . implode(',', $this->getHTTPLinks()));
         }
     }
 
     /**
      * Provide core functionality with the provided services
      *
-     * @param string|integer   $service_name The name to use when registering this service
-     *                                       with webfoo. If not a string, will use the
-     *                                       class name as the name.
-     * @param ServiceInterface $service      The service to register.
-     *
-     * @return void
+     * @param string|int $service_name The name to use when registering this service
+ * with webfoo. If not a string, will use the
+ * class name as the name.
+     * @param ServiceInterface $service The service to register.
      */
-    private function _service($service_name, ServiceInterface $service)
+    private function _service(string|int $service_name, ServiceInterface $service): void
     {
-        if(!is_string($service_name)) {
-            $class_path_parts = explode('\\', get_class($service));
-            $class_index = $this->_underscore(array_pop($class_path_parts));
+        if (! is_string($service_name)) {
+            $class_path_parts = explode('\\', $service::class);
+            $class_index = $this->asLabel(array_pop($class_path_parts));
             $this->mergeServices($class_index);
-            $this->_data[$class_index] = $service;
+            $this->data[$class_index] = $service;
+
             return;
         }
 
-        $class_index = $this->_underscore($service_name);
+        $class_index = $this->asLabel($service_name);
         $this->mergeServices($class_index);
-        $this->_data[$class_index] = $service;
+        $this->data[$class_index] = $service;
     }
 
     /**
      * Add service routes to Router
      *
      * @param string $class_index The index into the data array where this service is referenced.
-     *
-     * @return void
      */
-    private function _serviceRoutes(string $class_index)
+    private function _serviceRoutes(string $class_index): void
     {
-        $service = $this->_data[$class_index];
+        $service = $this->data[$class_index];
 
-        if(!($service instanceof Routable)) {
+        if (! ($service instanceof Routable)) {
             return;
         }
 
         $routes = $service->getRoutes();
-        if(!$routes) {
+
+        if (! $routes) {
             return;
         }
 
         $router = $this->getRouter();
-        foreach($routes as $route){
-            if(!($route instanceof Route)) {
+
+        foreach ($routes as $route) {
+            if (! ($route instanceof Route)) {
                 // throw exception
                 continue;
             }
+
             $route->setController($class_index);
             $router->mergeRoutes($route);
         }
@@ -120,28 +163,29 @@ class WebFoo
      * Add service stores to Storage
      *
      * @param string $class_index The index into the data array where this service is referenced.
-     *
-     * @return void
      */
-    private function _serviceStores(string $class_index)
+    private function _serviceStores(string $class_index): void
     {
-        $service = $this->_data[$class_index];
+        $service = $this->data[$class_index];
 
-        if(!($service instanceof Storable)) {
+        if (! ($service instanceof Storable)) {
             return;
         }
 
         $stores = $service->getStores();
-        if(!$stores) {
+
+        if (! $stores) {
             return;
         }
 
         $storage = $this->getStorage();
-        foreach($stores as $store){
-            if(!($store instanceof Store)) {
+
+        foreach ($stores as $store) {
+            if (! ($store instanceof Store)) {
                 // throw exception
                 continue;
             }
+
             $storage->register($store);
         }
     }
@@ -150,50 +194,48 @@ class WebFoo
      * Extend functionality with the provided extension
      *
      * @param ExtensionInterface $extension The extension.
-     *
-     * @return void
      */
-    private function _extend(ExtensionInterface $extension)
+    private function _extend(ExtensionInterface $extension): void
     {
-        $class_path_parts = explode('\\', get_class($extension));
+        $class_path_parts = explode('\\', $extension::class);
         $class_index = $this->_underscore(array_pop($class_path_parts));
 
         $this->mergeExtensions($class_index);
 
-        $this->_data[$class_index] = $extension;
+        $this->data[$class_index] = $extension;
 
         $this->_extensionRoutes($class_index, $extension);
         $this->_extensionLinks($extension);
         $this->getAsync()->register($extension);
-
     }
 
     /**
      * Add extension routes to Router
      *
-     * @param string             $class_index The index into the data array where this
+     * @param string $class_index The index into the data array where this
      *                                        extension is referenced.
-     * @param ExtensionInterface $extension   The extension.
-     *
-     * @return void
+     * @param ExtensionInterface $extension The extension.
      */
-    private function _extensionRoutes(string $class_index, ExtensionInterface $extension)
+    private function _extensionRoutes(string $class_index, ExtensionInterface $extension): void
     {
-        if(!($extension instanceof Routable)) {
+        if (! ($extension instanceof Routable)) {
             return;
         }
 
         $routes = $extension->getRoutes();
-        if(!$routes) {
+
+        if (! $routes) {
             return;
         }
 
         $router = $this->getRouter();
-        foreach($routes as $route){
-            if(!($route instanceof Route)) {
+
+        foreach ($routes as $route) {
+            if (! ($route instanceof Route)) {
                 // throw exception
                 continue;
             }
+
             $route->setController($class_index);
             $router->mergeRoutes($route);
         }
@@ -203,52 +245,53 @@ class WebFoo
      * Add extension links to Response
      *
      * @param ExtensionInterface $extension The extension.
-     *
-     * @return void
      */
-    private function _extensionLinks(ExtensionInterface $extension)
+    private function _extensionLinks(ExtensionInterface $extension): void
     {
-        if(!($extension instanceof HTTPLinkable)) {
+        if (! ($extension instanceof HTTPLinkable)) {
             return;
         }
 
         $links = $extension->getHTTPLinks();
-        if(!$links) {
+
+        if (! $links) {
             return;
         }
 
-        foreach($links as $link){
+        foreach ($links as $link) {
             $this->mergeHTTPLinks($link);
         }
     }
 
     /**
      * Sling some web stuff with this thinger.
-     *
-     * @return void
      */
-    public function sling()
+    public function sling(): void
     {
         $response = $this->getResponse();
 
         try {
             $this->getSession()->start();
 
-            list($controller, $method, $extras, $vars) = $this->getRouter()->route();
+            [$controller, $method, $extras, $vars] = $this->getRouter()->route();
 
             $that = $this;
-            if(!is_null($controller)) {
-                $that = $this->_data[$controller];
+
+            if (! is_null($controller)) {
+                $that = $this->data[$controller];
             }
 
-            $template = (isset($extras['use_vars']) && true == $extras['use_vars']) ? $that->$method($vars) : $that->$method();
-            if($template) {
+            $template = (isset($extras['use_vars']) && $extras['use_vars'] == true)
+                ? $that->$method($vars)
+                : $that->$method();
+
+            if ($template) {
                 $this->_includeTemplate($template);
             }
-
-        } catch (Redirect $redirect){
+        } catch (Redirect $redirect) {
             $response->mergeHeaders('Location: ' . $redirect->getMessage());
             $response->send();
+
             return;
         }
 
@@ -260,30 +303,30 @@ class WebFoo
     /**
      * Control file not found requests
      *
-     * @return string[] The template to render, with alternate.
+     * @return array<string> The template to render, with alternate.
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function _sling404()
+    private function _sling404(): array
     {
         $this->getResponse()->setCode(404);
         $this->getConfig()->setTitle(
             $this->getConfig()->getTitle() . ' - File Not Found'
         );
 
-        return array('404.php', 'default.php');
+        return ['404.php', 'default.php'];
     }
 
     /**
      * Control method not allowed requests
      *
-     * @param string[] $allowed_methods The allowed HTTP methods for this URL.
+     * @param array<string> $allowed_methods The allowed HTTP methods for this URL.
      *
-     * @return string[] The template to render, with alternate.
+     * @return array<string> The template to render, with alternate.
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function _sling405(array $allowed_methods)
+    private function _sling405(array $allowed_methods): array
     {
         $this->setAllowedMethods($allowed_methods);
 
@@ -292,7 +335,7 @@ class WebFoo
             $this->getConfig()->getTitle() . ' - Method Not Allowed'
         );
 
-        return array('405.php', 'default.php');
+        return ['405.php', 'default.php'];
     }
 
     /**
@@ -300,37 +343,33 @@ class WebFoo
      *
      * @param array $argv The arguments provided on the comment line to setup.php.
      *
-     * @return integer The exit status code.
+     * @return int The exit status code.
      */
-    public function setup(array $argv) : int
+    public function setup(CLImate $cli, SetupInterface $setup): int
     {
-        $setup = new Setup($this->getRequest());
-        if(!$setup->prerequisites($argv)) {
-            return 1;
-        }
-
         $extensions = $this->getExtensions();
-        if($extensions) {
-            foreach($extensions as $extension){
-                if($this->_data[$extension] instanceof Setupable) {
-                    if(!$this->_data[$extension]->setup($setup)) {
-                        return 1;
-                    }
+
+        if ($extensions) {
+            foreach ($extensions as $extension) {
+                if (! ($this->data[$extension] instanceof Setupable)) {
+                    continue;
+                }
+
+                if (! $this->data[$extension]->setup($setup)) {
+                    return 1;
                 }
             }
         }
 
-        return $setup->configure();
+        return $setup->configure($cli);
     }
 
     /**
      * Output the webfoo controls HTML.
-     *
-     * @return void
      */
-    public function webfooControls()
+    public function webfooControls(): void
     {
-        if(!$this->getSession()->isLoggedIn()) {
+        if (! $this->getSession()->isLoggedIn()) {
             return;
         }
 
@@ -340,48 +379,47 @@ class WebFoo
     /**
      * Send HTML to the client from a template file
      *
-     * @param string|string[] $template The filename to include or a pair of primary and alternate.
-     *
-     * @return void
+     * @param string|array<string> $template The filename to include or a pair of primary and alternate.
      */
-    private function _includeTemplate($template)
+    private function _includeTemplate(string|array $template): void
     {
-        if(is_array($template)) {
+        if (is_array($template)) {
             $this->_includeTemplateWithAlternate($template[0], $template[1]);
+
             return;
         }
+
         $this->_includeTemplateWithAlternate($template);
     }
 
     /**
      * Send HTML to the client from a template file
      *
-     * @param string $template  The filename to load.
+     * @param string $template The filename to load.
      * @param string $alternate The filename to load from default templates when the requested
      *                          template is missing from the local templates.
      *
-     * @return void
-     *
      * @psalm-suppress UnresolvableInclude
      */
-    private function _includeTemplateWithAlternate(string $template, string $alternate = '')
+    private function _includeTemplateWithAlternate(string $template, string $alternate = ''): void
     {
-        if(file_exists(TEMPLATES_LOCAL . $template)) {
+        if (file_exists(From::TEMPLATES___LOCAL->dir() . $template)) {
             /**
              * A file_exists check has succeeded at runtime.
              *
              * @psalm-suppress MissingFile
              */
-            include TEMPLATES_LOCAL . $template;
+            include From::TEMPLATES___LOCAL->dir() . $template;
+
             return;
         }
 
-        if(!empty($alternate)) {
-            include TEMPLATES_DEFAULT . $alternate;
+        if (! empty($alternate)) {
+            include From::TEMPLATES___DEFAULT->dir() . $alternate;
+
             return;
         }
 
-        include TEMPLATES_DEFAULT . $template;
+        include From::TEMPLATES___DEFAULT->dir() . $template;
     }
-
 }

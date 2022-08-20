@@ -1,15 +1,14 @@
 <?php
-/**
- * The Storage\Segment class is herein defined.
- *
- * @package WebFoo\Storage
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Storage;
+namespace a6a\a6a\Storage;
 
-use \ReflectionClass;
+use ReflectionClass;
+
+use function array_key_exists;
+use function in_array;
+use function array_values;
+use function is_null;
+use function get_called_class;
 
 /**
  * The storage is segmented such that like purposes for data may be readily grouped by
@@ -20,7 +19,6 @@ use \ReflectionClass;
  */
 final class Segment
 {
-
     /**
      * The zero value is unused to avoid edge case behaviours that originate with the falsity of 0
      * in PHP.
@@ -39,6 +37,7 @@ final class Segment
      * losing the value of an OAUTH bearer token.
      */
     const SYSTEM = 50;
+    const LOG = 51;
 
     /**
      * Data which is the original work of the end-user of the software system, is subject to
@@ -58,7 +57,7 @@ final class Segment
      *
      * @var array<string, mixed>|null
      */
-    private static $_cache = null;
+    private static ?array $_cache = null;
 
     /**
      * This private constructor prevents instantiation of the class, which has been declared final
@@ -73,10 +72,10 @@ final class Segment
      *
      * @param string $segment The constant name.
      *
-     * @return boolean True  The provided segment name is valid.
-     *                 False The provided segment name is not valid.
+     * @return bool True The provided segment name is valid.
+ * False The provided segment name is not valid.
      */
-    public static function hasSegment(string $segment)
+    public static function hasSegment(string $segment): bool
     {
         return array_key_exists($segment, self::_getConstants());
     }
@@ -84,12 +83,12 @@ final class Segment
     /**
      * Check if the constant, given by value, is defined here.
      *
-     * @param integer $value The constant value.
+     * @param int $value The constant value.
      *
-     * @return boolean True  The provided segment value is valid.
-     *                 False The provided segment value is not valid.
+     * @return bool True The provided segment value is valid.
+ * False The provided segment value is not valid.
      */
-    public static function hasValue(int $value)
+    public static function hasValue(int $value): bool
     {
         return in_array($value, array_values(self::_getConstants()));
     }
@@ -99,16 +98,15 @@ final class Segment
      *
      * @return array<string, mixed> The class contants.
      */
-    private static function _getConstants()
+    private static function _getConstants(): array
     {
-        if(!is_null(self::$_cache)) {
+        if (! is_null(self::$_cache)) {
             return self::$_cache;
         }
 
-        $reflection = new ReflectionClass(get_called_class());
+        $reflection = new ReflectionClass(self::class);
         self::$_cache = $reflection->getConstants();
 
         return self::$_cache;
     }
-
 }
