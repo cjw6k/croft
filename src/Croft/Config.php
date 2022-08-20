@@ -24,13 +24,15 @@ class Config implements ConfigA6a
      *
      * @throws Exception The specified config file does not exist.
      */
-    public function __construct(?string $config_file = 'not-config.yml')
+    public function __construct(?string $config_file = 'config.yml')
     {
         if (is_null($config_file)) {
             $this->makeDefaultConfig();
 
             return;
         }
+
+        $config_file = From::___->dir() . $config_file;
 
         if (file_exists($config_file)) {
             $config = yaml_parse_file($config_file);
