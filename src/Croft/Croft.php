@@ -26,9 +26,6 @@ use a6a\a6a\Storage\Storable;
 use a6a\a6a\Storage\Store;
 use League\CLImate\CLImate;
 
-/**
- * The WebFoo Class is the main slingin' thinger.
- */
 class Croft extends Aetheria
 {
 }
