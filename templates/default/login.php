@@ -1,18 +1,23 @@
 <?php
 
+use Croft\Croft;
+
+/** @var Croft $croft */
+$croft = $this;
+
 require 'header.php';
 
 ?>
 <a href="/">home</a>
 <?php
 
-if ($this->getSession()->hasErrors()) {
+if ($croft->getSession()->hasErrors()) {
     ?>
     <p>Log In Error</p>
     <ul>
     <?php
 
-    foreach ($this->getSession()->getErrors() as $error) {
+    foreach ($croft->getSession()->getErrors() as $error) {
         if (! is_string($error)) {
             continue;
         }

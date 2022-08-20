@@ -1,5 +1,10 @@
 <?php
 
+use Croft\Croft;
+
+/** @var Croft $croft */
+$croft = $this;
+
 require 'header.php';
 
 ?>
@@ -8,7 +13,7 @@ require 'header.php';
 <ul>
 <?php
 
-foreach ($this->getIndieAuth()->getErrors() as $error) {
+foreach ($croft->getIndieAuth()->getErrors() as $error) {
     ?>
     <li><?= $error ?></li>
     <?php
