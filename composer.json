@@ -1,10 +1,10 @@
 {
-	"name": "cjw6k/webfoo",
-	"description": "Web stuff slingin' thinger",
-	"homepage": "https://code.cjwillcock.ca/cjwillcock/webfoo",
-	"version": "0.1.0",
+	"name": "croft/croft",
+	"description": "",
+	"homepage": "https://packagist.org/croft/croft",
+	"version": "0.2.0",
 	"type": "project",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"authors": [
