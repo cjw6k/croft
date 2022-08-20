@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-use Croft\Croft;
 use Croft\From;
 use Dice\Dice;
 
@@ -12,10 +11,3 @@ $ioc = require_once From::BOOTSTRAP->dir() . 'ioc.php';
 /** @var Dice $ioc */
 $croft = $ioc->create('$aetheriaCli');
 $croft->run();
-
-//function works()
-//{
-//    /** @var Dice $croft */
-//    $croft = $ioc->create('$aetheria');
-//    $exitStatus = ($croft)->setup($argv);
-//}
