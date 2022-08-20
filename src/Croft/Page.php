@@ -1,34 +1,30 @@
 <?php
-/**
- * The Page class is herein defined.
- *
- * @package WebFoo\PageFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\PageFoo;
+namespace Croft;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Page\PageInterface;
-use \cjw6k\WebFoo\Response\ResponseInterface;
-use \cjw6k\WebFoo\Router\Routable;
-use \cjw6k\WebFoo\Router\Route;
-use \cjw6k\WebFoo\Storage\StorageInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Page\PageInterface;
+use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Router\Routable;
+use a6a\a6a\Router\Route;
+use a6a\a6a\Storage\StorageInterface;
+
+use function realpath;
+use function strpos;
+use function file_exists;
 
 /**
  * The Page class slings page templates
  */
 class Page implements PageInterface, Routable
 {
-
     use Aether;
 
     /**
      * Store a local reference to the response
      *
      * @param ResponseInterface $response The response.
-     * @param StorageInterface  $storage  The storage service.
+     * @param StorageInterface $storage The storage service.
      */
     public function __construct(ResponseInterface $response, StorageInterface $storage)
     {
@@ -41,33 +37,33 @@ class Page implements PageInterface, Routable
      *
      * @return mixed|null The list of routes to register or null if there are none.
      */
-    public function getRoutes()
+    public function getRoutes(): mixed
     {
-        return array(
-        new Route('GET', '/', 'home'),
-        new Route('GET', '/{page}/{category}[/]', 'sling', array('use_vars' => true), null, 0),
-        new Route('GET', '/{page}[/]', 'sling', array('use_vars' => true), null, 0),
-        );
+        return [
+            new Route('GET', '/', 'home'),
+            new Route('GET', '/{page}/{category}[/]', 'sling', ['use_vars' => true], null, 0),
+            new Route('GET', '/{page}[/]', 'sling', ['use_vars' => true], null, 0),
+        ];
     }
 
     /**
      * Control requests to the homepage
      *
-     * @return string[] The template to render, with alternate.
+     * @return array<string> The template to render, with alternate.
      */
-    public function home()
+    public function home(): array
     {
-        return array('home.php', 'default.php');
+        return ['home.php', 'default.php'];
     }
 
     /**
      * Control page template requests
      *
-     * @param string[] $vars The hash of path components in the page request.
+     * @param array<string> $vars The hash of path components in the page request.
      *
-     * @return string[] The template to render, with alternate.
+     * @return array<string> The template to render, with alternate.
      */
-    public function sling(array $vars)
+    public function sling(array $vars): array
     {
         /**
          * The Router will not start this action unless page is set
@@ -75,22 +71,24 @@ class Page implements PageInterface, Routable
          * @psalm-suppress PossiblyUndefinedStringArrayOffset
          */
         $page = $vars['page'];
-        $category = isset($vars['category']) ? $vars['category'] : null;
+        $category = $vars['category'] ?? null;
 
         $this->setCategory($category);
 
-        $template = realpath(TEMPLATES_LOCAL . 'pages/' . $page . '.php');
-        if(0 !== strpos($template, realpath(TEMPLATES_LOCAL))) {
+        $template = realpath(From::TEMPLATES___LOCAL->dir() . 'pages/' . $page . '.php');
+
+        if (strpos($template, realpath(From::TEMPLATES___LOCAL->dir())) !== 0) {
             $this->getResponse()->setCode(404);
-            return array('404.php', 'default.php');
+
+            return ['404.php', 'default.php'];
         }
 
-        if(!file_exists($template)) {
+        if (! file_exists($template)) {
             $this->getResponse()->setCode(404);
-            return array('404.php', 'default.php');
+
+            return ['404.php', 'default.php'];
         }
 
-        return array('pages/' . $page . '.php', 'default.php');
+        return ['pages/' . $page . '.php', 'default.php'];
     }
-
 }

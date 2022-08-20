@@ -1,34 +1,42 @@
 <?php
-/**
- * The Storage class is herein defined.
- *
- * @package WebFoo\StorageFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\StorageFoo;
+namespace Croft;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Storage\Segment;
-use \cjw6k\WebFoo\Storage\StorageInterface;
-use \cjw6k\WebFoo\Storage\Store;
+use a6a\a6a\Exception\YagniException;
+use A6A\Aether\Aether;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Storage\Segment;
+use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Store;
+
+use function file_exists;
+use function is_null;
+use function dirname;
+use function mkdir;
+use function file_put_contents;
+use function file_get_contents;
+use function defined;
+use function fopen;
+use function flock;
+use function fclose;
+
+use const LOCK_UN;
+
+use function unlink;
 
 /**
  * The Storage service loads and stores data.
  */
 class Storage implements StorageInterface
 {
-
     use Aether;
 
     /**
      * The registered stores.
      *
-     * @var mixed[]
+     * @var array<mixed>
      */
-    private $_stores = array();
+    private array $_stores = [];
 
     /**
      * Store a local reference to the active configuration
@@ -41,49 +49,49 @@ class Storage implements StorageInterface
     }
 
     /**
-     * Register a prefix in for storage in segment
+     * Register a prefix for the storage segment.
      *
      * @param Store $store The store definition.
      *
-     * @return void
-     *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function register(Store $store)
+    public function register(Store $store): void
     {
-        list($segment, $prefix, $ingress, $egress) = $store->pack();
+        [$segment, $prefix, $ingress, $egress] = $store->pack();
 
      // @phpcs:disable Generic.CodeAnalysis.EmptyStatement.DetectedIf
-        if(!(Segment::hasValue($segment))) {
+        if (! (Segment::hasValue($segment))) {
             // throw exception
         }
+
      // @phpcs:enable Generic.CodeAnalysis.EmptyStatement.DetectedIf
 
-        $this->_stores[$segment][$prefix] = array(
-        'ingress' => $ingress,
-        'egress' => $egress,
-        );
+        $this->_stores[$segment][$prefix] = [
+            'ingress' => $ingress,
+            'egress' => $egress,
+        ];
     }
 
     /**
      * Check if a storage segment has data at the given prefixed index.
      *
-     * @param integer $segment The storage segment.
-     * @param string  $prefix  The prefix.
-     * @param string  $index   The index.
+     * @param int $segment The storage segment.
+     * @param string $prefix The prefix.
+     * @param string $index The index.
      *
-     * @return boolean True  The index is set on this prefix in the storage segmeent.
-     *                 False The index is not set on this prefix in the storage segment.
+     * @return bool True The index is set on this prefix in the storage segmeent.
+ * False The index is not set on this prefix in the storage segment.
      */
-    public function hasIndex(int $segment, string $prefix, string $index)
+    public function hasIndex(int $segment, string $prefix, string $index): bool
     {
-        if(!isset($this->_stores[$segment][$prefix])) {
+        if (! isset($this->_stores[$segment][$prefix])) {
             // throw exception
             return false;
         }
 
         $path = $this->_getPathFromSegment($segment);
-        if(empty($path)) {
+
+        if (empty($path)) {
             // throw exception
             return false;
         }
@@ -96,18 +104,17 @@ class Storage implements StorageInterface
      *
      * WARNING: will overwrite stored data with no notice.
      *
-     * @param integer $segment The storage segment.
-     * @param string  $prefix  The prefix.
-     * @param string  $index   The index.
-     * @param mixed   $data    The data to store.
-     *
-     * @return void
+     * @param int $segment The storage segment.
+     * @param string $prefix The prefix.
+     * @param string $index The index.
+     * @param mixed $data The data to store.
      */
-    public function store(int $segment, string $prefix, string $index, $data)
+    public function store(int $segment, string $prefix, string $index, mixed $data): void
     {
         // WARNING: will overwrite stored data without any notice
         $path = $this->_getPathFromSegment($segment);
-        if(empty($path)) {
+
+        if (empty($path)) {
             // throw exception
             return;
         }
@@ -116,7 +123,8 @@ class Storage implements StorageInterface
         $content = is_null($ingress) ? $data : $ingress($data);
 
         $parent_path = dirname($path . $prefix . '/' . $index);
-        if(!file_exists($parent_path)) {
+
+        if (! file_exists($parent_path)) {
             mkdir($parent_path, 0755, true);
         }
 
@@ -126,20 +134,21 @@ class Storage implements StorageInterface
     /**
      * Load data from a storage segment at the given prefixed index.
      *
-     * @param integer $segment The storage segment.
-     * @param string  $prefix  The prefix.
-     * @param string  $index   The index.
+     * @param int $segment The storage segment.
+     * @param string $prefix The prefix.
+     * @param string $index The index.
      *
      * @return mixed|null The data from storage or null if the prefixed index is not set.
      */
-    public function load(int $segment, string $prefix, string $index)
+    public function load(int $segment, string $prefix, string $index): mixed
     {
-        if(!$this->hasIndex($segment, $prefix, $index)) {
+        if (! $this->hasIndex($segment, $prefix, $index)) {
             return null;
         }
 
         $path = $this->_getPathFromSegment($segment);
-        if(empty($path)) {
+
+        if (empty($path)) {
             // throw exception
             return null;
         }
@@ -153,53 +162,57 @@ class Storage implements StorageInterface
     /**
      * Map a given storage segment to a path on disk.
      *
-     * @param integer $segment The storage segment.
+     * @param int $segment The storage segment.
      *
      * @return string|null The storage path on disk, or null on failure.
      */
-    private function _getPathFromSegment(int $segment)
+    private function _getPathFromSegment(int $segment): ?string
     {
-        switch($segment){
-        case Segment::SYSTEM:
-            // $path = $this->getConfig()->getStorage()['system'];
-            return defined('VAR_ROOT') ? VAR_ROOT : null;
+        switch ($segment) {
+            case Segment::SYSTEM:
+                // $path = $this->getConfig()->getStorage()['system'];
+                return defined('VAR_ROOT') ? VAR_ROOT : null;
 
-        case Segment::CONTENT:
-            // $path = $this->getConfig()->getStorage()['content'];
-            return defined('CONTENT_ROOT') ? CONTENT_ROOT : null;
+            case Segment::CONTENT:
+                // $path = $this->getConfig()->getStorage()['content'];
+                return defined('CONTENT_ROOT') ? CONTENT_ROOT : null;
 
-        default:
-            // throw exception
-            return null;
+            default:
+                // throw exception
+                return null;
         }
     }
 
     /**
      * Lock read/write operations on storage at the given index of the prefixed storage segment
      *
-     * @param integer $segment   The storage segment.
-     * @param string  $prefix    The prefix.
-     * @param string  $index     The index.
-     * @param integer $operation See flock().
+     * @param int $segment The storage segment.
+     * @param string $prefix The prefix.
+     * @param string $index The index.
+     * @param int $operation See flock().
      *
      * @return mixed|null A handle for the lock or null on failure.
      */
-    public function lock(int $segment, string $prefix, string $index, int $operation)
+    public function lock(int $segment, string $prefix, string $index, int $operation): mixed
     {
         $path = $this->_getPathFromSegment($segment);
-        if(empty($path)) {
+
+        if (empty($path)) {
             // throw exception
             return null;
         }
 
         $parent_path = dirname($path . $prefix . '/' . $index);
-        if(!file_exists($parent_path)) {
+
+        if (! file_exists($parent_path)) {
             mkdir($parent_path, 0755, true);
         }
 
         $lock_file = fopen($path . $prefix . '/' . $index, 'c+');
-        if(!flock($lock_file, $operation)) {
+
+        if (! flock($lock_file, $operation)) {
             fclose($lock_file);
+
             return null;
         }
 
@@ -210,10 +223,8 @@ class Storage implements StorageInterface
      * Unock read/write operations on storage at the given index of the prefixed storage segment
      *
      * @param mixed $lock The handle for the lock.
-     *
-     * @return void
      */
-    public function unlock($lock)
+    public function unlock(mixed $lock): void
     {
         /**
          * This is actually needed lol. Remove the suppression if you don't believe it.
@@ -227,21 +238,18 @@ class Storage implements StorageInterface
     /**
      * Delete data from the prefix storage segment at the given index
      *
-     * @param integer $segment The storage segment.
-     * @param string  $prefix  The prefix.
-     * @param string  $index   The index.
-     *
-     * @return null|void Null if the index is not in use on the prefixed storage segment.
+     * @param int $segment The storage segment.
+     * @param string $prefix The prefix.
+     * @param string $index The index.
      */
     public function purge(int $segment, string $prefix, string $index)
     {
         $path = $this->_getPathFromSegment($segment);
-        if(empty($path)) {
-            // throw exception
-            return null;
+
+        if (empty($path)) {
+            throw new YagniException();
         }
 
         unlink($path . $prefix . '/' . $index);
     }
-
 }

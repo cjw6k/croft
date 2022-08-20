@@ -1,35 +1,30 @@
 <?php
-/**
- * The Router class is herein defined.
- *
- * @package WebFoo\RouterFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\RouterFoo;
+namespace Croft;
 
-use \FastRoute\Dispatcher;
-use \FastRoute\RouteCollector;
+use A6A\Aether\Aether;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Router\Route;
+use a6a\a6a\Router\RouterInterface;
+use FastRoute\Dispatcher;
+use FastRoute\RouteCollector;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Router\Route;
-use \cjw6k\WebFoo\Router\RouterInterface;
+use function usort;
+use function FastRoute\cachedDispatcher;
+use function array_merge;
 
 /**
  * The Router service determines which object method will handle incoming request
  */
 class Router implements RouterInterface
 {
-
     use Aether;
 
     /**
      * Store a local reference to the active configuration and current request
      *
-     * @param ConfigInterface  $config  The active configuration.
+     * @param ConfigInterface $config The active configuration.
      * @param RequestInterface $request The current request.
      */
     public function __construct(ConfigInterface $config, RequestInterface $request)
@@ -43,50 +38,55 @@ class Router implements RouterInterface
      *
      * @return mixed The class, method and parameters that are matched to the request.
      */
-    public function route()
+    public function route(): mixed
     {
         $routes = $this->getRoutes();
-        $route_collector = function (RouteCollector $route_collector) use ($routes) : void {
-            if(empty($routes)) {
+        $route_collector = static function (RouteCollector $route_collector) use ($routes): void {
+            if (empty($routes)) {
                 return;
             }
 
-            $safe_routes = array();
-            foreach($routes as $route){
-                if(!($route instanceof Route)) {
+            $safe_routes = [];
+
+            foreach ($routes as $route) {
+                if (! ($route instanceof Route)) {
                     // throw exception
                     continue;
                 }
+
                 $safe_routes[] = $route;
             }
 
-            if(empty($safe_routes)) {
+            if (empty($safe_routes)) {
                  return;
             }
 
             usort(
                 $safe_routes,
-                function (Route $route_a, Route $route_b) {
+                static function (Route $route_a, Route $route_b) {
                     if ($route_a->getPriority() == $route_b->getPriority()) {
                         return 0;
                     }
-                    return ($route_a->getPriority() > $route_b->getPriority()) ? -1 : 1;
+
+                    return ($route_a->getPriority() > $route_b->getPriority())
+                        ? -1
+                        : 1;
                 }
             );
 
-            foreach($safe_routes as $route){
-                list($verbs, $regex, $data) = $route->pack();
+            foreach ($safe_routes as $route) {
+                [$verbs, $regex, $data] = $route->pack();
                 $route_collector->addRoute($verbs, $regex, $data);
             }
         };
 
-        $route_collector_opts = array(
-        'cacheFile' => VAR_ROOT . '.route-cache',
-        'cacheDisabled' => isset($this->getConfig()->getRouting()['use_cache']) ? $this->getConfig()->getRouting()['use_cache'] : true,
-        );
+        $route_collector_opts = [
+            'cacheFile' => From::VAR->dir() . '.route-cache',
+            'cacheDisabled' => $this->getConfig()->getRouting()['use_cache'] ?? true,
+        ];
 
         $this->setDispatcher(
-            \FastRoute\cachedDispatcher(
+            cachedDispatcher(
                 $route_collector,
                 $route_collector_opts
             )
@@ -107,19 +107,18 @@ class Router implements RouterInterface
      *
      * @return mixed The class, method and parameters that are matched to the request.
      */
-    private function _processRoute($matched_route)
+    private function _processRoute(mixed $matched_route): mixed
     {
         // trigger_error(print_r(array($this->getRequest()->getPath(), $matched_route), true));
-        switch($matched_route[0]){
-        case Dispatcher::METHOD_NOT_ALLOWED:
-            return array(null, '_sling405', array('use_vars' => true), $matched_route[1]);
+        switch ($matched_route[0]) {
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                return [null, '_sling405', ['use_vars' => true], $matched_route[1]];
 
-        case Dispatcher::NOT_FOUND:
-            return array(null, '_sling404', null, null);
+            case Dispatcher::NOT_FOUND:
+                return [null, '_sling404', null, null];
 
-        case Dispatcher::FOUND:
-            return array_merge($matched_route[1], array($matched_route[2]));
+            case Dispatcher::FOUND:
+                return array_merge($matched_route[1], [$matched_route[2]]);
         }
     }
-
 }

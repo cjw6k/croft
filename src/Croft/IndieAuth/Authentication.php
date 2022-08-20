@@ -1,24 +1,29 @@
 <?php
-/**
- * The IndieAuth\Authentication class is herein defined.
- *
- * @package WebFoo\IndieAuth
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\IndieAuth;
+namespace Croft\IndieAuth;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Exception\Redirect;
-use \cjw6k\WebFoo\Request\RequestInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Exception\Redirect;
+use a6a\a6a\Request\RequestInterface;
+use Croft\From;
+
+use function str_replace;
+use function substr;
+use function bin2hex;
+use function openssl_random_pseudo_bytes;
+use function password_hash;
+
+use const PASSWORD_DEFAULT;
+
+use function now;
+use function hash;
+use function yaml_emit_file;
 
 /**
  * The Authentication class provides methods to service the authentication steps of IndieAuth
  */
 class Authentication
 {
-
     use Aether;
 
     /**
@@ -35,14 +40,12 @@ class Authentication
      * Handle an incoming authentication request
      *
      * @param Validation $validation Helper for validation of request parameters.
-     *
-     * @return void
      */
-    public function handleRequest(Validation $validation)
+    public function handleRequest(Validation $validation): void
     {
         $request = $this->getRequest();
 
-        if('GET' == $request->getMethod()) {
+        if ($request->getMethod() == 'GET') {
             $this->_start($validation);
         }
 
@@ -53,37 +56,42 @@ class Authentication
          *
          * @psalm-suppress PossiblyUndefinedMethod
          */
-        if('POST' == $request->getMethod()) {
-            if($request->post('ssrv') && $request->session('ssrv') == $request->post('ssrv')) {
-                $this->_approve();
-            }
+        if ($request->getMethod() != 'POST') {
+            return;
         }
+
+        if (
+            ! $request->post('ssrv')
+            || $request->session('ssrv') != $request->post('ssrv')
+        ) {
+            return;
+        }
+
+        $this->_approve();
     }
 
     /**
      * Consider an incoming authentication request
      *
      * @param Validation $validation Helper for validation of request parameters.
-     *
-     * @return void
      */
-    private function _start(Validation $validation)
+    private function _start(Validation $validation): void
     {
         $validation->authenticationRequest();
 
-        if(!$validation->isValid()) {
-            $this->setErrors($validation->getErrors());
+        if ($validation->isValid()) {
+            return;
         }
+
+        $this->setErrors($validation->getErrors());
     }
 
     /**
      * Generate an authentication code and redirect to the client
      *
      * @throws Redirect A HTTP redirect is required.
-     *
-     * @return void
      */
-    private function _approve()
+    private function _approve(): void
     {
         $request = $this->getRequest();
 
@@ -92,8 +100,8 @@ class Authentication
         $state = $request->post('state');
 
         $code = str_replace(
-            array('+', '/'),
-            array('-', '_'),
+            ['+', '/'],
+            ['-', '_'],
             substr(
                 bin2hex(openssl_random_pseudo_bytes(16)),
                 0,
@@ -101,14 +109,14 @@ class Authentication
             )
         );
 
-        $approval = array(
-        'client_id' => $client_id,
-        'redirect_uri' => $redirect_uri,
-        'code' => password_hash($code, PASSWORD_DEFAULT),
-        'expires' => now() + 600,
-        'used' => 0,
-        'scopes' => $request->post('scopes'),
-        );
+        $approval = [
+            'client_id' => $client_id,
+            'redirect_uri' => $redirect_uri,
+            'code' => password_hash($code, PASSWORD_DEFAULT),
+            'expires' => now() + 600,
+            'used' => 0,
+            'scopes' => $request->post('scopes'),
+        ];
 
         $filename = hash('sha1', "[$client_id][$redirect_uri][$code]");
 
@@ -117,9 +125,8 @@ class Authentication
          *
          * @psalm-suppress UnusedFunctionCall
          */
-        yaml_emit_file(VAR_ROOT . '/indieauth/auth-' . $filename, $approval);
+        yaml_emit_file(From::VAR->dir() . '/indieauth/auth-' . $filename, $approval);
 
         throw new Redirect($redirect_uri . '?code=' . $code . '&state=' . $state);
     }
-
 }

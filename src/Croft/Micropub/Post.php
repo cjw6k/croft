@@ -1,35 +1,28 @@
 <?php
-/**
- * The Post class is herein defined.
- *
- * @package WebFoo\Micropub
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Micropub;
+namespace Croft\Micropub;
 
-use \DateTime;
+use A6A\Aether\Aether;
+use a6a\a6a\Exception\Redirect;
+use a6a\a6a\Post\PostInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Response\ResponseInterface;
+use DateTime;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Exception\Redirect;
-use \cjw6k\WebFoo\Post\PostInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Response\ResponseInterface;
+use function is_null;
 
 /**
  * The Micropub\Post class handles post creation
  */
 class Post
 {
-
     use Aether;
 
     /**
      * Store a local reference to a model post
      *
-     * @param PostInterface     $post     The model post.
-     * @param RequestInterface  $request  The current request.
+     * @param PostInterface $post The model post.
+     * @param RequestInterface $request The current request.
      * @param ResponseInterface $response The response.
      */
     public function __construct(PostInterface $post, RequestInterface $request, ResponseInterface $response)
@@ -45,14 +38,12 @@ class Post
      * @param string $client_id The client_id of the posting micropub client.
      *
      * @throws Redirect A HTTP redirect to the new post.
-     *
-     * @return void
      */
-    public function createPost(string $client_id)
+    public function createPost(string $client_id): void
     {
         $this->setClientId($client_id);
 
-        if(!$this->_allocate()) {
+        if (! $this->_allocate()) {
             return;
         }
 
@@ -66,10 +57,10 @@ class Post
     /**
      * Allocate a new post
      *
-     * @return boolean True  If post allocation works.
-     *                 False If post allocation does not work.
+     * @return bool True If post allocation works.
+ * False If post allocation does not work.
      */
-    private function _allocate()
+    private function _allocate(): bool
     {
         return $this->getPost()->allocate(
             $this->_getPublicationDateFromRequest()
@@ -83,7 +74,7 @@ class Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest()
+    protected function _getPublicationDateFromRequest(): DateTime
     {
         return $this->_getPublicationDate();
     }
@@ -95,39 +86,38 @@ class Post
      *
      * @return DateTime The publication time.
      */
-    protected function _getPublicationDate($published = null)
+    protected function _getPublicationDate(?string $published = null): DateTime
     {
         $dt_published = new DateTime(is_null($published) ? 'now' : $published);
         $this->setPublished($dt_published);
+
         return $dt_published;
     }
 
     /**
      * Build the post record front matter
-     *
-     * @return void
      */
-    protected function _setFrontMatter()
+    protected function _setFrontMatter(): void
     {
-        $front_matter = array(
-        'client_id' => $this->getClientId(),
-        'media_type' => 'text/plain',
-        'item' => array(
-        'type' => array(
-        $this->getPostType(),
-        ),
-        'properties' => array(
-                    'published' => array(
+        $front_matter = [
+            'client_id' => $this->getClientId(),
+            'media_type' => 'text/plain',
+            'item' => [
+                'type' => [
+                    $this->getPostType(),
+                ],
+                'properties' => [
+                    'published' => [
                         $this->getPublished()->format('c'),
-        ),
-                    'uid' => array(
+                    ],
+                    'uid' => [
                         $this->getPost()->getUid(),
-        ),
-        ),
-        ),
-        );
+                    ],
+                ],
+            ],
+        ];
 
-        if(!is_null($this->getPostSlug())) {
+        if (! is_null($this->getPostSlug())) {
             $front_matter['slug'] = $this->getPostSlug();
         }
 
@@ -143,18 +133,18 @@ class Post
      *
      * @param string $key The key to check against the list of reserved keys.
      *
-     * @return boolean True  If the key is reserved.
-     *                 False If the key is not reserved.
+     * @return bool True If the key is reserved.
+ * False If the key is not reserved.
      */
-    protected function _reservedPropertyKey(string $key)
+    protected function _reservedPropertyKey(string $key): bool
     {
-        switch($key){
-        case 'access_token':
-        case 'h':
-        case 'slug':
-        case 'published':
-        case 'content':
-            return true;
+        switch ($key) {
+            case 'access_token':
+            case 'h':
+            case 'slug':
+            case 'published':
+            case 'content':
+                return true;
         }
 
         return false;
@@ -162,12 +152,9 @@ class Post
 
     /**
      * Store the post front matter and content into a post record on disk
-     *
-     * @return void
      */
-    protected function _storePost()
+    protected function _storePost(): void
     {
         $this->getPost()->store($this->getFrontMatter(), $this->getPostContent());
     }
-
 }

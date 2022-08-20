@@ -1,26 +1,26 @@
 <?php
+
 /**
  * The WebFoo\Config class is herein defined.
  *
- * @package WebFoo\ConfigFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
+ * @link https://cj.w6k.ca/
  */
 
-namespace cjw6k\WebFoo\ConfigFoo;
+namespace Croft;
 
-use \Exception;
-use yaml_parse_file;
+use A6A\Aether\Aether;
+use a6a\a6a\Config\ConfigInterface;
+use Exception;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Config\ConfigInterface;
+use function is_null;
+use function file_exists;
+use function yaml_parse_file;
 
 /**
  * The Config class loads and saves configurations.
  */
 class Config implements ConfigInterface
 {
-
     use Aether;
 
     /**
@@ -30,18 +30,21 @@ class Config implements ConfigInterface
      *
      * @throws Exception The specified config file does not exist.
      */
-    public function __construct($config_file = PACKAGE_ROOT . 'config.yml')
+    public function __construct(?string $config_file = 'not-config.yml')
     {
-        if(is_null($config_file)) {
+        if (is_null($config_file)) {
             $this->_makeDefaultConfig();
+
             return;
         }
 
-        if(file_exists($config_file)) {
+        if (file_exists($config_file)) {
             $config = yaml_parse_file($config_file);
-            foreach($config as $key => $value){
+
+            foreach ($config as $key => $value) {
                 $this->setData($key, $value);
             }
+
             return;
         }
 
@@ -51,13 +54,10 @@ class Config implements ConfigInterface
 
     /**
      * Setup a default configuration when no configuration file is available
-     *
-     * @return void
      */
-    private function _makeDefaultConfig()
+    private function _makeDefaultConfig(): void
     {
-        $this->setTitle('WebFoo');
+        $this->setTitle('the default config');
         $this->setMe('http://localhost/');
     }
-
 }

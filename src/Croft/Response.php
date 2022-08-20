@@ -1,23 +1,25 @@
 <?php
-/**
- * The Response class is herein defined.
- *
- * @package WebFoo\ResponseFoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\ResponseFoo;
+namespace Croft;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Response\ResponseInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Response\ResponseInterface;
+
+use function ob_start;
+use function session_id;
+use function session_write_close;
+use function ignore_user_abort;
+use function ob_get_clean;
+use function flush;
+use function strlen;
+use function http_response_code;
+use function header;
 
 /**
  * The Response class composes and sends the response to the client when complete
  */
 class Response implements ResponseInterface
 {
-
     use Aether;
 
     /**
@@ -32,12 +34,10 @@ class Response implements ResponseInterface
 
     /**
      * Fill in HTTP headers as needed and send the response to the client
-     *
-     * @return void
      */
-    public function send()
+    public function send(): void
     {
-        if(session_id()) {
+        if (session_id()) {
             session_write_close();
         }
 
@@ -47,11 +47,11 @@ class Response implements ResponseInterface
 
         $this->_setContentLength();
 
-        if($this->hasHeaders()) {
+        if ($this->hasHeaders()) {
             $this->_sendHeaders();
         }
 
-        if($this->hasBody()) {
+        if ($this->hasBody()) {
             $this->_sendBody();
         }
 
@@ -61,10 +61,8 @@ class Response implements ResponseInterface
 
     /**
      * Calculate the length of the response body and set the content-length HTTP header
-     *
-     * @return void
      */
-    private function _setContentLength()
+    private function _setContentLength(): void
     {
         $content_length = $this->hasBody() ? strlen($this->getBody()) : 0;
         $this->mergeHeaders("Content-Length: $content_length");
@@ -72,28 +70,23 @@ class Response implements ResponseInterface
 
     /**
      * Send the HTTP headers
-     *
-     * @return void
      */
-    private function _sendHeaders()
+    private function _sendHeaders(): void
     {
-        if($this->hasCode()) {
+        if ($this->hasCode()) {
             http_response_code($this->getCode());
         }
 
-        foreach($this->getHeaders() as $header){
+        foreach ($this->getHeaders() as $header) {
             header($header);
         }
     }
 
     /**
      * Send the response body
-     *
-     * @return void
      */
-    private function _sendBody()
+    private function _sendBody(): void
     {
         echo $this->getBody();
     }
-
 }

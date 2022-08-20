@@ -1,32 +1,31 @@
 <?php
-/**
- * The IndieAuth\Authorization class is herein defined.
- *
- * @package WebFoo\IndieAuth
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\IndieAuth;
+namespace Croft\IndieAuth;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Response\ResponseInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Response\ResponseInterface;
+use Croft\From;
+
+use function hash;
+use function file_exists;
+use function yaml_parse_file;
+use function now;
+use function yaml_emit_file;
 
 /**
  * The Authorization class provides methods to service the authorization steps of IndieAuth
  */
 class Authorization
 {
-
     use Aether;
 
     /**
      * Store a local reference to required services
      *
-     * @param ConfigInterface   $config   The active configuration.
-     * @param RequestInterface  $request  The current request.
+     * @param ConfigInterface $config The active configuration.
+     * @param RequestInterface $request The current request.
      * @param ResponseInterface $response The response.
      */
     public function __construct(ConfigInterface $config, RequestInterface $request, ResponseInterface $response)
@@ -41,17 +40,18 @@ class Authorization
      *
      * @param Validation $validation Helper class for validating request parameters.
      *
-     * @return boolean True  If the authorization code request is good.
-     *                 False If the authorization code request is not good.
+     * @return bool True If the authorization code request is good.
+ * False If the authorization code request is not good.
      */
-    public function codeVerificationRequest(Validation $validation)
+    public function codeVerificationRequest(Validation $validation): bool
     {
         $request = $this->getRequest();
 
         $this->getResponse()->mergeHeaders('Content-Type: application/json; charset=UTF-8');
 
-        if(!$validation->indieAuthRequestHasParams('authorization code verification')) {
+        if (! $validation->indieAuthRequestHasParams('authorization code verification')) {
             $this->setResponseBody($validation->getResponseBody());
+
             return false;
         }
 
@@ -60,32 +60,35 @@ class Authorization
         $code = $request->post('code');
 
         $filename = hash('sha1', "[$client_id][$redirect_uri][$code]");
-        if(!file_exists(VAR_ROOT . 'indieauth/auth-' . $filename)) {
+
+        if (! file_exists(From::VAR->dir() . 'indieauth/auth-' . $filename)) {
             $this->setResponseBody(
-                array(
-                'error' => 'invalid_request',
-                'error_description' => 'the authorization code verification request could not be matched to an approved authentication response',
-                )
+                [
+                    'error' => 'invalid_request',
+                    'error_description' => 'the authorization code verification request could not be matched to an approved authentication response',
+                ]
             );
+
             return false;
         }
 
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
 
-        if((now() - 600) > $approval['expires']) {
+        if ((now() - 600) > $approval['expires']) {
             $this->setResponseBody(
-                array(
-                'error' => 'invalid_request',
-                'error_description' => 'the authorization code verification request matched an approved authentication response that has already expired (10 mins)',
-                )
+                [
+                    'error' => 'invalid_request',
+                    'error_description' => 'the authorization code verification request matched an approved authentication response that has already expired (10 mins)',
+                ]
             );
+
             return false;
         }
 
         $this->setResponseBody(
-            array(
-            'me' => $this->getConfig()->getMe(),
-            )
+            [
+                'me' => $this->getConfig()->getMe(),
+            ]
         );
 
         $approval['used']++;
@@ -95,19 +98,19 @@ class Authorization
          *
          * @psalm-suppress UnusedFunctionCall
          */
-        yaml_emit_file(VAR_ROOT . 'indieauth/auth-' . $filename, $approval);
+        yaml_emit_file(From::VAR->dir() . 'indieauth/auth-' . $filename, $approval);
 
-        if(1 != $approval['used']) {
+        if ($approval['used'] != 1) {
             $this->setResponseBody(
-                array(
-                'error' => 'invalid_request',
-                'error_description' => 'the authorization code verification request matched an approved authentication response that has already been used',
-                )
+                [
+                    'error' => 'invalid_request',
+                    'error_description' => 'the authorization code verification request matched an approved authentication response that has already been used',
+                ]
             );
+
             return false;
         }
 
         return true;
     }
-
 }

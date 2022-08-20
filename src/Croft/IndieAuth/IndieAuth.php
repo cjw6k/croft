@@ -1,47 +1,51 @@
 <?php
-/**
- * The IndieAuth class is herein defined.
- *
- * @package WebFoo\IndieAuth
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\IndieAuth;
+namespace Croft\IndieAuth;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Config\ConfigInterface;
-use \cjw6k\WebFoo\Exception\Redirect;
-use \cjw6k\WebFoo\Extension\ExtensionInterface;
-use \cjw6k\WebFoo\Response\HTTPLinkable;
-use \cjw6k\WebFoo\Response\ResponseInterface;
-use \cjw6k\WebFoo\Request\RequestInterface;
-use \cjw6k\WebFoo\Router\Routable;
-use \cjw6k\WebFoo\Router\Route;
-use \cjw6k\WebFoo\Session\SessionInterface;
-use \cjw6k\WebFoo\Setup\Setup;
-use \cjw6k\WebFoo\Setup\Setupable;
-use \cjw6k\WebFoo\Storage\StorageInterface;
+use a6a\a6a\Setup\SetupInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Exception\Redirect;
+use a6a\a6a\Extension\ExtensionInterface;
+use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Response\HTTPLinkable;
+use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Router\Routable;
+use a6a\a6a\Router\Route;
+use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Setup\Setupable;
+use a6a\a6a\Storage\StorageInterface;
+use Croft\Setup;
+
+use function json_encode;
+use function trim;
+use function urlencode;
+
+use const PHP_EOL;
 
 /**
  * The IndieAuth class implements an IndieAuth server
  */
 class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 {
-
     use Aether;
 
     /**
      * Send the IndieAuth authorization point HTTP link-rel header
      *
-     * @param ConfigInterface   $config   The active configuration.
-     * @param RequestInterface  $request  The current request.
+     * @param ConfigInterface $config The active configuration.
+     * @param RequestInterface $request The current request.
      * @param ResponseInterface $response The response.
-     * @param SessionInterface  $session  The login session.
-     * @param StorageInterface  $storage  The storage service.
+     * @param SessionInterface $session The login session.
+     * @param StorageInterface $storage The storage service.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request, ResponseInterface $response, SessionInterface $session, StorageInterface $storage)
-    {
+    public function __construct(
+        ConfigInterface $config,
+        RequestInterface $request,
+        ResponseInterface $response,
+        SessionInterface $session,
+        StorageInterface $storage
+    ) {
         $this->setConfig($config);
         $this->setRequest($request);
         $this->setResponse($response);
@@ -54,51 +58,54 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @return mixed|null The list of routes to register or null if there are none.
      */
-    public function getRoutes()
+    public function getRoutes(): mixed
     {
-        return array(
-        new Route(array('GET', 'POST'), '/auth/', "handleRequest"),
-        new Route('POST', '/token/', 'handleTokenRequest'),
-        new Route('GET', '/token/', 'handleTokenVerificationRequest'),
-        );
+        return [
+            new Route(['GET', 'POST'], '/auth/', "handleRequest"),
+            new Route('POST', '/token/', 'handleTokenRequest'),
+            new Route('GET', '/token/', 'handleTokenVerificationRequest'),
+        ];
     }
 
     /**
      * Provide HTTP link header configuration to the Response\HTTP
      *
-     * @return mixed[] An array of HTTP link headers.
+     * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks()
+    public function getHTTPLinks(): array
     {
-        return array(
-        '</auth/>; rel="authorization_endpoint"',
-        '</token/>; rel="token_endpoint"'
-        );
+        return [
+            '</auth/>; rel="authorization_endpoint"',
+            '</token/>; rel="token_endpoint"',
+        ];
     }
 
     /**
      * Handle a request
      *
-     * @throws Redirect A HTTP redirect is required.
-     *
      * @return string|void The template to render, or void to skip rendering.
+     *
+     * @throws Redirect A HTTP redirect is required.
      */
-    public function handleRequest()
+    public function handleRequest(): ?string
     {
-        if($this->getSession()->isLoggedIn()) {
+        if ($this->getSession()->isLoggedIn()) {
             return $this->_loggedInRequest();
         }
 
-        if('POST' == $this->getRequest()->getMethod()) {
+        if ($this->getRequest()->getMethod() == 'POST') {
             $authorization = new Authorization($this->getConfig(), $this->getRequest(), $this->getResponse());
-            if(!$authorization->codeVerificationRequest(new Validation($this->getConfig(), $this->getRequest()))) {
+
+            if (! $authorization->codeVerificationRequest(new Validation($this->getConfig(), $this->getRequest()))) {
                 $this->getResponse()->setCode(400);
             }
+
             echo json_encode($authorization->getResponseBody());
+
             return;
         }
 
-        if(!empty($this->getRequest()->getQuery())) {
+        if (! empty($this->getRequest()->getQuery())) {
             throw new Redirect('/login/?redirect_to=' . trim($this->getRequest()->getPath(), '/') . '/?' . urlencode($this->getRequest()->getQuery()));
         }
 
@@ -110,13 +117,13 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @return string The template to render.
      */
-    private function _loggedInRequest()
+    private function _loggedInRequest(): string
     {
         $validation = new Validation($this->getConfig(), $this->getRequest());
         $authentication = new Authentication($this->getRequest());
         $authentication->handleRequest($validation);
 
-        if($authentication->hasErrors()) {
+        if ($authentication->hasErrors()) {
             $this->setErrors($authentication->getErrors());
         }
 
@@ -135,18 +142,20 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * Errors should be directly echoed to the console.
      *
-     * @param Setup $setup The setup service.
+     * @param SetupInterface $setup The setup service.
      *
-     * @return boolean True  Setup may proceed.
-     *                 False Setup has failed.
+     * @return bool True Setup may proceed.
+ * False Setup has failed.
      */
-    public function setup(Setup $setup)
+    public function setup(SetupInterface $setup): bool
     {
-        if(!$this->validateUserProfileURL($setup->getUrl())) {
-            foreach($this->getErrors() as $error){
+        if (! $this->validateUserProfileURL($setup->getUrl())) {
+            foreach ($this->getErrors() as $error) {
                 echo 'error: ', $error, PHP_EOL;
             }
+
             echo 'Try \'setup.php --help\' for more information.', PHP_EOL;
+
             return false;
         }
 
@@ -158,14 +167,16 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @param string $url The user profile URL.
      *
-     * @return boolean True  If the user profile URL is valid.
-     *                 False If the user profile URL is not valid.
+     * @return bool True If the user profile URL is valid.
+ * False If the user profile URL is not valid.
      */
-    public function validateUserProfileURL(string $url)
+    public function validateUserProfileURL(string $url): bool
     {
         $validation = new Validation($this->getConfig(), $this->getRequest());
-        if(!$validation->userProfileURL($url)) {
+
+        if (! $validation->userProfileURL($url)) {
             $this->setErrors($validation->getErrors());
+
             return false;
         }
 
@@ -174,10 +185,8 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 
     /**
      * Handle a token request
-     *
-     * @return void
      */
-    public function handleTokenRequest()
+    public function handleTokenRequest(): void
     {
         $token = new Token($this->getConfig(), $this->getRequest(), $this->getResponse());
         $token->handleRequest();
@@ -186,13 +195,10 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 
     /**
      * Handle a token verification request
-     *
-     * @return void
      */
-    public function handleTokenVerificationRequest()
+    public function handleTokenVerificationRequest(): void
     {
         $token = new Token($this->getConfig(), $this->getRequest(), $this->getResponse());
         $token->handleVerificationRequest();
     }
-
 }

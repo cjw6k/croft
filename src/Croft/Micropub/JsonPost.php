@@ -1,32 +1,29 @@
 <?php
-/**
- * The JsonPost class is herein defined.
- *
- * @package WebFoo\Micropub
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Micropub;
+namespace Croft\Micropub;
 
-use \DateTime;
+use DateTime;
+
+use function json_decode;
+use function file_get_contents;
+use function obj2arr;
+use function is_object;
+use function is_string;
 
 /**
  * The Micropub\Json class handles post creationg for JSON-encoded posts
  */
 class JsonPost extends Post
 {
-
     /**
      * Create a new post
      *
      * @param string $client_id The client_id of the posting micropub client.
-     *
-     * @return void
      */
-    public function createPost(string $client_id)
+    public function createPost(string $client_id): void
     {
         $this->setMf2(json_decode(file_get_contents('php://input')));
+
         parent::createPost($client_id);
     }
 
@@ -37,10 +34,11 @@ class JsonPost extends Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest()
+    protected function _getPublicationDateFromRequest(): DateTime
     {
         $published = null;
-        if(isset($this->getMf2()->properties->published[0])) {
+
+        if (isset($this->getMf2()->properties->published[0])) {
             $published = $this->getMf2()->properties->published[0];
         }
 
@@ -49,17 +47,17 @@ class JsonPost extends Post
 
     /**
      * Build the post record front matter from POST parameters
-     *
-     * @return void
      */
-    protected function _setFrontMatter()
+    protected function _setFrontMatter(): void
     {
-        $this->setPostType(isset($this->getMf2()->type[0]) ? $this->getMf2()->type[0] : 'h-entry');
+        $this->setPostType($this->getMf2()->type[0] ?? 'h-entry');
 
         $post_slug = null;
-        if(isset($this->getMf2()->properties->slug[0])) {
+
+        if (isset($this->getMf2()->properties->slug[0])) {
             $post_slug = $this->getMf2()->properties->slug[0];
         }
+
         $this->setPostSlug($post_slug);
 
         parent::_setFrontMatter();
@@ -67,21 +65,21 @@ class JsonPost extends Post
 
     /**
      * Capture optional front matter properties from the JSON
-     *
-     * @return void
      */
-    protected function _setFrontMatterProperties()
+    protected function _setFrontMatterProperties(): void
     {
         $front_matter = $this->getFrontMatter();
 
-        foreach($this->getMf2()->properties as $key => $set){
-            if($this->_reservedPropertyKey($key)) {
+        foreach ($this->getMf2()->properties as $key => $set) {
+            if ($this->_reservedPropertyKey($key)) {
                 continue;
             }
 
-            if(!empty($set)) {
-                $front_matter['item']['properties'][$key] = obj2arr($set);
+            if (empty($set)) {
+                continue;
             }
+
+            $front_matter['item']['properties'][$key] = obj2arr($set);
         }
 
         $this->setFrontMatter($front_matter);
@@ -89,27 +87,26 @@ class JsonPost extends Post
 
     /**
      * Store the post front matter and content into a post record on disk_free_space
-     *
-     * @return void
      */
-    protected function _storePost()
+    protected function _storePost(): void
     {
         $front_matter = $this->getFrontMatter();
         $content = $this->getMf2()->properties->content[0];
-        if(is_object($this->getMf2()->properties->content[0])) {
-            if(isset($this->getMf2()->properties->content[0]->html)) {
+
+        if (is_object($this->getMf2()->properties->content[0])) {
+            if (isset($this->getMf2()->properties->content[0]->html)) {
                 $front_matter['media_type'] = 'text/html';
                 $content = $this->getMf2()->properties->content[0]->html;
             }
         }
 
-        if(!is_string($content)) {
+        if (! is_string($content)) {
             $content = '';
         }
 
         $this->setFrontMatter($front_matter);
         $this->setPostContent($content);
+
         parent::_storePost();
     }
-
 }

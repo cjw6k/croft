@@ -1,16 +1,24 @@
 <?php
-/**
- * The Setup class is herein defined.
- *
- * @package webfoo
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Setup;
+namespace Croft;
 
-use \A6A\Aether\Aether;
-use \cjw6k\WebFoo\Request\RequestInterface;
+use a6a\a6a\Setup\SetupInterface;
+use A6A\Aether\Aether;
+use a6a\a6a\Request\RequestInterface;
+use League\CLImate\CLImate;
+
+use function file_exists;
+use function parse_url;
+use function substr;
+use function base64_encode;
+use function random_bytes;
+use function password_hash;
+
+use const PASSWORD_DEFAULT;
+
+use function yaml_emit_file;
+
+use const PHP_EOL;
 
 /**
  * The Setup completes first-time configuratrion of WebFoo
@@ -21,9 +29,8 @@ use \cjw6k\WebFoo\Request\RequestInterface;
  * IndieAuth user profile URL. A password is generated and displayed on the command line when
  * setup completes successfully.
  */
-class Setup
+class Setup implements SetupInterface
 {
-
     use Aether;
 
     /**
@@ -41,24 +48,14 @@ class Setup
      *
      * @param mixed $argv The command lines parameters.
      *
-     * @return boolean True  If called with all required parameters.
-     *                 False If not called with all required parameters.
+     * @return bool True If called with all required parameters.
+ * False If not called with all required parameters.
      */
-    public function prerequisites($argv)
+    public function prerequisites(CLImate $cli): bool
     {
-        if(file_exists(PACKAGE_ROOT . 'config.yml')) {
-            echo 'setup.php: first time setup is already complete.', PHP_EOL,
-            'Try \'setup.php --help\' for more information.', PHP_EOL;
-            return false;
-        }
+        if (file_exists(From::___->dir() . 'config.yml')) {
+            $cli->error('croft: first time setup is already complete. should do something useful, ayuh');
 
-        if(3 > count($argv)) {
-            echo 'Usage: setup.php [OPTIONS]... USERNAME URL', PHP_EOL,
-            'Try \'setup.php --help\' for more information.', PHP_EOL;
-            return false;
-        }
-
-        if(!$this->_hasRequiredParameters($argv)) {
             return false;
         }
 
@@ -72,24 +69,17 @@ class Setup
      *
      * @param mixed $argv The command lines parameters.
      *
-     * @return boolean True  If called with all required parameters.
-     *                 False If not called with all required parameters.
+     * @return bool True If called with all required parameters.
+ * False If not called with all required parameters.
      */
-    private function _hasRequiredParameters($argv)
+    private function _hasRequiredParameters(CLImate $cli): bool
     {
-        foreach($argv as $idx => $arg){
-            if(0 == $idx) {
-                continue;
-            }
+        if (
+            ! $cli->arguments->get('username')
+            || ! $cli->arguments->get('url')
+        ) {
+            $cli->usage();
 
-            if(!$this->_parseParameter($arg)) {
-                return false;
-            }
-        }
-
-        if(empty($this->getUsername()) || empty($this->getUrl())) {
-            echo 'Usage: setup.php [OPTIONS]... USERNAME URL', PHP_EOL,
-            'Try \'setup.php --help\' for more information.', PHP_EOL;
             return false;
         }
 
@@ -97,67 +87,46 @@ class Setup
     }
 
     /**
-     * Parse one command line parameter
-     *
-     * @param string $param The command line parameter to parse.
-     *
-     * @return boolean True  If parsed okay.
-     *                 False If not parsed okay.
-     */
-    private function _parseParameter(string $param)
-    {
-        if(!$this->hasUsername()) {
-            $this->setUsername($param);
-            return true;
-        }
-
-        if(!$this->hasUrl()) {
-            $this->setUrl($param);
-            return true;
-        }
-
-        echo 'Usage: setup.php [OPTIONS]... USERNAME URL', PHP_EOL,
-        'Try \'setup.php --help\' for more information.', PHP_EOL;
-
-        return false;
-    }
-
-    /**
      * Append the root path component '/' if missing from the URL
-     *
-     * @return void
      */
-    private function _ensureURLHasPath()
+    private function _ensureURLHasPath(): void
     {
         $url_parts = parse_url($this->getUrl());
-        if(!isset($url_parts['path'])) {
-            $this->setUrl($this->getUrl() . '/');
+
+        if (isset($url_parts['path'])) {
+            return;
         }
+
+        $this->setUrl($this->getUrl() . '/');
     }
 
     /**
      * Configure WebFoo using parameters provided on the command line
      *
-     * @return integer The return code of the setup.php script.
+     * @return int The return code of the setup.php script.
      */
-    public function configure()
+    public function configure(CLImate $cli): int
     {
         $password = substr(base64_encode(random_bytes(12)), 0, 16);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $config = array(
-        'username' => $this->getUsername(),
-        'password' => $password_hash,
-        'me' => $this->getUrl(),
-        );
+        $this->setUsername($cli->yellow()->input('Choose your username:')->prompt());
+        $this->setUrl($cli->yellow()->input('The URL:')->prompt());
 
-        if(!yaml_emit_file(PACKAGE_ROOT . 'config.yml', $config)) {
-            echo 'setup.php: An error occured writing the config to ' . PACKAGE_ROOT . 'config.yml.';
+        $config = [
+            'username' => $this->getUsername(),
+            'password' => $password_hash,
+            'me' => $this->getUrl(),
+        ];
+
+        if (! yaml_emit_file(From::___->dir() . 'config.yml', $config)) {
+            echo 'setup.php: An error occured writing the config to ' . From::___->dir() . 'config.yml.';
+
             return 1;
         }
 
         echo 'setup.php: Done! Enjoy WebFoo!', PHP_EOL, 'Your temporary password is: ', $password, PHP_EOL;
+
         return 0;
     }
-
 }

@@ -1,22 +1,29 @@
 <?php
-/**
- * The FormPost class is herein defined.
- *
- * @package WebFoo\Micropub
- * @author  cjw6k
- * @link    https://cj.w6k.ca/
- */
 
-namespace cjw6k\WebFoo\Micropub;
+namespace Croft\Micropub;
 
-use \DateTime;
+use DateTime;
+
+use function is_array;
+use function array_merge;
+use function array_keys;
+
+use const UPLOAD_ERR_OK;
+
+use function is_uploaded_file;
+use function mkdir;
+use function pathinfo;
+
+use const PATHINFO_EXTENSION;
+
+use function move_uploaded_file;
+use function is_null;
 
 /**
  * The Micropub\Form class handles post creation for www-form-url-encoded and multipart/form-data
  */
 class FormPost extends Post
 {
-
     /**
      * Get the publication date of this post from the micropub request.
      *
@@ -24,19 +31,17 @@ class FormPost extends Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest()
+    protected function _getPublicationDateFromRequest(): DateTime
     {
         return $this->_getPublicationDate($this->getRequest()->post('published'));
     }
 
     /**
      * Build the post record front matter from POST parameters
-     *
-     * @return void
      */
-    protected function _setFrontMatter()
+    protected function _setFrontMatter(): void
     {
-        $this->setPostType('h-' . ($this->getRequest()->post('h') ? $this->getRequest()->post('h') : 'entry'));
+        $this->setPostType('h-' . ($this->getRequest()->post('h') ?: 'entry'));
         $this->setPostSlug($this->getRequest()->post('slug'));
 
         parent::_setFrontMatter();
@@ -46,15 +51,13 @@ class FormPost extends Post
 
     /**
      * Capture optional front matter properties from the POST parameters
-     *
-     * @return void
      */
-    protected function _setFrontMatterProperties()
+    protected function _setFrontMatterProperties(): void
     {
         $front_matter = $this->getFrontMatter();
 
-        foreach($this->getRequest()->post() as $key => $value){
-            if($this->_reservedPropertyKey($key)) {
+        foreach ($this->getRequest()->post() as $key => $value) {
+            if ($this->_reservedPropertyKey($key)) {
                 continue;
             }
 
@@ -67,30 +70,29 @@ class FormPost extends Post
     /**
      * Capture one front matter property
      *
-     * @param mixed  $front_matter The front matter of the post.
-     * @param string $key          The index provided in POST.
-     * @param mixed  $value        The value of POST at the given index.
-     *
-     * @return void
+     * @param mixed $front_matter The front matter of the post.
+     * @param string $key The index provided in POST.
+     * @param mixed $value The value of POST at the given index.
      */
-    protected function _setFrontMatterProperty(&$front_matter, string $key, $value)
+    protected function _setFrontMatterProperty(mixed &$front_matter, string $key, mixed $value): void
     {
-        if(is_array($value)) {
+        if (is_array($value)) {
             $array_is_empty = true;
 
-            foreach($value as $one_of){
-                if(!empty($one_of)) {
+            foreach ($value as $one_of) {
+                if (! empty($one_of)) {
                     $array_is_empty = false;
+
                     break;
                 }
             }
 
-            if($array_is_empty) {
+            if ($array_is_empty) {
                 return;
             }
 
-            if(!isset($front_matter['item']['properties'][$key])) {
-                $front_matter['item']['properties'][$key] = array();
+            if (! isset($front_matter['item']['properties'][$key])) {
+                $front_matter['item']['properties'][$key] = [];
             }
 
             $front_matter['item']['properties'][$key] = array_merge($front_matter['item']['properties'][$key], $value);
@@ -98,46 +100,48 @@ class FormPost extends Post
             return;
         }
 
-        if(!empty($value)) {
-            $front_matter['item']['properties'][$key][] = $value;
+        if (empty($value)) {
+            return;
         }
+
+        $front_matter['item']['properties'][$key][] = $value;
     }
 
     /**
      * Capture the embedded media in a post
-     *
-     * @return void
      */
-    private function _embeddedMedia()
+    private function _embeddedMedia(): void
     {
         $files = $this->getRequest()->files();
-        if(!$files) {
+
+        if (! $files) {
             return;
         }
 
-        foreach($files as $name => $set){
-            switch($name){
-            case 'photo':
-            case 'video':
-            case 'audio':
-                break;
+        foreach ($files as $name => $set) {
+            switch ($name) {
+                case 'photo':
+                case 'video':
+                case 'audio':
+                    break;
 
-            default:
-                continue 2;
+                default:
+                    continue 2;
             }
 
-            if(is_array($set['error'])) {
-                foreach(array_keys($set['error']) as $key){
+            if (is_array($set['error'])) {
+                foreach (array_keys($set['error']) as $key) {
                     $this->_storeMedia(
                         $name,
-                        array(
-                        'error' => $set['error'][$key],
-                        'name' => $set['name'][$key],
-                        'tmp_name' => $set['tmp_name'][$key],
-                        'size' => $set['size'][$key],
-                        )
+                        [
+                            'error' => $set['error'][$key],
+                            'name' => $set['name'][$key],
+                            'tmp_name' => $set['tmp_name'][$key],
+                            'size' => $set['size'][$key],
+                        ]
                     );
                 }
+
                 continue;
             }
 
@@ -149,7 +153,7 @@ class FormPost extends Post
      * Store one media item from the post locally
      *
      * @param string $name The property name of the media item.
-     * @param mixed  $file The relevant parameters from $_FILE.
+     * @param mixed $file The relevant parameters from $_FILE.
      *
      * @return void
      *
@@ -158,29 +162,33 @@ class FormPost extends Post
      *
      * @SuppressWarnings(PHPMD.UndefinedVariable)
      */
-    private function _storeMedia(string $name, $file)
+    private function _storeMedia(string $name, mixed $file): void
     {
-        static $counters = array(
-        'photo' => 1,
-        'video' => 1,
-        'audio' => 1,
-        );
+        static $counters = [
+            'photo' => 1,
+            'video' => 1,
+            'audio' => 1,
+        ];
 
         static $media_folder_made = false;
 
         $front_matter = $this->getFrontMatter();
 
-        if(UPLOAD_ERR_OK != $file['error']) {
+        if ($file['error'] != UPLOAD_ERR_OK) {
             return;
         }
 
-        if(!is_uploaded_file($file['tmp_name'])) {
+        if (! is_uploaded_file($file['tmp_name'])) {
             return;
         }
 
-        if(!$media_folder_made && !mkdir($this->getPost()->getContentPath() . $this->getPost()->getContentId() . '/media/', 0755, true)) {
+        if (
+            ! $media_folder_made
+            && ! mkdir($this->getPost()->getContentPath() . $this->getPost()->getContentId() . '/media/', 0755, true)
+        ) {
             return;
         }
+
         $media_folder_made = true;
 
         $destination_file = $name . $counters[$name]++ . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -193,17 +201,17 @@ class FormPost extends Post
 
     /**
      * Store the post front matter and content into a post record on disk
-     *
-     * @return void
      */
-    protected function _storePost()
+    protected function _storePost(): void
     {
         $content = $this->getRequest()->post('content');
-        if(is_null($content)) {
+
+        if (is_null($content)) {
             $content = '';
         }
+
         $this->setPostContent($content);
+
         parent::_storePost();
     }
-
 }
