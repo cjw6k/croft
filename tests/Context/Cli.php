@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Context;
+
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Croft\From;
@@ -11,16 +13,15 @@ use function PHPUnit\Framework\assertNotEmpty;
 use function PHPUnit\Framework\assertStringContainsString;
 use function PHPUnit\Framework\assertTrue;
 
-require_once From::TESTS___FIXTURES->dir() . 'bootstrap.php';
 require_once From::VENDOR->dir() . 'phpunit/phpunit/src/Framework/Assert/Functions.php';
 
 /**
  * Defines application features from the specific context.
  */
-class CLIContext implements Context, SnippetAcceptingContext
+class Cli implements Context, SnippetAcceptingContext
 {
-    private $_cli_output = null;
-    private $_cli_status = null;
+    private $cliOutput = null;
+    private $cliStatus = null;
 
     /** @BeforeScenario @make_config */
     public function makeEmptyConfig(): void
@@ -32,8 +33,8 @@ class CLIContext implements Context, SnippetAcceptingContext
     /** @AfterScenario */
     public function resetCLIOutput(): void
     {
-        $this->_cli_output = null;
-        $this->_cli_status = null;
+        $this->cliOutput = null;
+        $this->cliStatus = null;
     }
 
     /** @AfterScenario @cleanup_config */
@@ -61,32 +62,32 @@ class CLIContext implements Context, SnippetAcceptingContext
     /** @When I run the setup script with no arguments */
     public function iRunTheSetupScriptWithNoArguments(): void
     {
-        exec('php ' . From::___->dir() . 'bin/setup.php', $this->_cli_output, $this->_cli_status);
+        exec('php ' . From::___->dir() . 'bin/setup.php', $this->cliOutput, $this->cliStatus);
     }
 
     /** @When I run the setup script with arguments :arg1 */
     public function iRunTheSetupScriptWithArguments($arg1): void
     {
-        exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1, $this->_cli_output, $this->_cli_status);
+        exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1, $this->cliOutput, $this->cliStatus);
     }
 
     /** @When I run the setup script with user :arg1 and URL :arg2 */
     public function iRunTheSetupScriptWithUserAndUrl($arg1, $arg2): void
     {
-        exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1 . ' ' . $arg2, $this->_cli_output, $this->_cli_status);
+        exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1 . ' ' . $arg2, $this->cliOutput, $this->cliStatus);
     }
 
     /** @Then I should see :arg1 */
     public function iShouldSee($arg1): void
     {
-        assertNotEmpty($this->_cli_output);
-        assertStringContainsString($arg1, implode(PHP_EOL, $this->_cli_output));
+        assertNotEmpty($this->cliOutput);
+        assertStringContainsString($arg1, implode(PHP_EOL, $this->cliOutput));
     }
 
     /** @Then the exit status should be :arg1 */
     public function theExitStatusShouldBe($arg1): void
     {
-        assertEquals($arg1, $this->_cli_status);
+        assertEquals($arg1, $this->cliStatus);
     }
 
     /** @Then the config file should have key :arg1 with value :arg2 */
@@ -100,13 +101,13 @@ class CLIContext implements Context, SnippetAcceptingContext
     /** @Then I should see a temporary password */
     public function iShouldSeeATemporaryPassword(): void
     {
-        assertStringContainsString("Your temporary password is: ", implode(PHP_EOL, $this->_cli_output));
+        assertStringContainsString("Your temporary password is: ", implode(PHP_EOL, $this->cliOutput));
     }
 
     /** @Then the config file should contain the password hash */
     public function theConfigFileShouldContainThePasswordHash(): void
     {
-        assertEquals(1, preg_match('/^Your temporary password is: (.*)/m', implode(PHP_EOL, $this->_cli_output), $matches));
+        assertEquals(1, preg_match('/^Your temporary password is: (.*)/m', implode(PHP_EOL, $this->cliOutput), $matches));
         $config = yaml_parse_file(From::___->dir() . 'config.yml');
         assertArrayHasKey('password', $config);
         assertTrue(password_verify($matches[1], $config['password']));
