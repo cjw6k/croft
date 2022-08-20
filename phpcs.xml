@@ -16,6 +16,7 @@
         <exclude name="Generic.Files.LineLength.TooLong"/>
         <exclude name="SlevomatCodingStandard.Files.LineLength.LineTooLong"/>
         <exclude name="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion.DisallowedConstructorPropertyPromotion"/>
+        <exclude name="Generic.Formatting.SpaceBeforeCast.NoSpace"/>
     </rule>
 
     <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse">

@@ -127,22 +127,26 @@ class FormPost extends Post
             }
 
             if (is_array($set['error'])) {
-                foreach (array_keys($set['error']) as $key) {
-                    $this->storeMedia(
-                        $name,
-                        [
-                            'error' => $set['error'][$key],
-                            'name' => $set['name'][$key],
-                            'tmp_name' => $set['tmp_name'][$key],
-                            'size' => $set['size'][$key],
-                        ]
-                    );
-                }
-
+                $this->embeddedMediaHelper($name, $set);
                 continue;
             }
 
             $this->storeMedia($name, $set);
+        }
+    }
+
+    private function embeddedMediaHelper(string $name, mixed $set): void
+    {
+        foreach (array_keys($set['error']) as $key) {
+            $this->storeMedia(
+                $name,
+                [
+                    'error' => $set['error'][$key],
+                    'name' => $set['name'][$key],
+                    'tmp_name' => $set['tmp_name'][$key],
+                    'size' => $set['size'][$key],
+                ]
+            );
         }
     }
 
@@ -169,8 +173,6 @@ class FormPost extends Post
 
         static $media_folder_made = false;
 
-        $front_matter = $this->getFrontMatter();
-
         if ($file['error'] != UPLOAD_ERR_OK) {
             return;
         }
@@ -188,17 +190,26 @@ class FormPost extends Post
 
         $media_folder_made = true;
 
-        $destination_file = $name . $counters[$name] . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+        $this->storeMediaHelper($name, $counters[$name], $file);
+
         $counters[$name]++;
+    }
+
+    /** @param mixed $file The relevant parameters from $_FILE. */
+    private function storeMediaHelper(string $name, string $counterName, mixed $file): void
+    {
+        $destination_file = $name . $counterName . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+
         move_uploaded_file(
             $file['tmp_name'],
             $this->getPost()->getContentPath() . $this->getPost()->getContentId()
-                . '/media/' . $destination_file
+            . '/media/' . $destination_file
         );
 
-        $front_matter['item']['properties'][$name][] = $this->getPost()->getUid() . 'media/' . $destination_file;
+        $frontMatter = $this->getFrontMatter();
+        $frontMatter['item']['properties'][$name][] = $this->getPost()->getUid() . 'media/' . $destination_file;
 
-        $this->setFrontMatter($front_matter);
+        $this->setFrontMatter($frontMatter);
     }
 
     /**
