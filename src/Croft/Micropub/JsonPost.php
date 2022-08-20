@@ -34,7 +34,7 @@ class JsonPost extends Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest(): DateTime
+    protected function getPublicationDateFromRequest(): DateTime
     {
         $published = null;
 
@@ -42,13 +42,13 @@ class JsonPost extends Post
             $published = $this->getMf2()->properties->published[0];
         }
 
-        return $this->_getPublicationDate($published);
+        return $this->getPublicationDate($published);
     }
 
     /**
      * Build the post record front matter from POST parameters
      */
-    protected function _setFrontMatter(): void
+    protected function setFrontMatter(): void
     {
         $this->setPostType($this->getMf2()->type[0] ?? 'h-entry');
 
@@ -60,18 +60,18 @@ class JsonPost extends Post
 
         $this->setPostSlug($post_slug);
 
-        parent::_setFrontMatter();
+        parent::setFrontMatter();
     }
 
     /**
      * Capture optional front matter properties from the JSON
      */
-    protected function _setFrontMatterProperties(): void
+    protected function setFrontMatterProperties(): void
     {
         $front_matter = $this->getFrontMatter();
 
         foreach ($this->getMf2()->properties as $key => $set) {
-            if ($this->_reservedPropertyKey($key)) {
+            if ($this->reservedPropertyKey($key)) {
                 continue;
             }
 
@@ -88,7 +88,7 @@ class JsonPost extends Post
     /**
      * Store the post front matter and content into a post record on disk_free_space
      */
-    protected function _storePost(): void
+    protected function storePost(): void
     {
         $front_matter = $this->getFrontMatter();
         $content = $this->getMf2()->properties->content[0];
@@ -107,6 +107,6 @@ class JsonPost extends Post
         $this->setFrontMatter($front_matter);
         $this->setPostContent($content);
 
-        parent::_storePost();
+        parent::storePost();
     }
 }

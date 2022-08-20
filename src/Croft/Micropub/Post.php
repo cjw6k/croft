@@ -47,8 +47,8 @@ class Post
             return;
         }
 
-        $this->_setFrontMatter();
-        $this->_storePost();
+        $this->setFrontMatter();
+        $this->storePost();
 
         $this->getResponse()->setCode(201);
         throw new Redirect($this->getPost()->getUid());
@@ -63,7 +63,7 @@ class Post
     private function _allocate(): bool
     {
         return $this->getPost()->allocate(
-            $this->_getPublicationDateFromRequest()
+            $this->getPublicationDateFromRequest()
         );
     }
 
@@ -74,9 +74,9 @@ class Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest(): DateTime
+    protected function getPublicationDateFromRequest(): DateTime
     {
-        return $this->_getPublicationDate();
+        return $this->getPublicationDate();
     }
 
     /**
@@ -86,7 +86,7 @@ class Post
      *
      * @return DateTime The publication time.
      */
-    protected function _getPublicationDate(?string $published = null): DateTime
+    protected function getPublicationDate(?string $published = null): DateTime
     {
         $dt_published = new DateTime(is_null($published) ? 'now' : $published);
         $this->setPublished($dt_published);
@@ -97,7 +97,7 @@ class Post
     /**
      * Build the post record front matter
      */
-    protected function _setFrontMatter(): void
+    protected function setFrontMatter(): void
     {
         $front_matter = [
             'client_id' => $this->getClientId(),
@@ -123,7 +123,7 @@ class Post
 
         $this->setFrontMatter($front_matter);
 
-        $this->_setFrontMatterProperties();
+        $this->setFrontMatterProperties();
     }
 
     /**
@@ -136,7 +136,7 @@ class Post
      * @return bool True If the key is reserved.
  * False If the key is not reserved.
      */
-    protected function _reservedPropertyKey(string $key): bool
+    protected function reservedPropertyKey(string $key): bool
     {
         switch ($key) {
             case 'access_token':
@@ -153,7 +153,7 @@ class Post
     /**
      * Store the post front matter and content into a post record on disk
      */
-    protected function _storePost(): void
+    protected function storePost(): void
     {
         $this->getPost()->store($this->getFrontMatter(), $this->getPostContent());
     }

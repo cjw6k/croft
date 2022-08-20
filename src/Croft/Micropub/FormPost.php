@@ -31,20 +31,20 @@ class FormPost extends Post
      *
      * @return DateTime The publication date.
      */
-    protected function _getPublicationDateFromRequest(): DateTime
+    protected function getPublicationDateFromRequest(): DateTime
     {
-        return $this->_getPublicationDate($this->getRequest()->post('published'));
+        return $this->getPublicationDate($this->getRequest()->post('published'));
     }
 
     /**
      * Build the post record front matter from POST parameters
      */
-    protected function _setFrontMatter(): void
+    protected function setFrontMatter(): void
     {
         $this->setPostType('h-' . ($this->getRequest()->post('h') ?: 'entry'));
         $this->setPostSlug($this->getRequest()->post('slug'));
 
-        parent::_setFrontMatter();
+        parent::setFrontMatter();
 
         $this->_embeddedMedia();
     }
@@ -57,7 +57,7 @@ class FormPost extends Post
         $front_matter = $this->getFrontMatter();
 
         foreach ($this->getRequest()->post() as $key => $value) {
-            if ($this->_reservedPropertyKey($key)) {
+            if ($this->reservedPropertyKey($key)) {
                 continue;
             }
 
@@ -202,7 +202,7 @@ class FormPost extends Post
     /**
      * Store the post front matter and content into a post record on disk
      */
-    protected function _storePost(): void
+    protected function storePost(): void
     {
         $content = $this->getRequest()->post('content');
 
@@ -212,6 +212,6 @@ class FormPost extends Post
 
         $this->setPostContent($content);
 
-        parent::_storePost();
+        parent::storePost();
     }
 }
