@@ -1,29 +1,37 @@
 <?xml version="1.0"?>
 <psalm
-    totallyTyped="false"
     errorLevel="5"
-    resolveFromConfigFile="false"
-    findUnusedVariablesAndParams="true"
-    ensureArrayStringOffsetsExist="true"
-    skipChecksOnUnresolvableIncludes="true"
+    resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
 	<projectFiles>
-		<directory name="source" />
-		<directory name="public" />
+
 		<directory name="bin" />
+		<directory name="lib" />
+		<directory name="public" />
+		<directory name="src" />
 		<directory name="templates" />
+
 		<ignoreFiles>
 			<directory name="vendor" />
 		</ignoreFiles>
+
 	</projectFiles>
+
+	<!--
+Invalid Scope: IIRC template files are "included" code; their use of scope IS VALID AT RUNTIME, but I may have seen some
+	evidence of a6a/coding-standards changing include to require.
+	-->
 	<issueHandlers>
+
 		<InvalidScope>
-			<errorLevel type="suppress">
+			<errorLevel type="info">
 				<directory name="templates" />
 			</errorLevel>
 		</InvalidScope>
+
 	</issueHandlers>
+
 </psalm>
