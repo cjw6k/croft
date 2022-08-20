@@ -22,6 +22,7 @@
 		"a6a/aether": "*@stable",
 		"a6a/fromdir": "dev-main",
 		"cjw6k/chapeau": "^1.1",
+		"filp/whoops": "^2.14",
 		"league/climate": "^3.8",
 		"level-2/dice": "^4.0",
 		"nikic/fast-route": "*@stable",
