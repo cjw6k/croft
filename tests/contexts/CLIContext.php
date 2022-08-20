@@ -3,6 +3,7 @@
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Croft\From;
+
 use function PHPUnit\Framework\assertArrayHasKey;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFileDoesNotExist;
@@ -33,7 +34,6 @@ class CLIContext implements Context, SnippetAcceptingContext
     {
         $this->_cli_output = null;
         $this->_cli_status = null;
-
     }
 
     /** @AfterScenario @cleanup_config */
