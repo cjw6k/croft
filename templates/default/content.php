@@ -1,4 +1,9 @@
 <?php
+/**
+ * @var Croft $this
+ */
+
+use Croft\Croft;
 
 $mf2ish = $this->getPost()->getFrontMatter();
 
@@ -7,7 +12,7 @@ if (isset($mf2ish['item']['properties']['visibility'][0])) {
         case 'private':
         case 'draft':
             if (! $this->getSession()->isLoggedIn()) {
-                $this->_sling404();
+                $this->sling404();
 
                 return;
             }

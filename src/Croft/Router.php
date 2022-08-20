@@ -111,8 +111,8 @@ class Router implements RouterA6a
     {
         // trigger_error(print_r(array($this->getRequest()->getPath(), $matched_route), true));
         return match ($matched_route[0]) {
-            Dispatcher::METHOD_NOT_ALLOWED => [null, '_sling405', ['use_vars' => true], $matched_route[1]],
-            Dispatcher::NOT_FOUND => [null, '_sling404', null, null],
+            Dispatcher::METHOD_NOT_ALLOWED => [null, 'sling405', ['use_vars' => true], $matched_route[1]],
+            Dispatcher::NOT_FOUND => [null, 'sling404', null, null],
             Dispatcher::FOUND => array_merge($matched_route[1], [$matched_route[2]])
         };
     }
