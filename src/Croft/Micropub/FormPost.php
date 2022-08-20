@@ -39,12 +39,12 @@ class FormPost extends Post
     /**
      * Build the post record front matter from POST parameters
      */
-    protected function setFrontMatter(): void
+    protected function buildPostFrontMatter(): void
     {
         $this->setPostType('h-' . ($this->getRequest()->post('h') ?: 'entry'));
         $this->setPostSlug($this->getRequest()->post('slug'));
 
-        parent::setFrontMatter();
+        parent::buildPostFrontMatter();
 
         $this->_embeddedMedia();
     }

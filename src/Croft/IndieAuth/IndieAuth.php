@@ -83,11 +83,11 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
     /**
      * Handle a request
      *
-     * @return string|void The template to render, or void to skip rendering.
+     * @return string|null The template to render, or void to skip rendering.
      *
      * @throws Redirect A HTTP redirect is required.
      */
-    public function handleRequest(): ?string
+    public function handleRequest(): string|null
     {
         if ($this->getSession()->isLoggedIn()) {
             return $this->_loggedInRequest();
@@ -102,7 +102,7 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
 
             echo json_encode($authorization->getResponseBody());
 
-            return;
+            return null;
         }
 
         if (! empty($this->getRequest()->getQuery())) {

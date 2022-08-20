@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <psalm
-    errorLevel="5"
+    errorLevel="2"
     resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
@@ -21,13 +21,12 @@
 	</projectFiles>
 
 	<!--
-Invalid Scope: IIRC template files are "included" code; their use of scope IS VALID AT RUNTIME, but I may have seen some
-	evidence of a6a/coding-standards changing include to require.
+Invalid Scope: IIRC template files are "included" code; it was quick and easy though! :/
 	-->
 	<issueHandlers>
 
 		<InvalidScope>
-			<errorLevel type="info">
+			<errorLevel type="suppress">
 				<directory name="templates" />
 			</errorLevel>
 		</InvalidScope>

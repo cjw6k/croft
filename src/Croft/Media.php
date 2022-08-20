@@ -51,7 +51,7 @@ class Media implements MediaInterface, Routable
      *
      * @param array<string> $vars The hash of path components in the content request.
      *
-     * @return array<string>|void The template to render, with alternate, or void to skip rendering.
+     * @return array<string>|null The template to render, with alternate, or null to skip rendering.
      */
     public function sling(array $vars): ?array
     {
@@ -67,5 +67,7 @@ class Media implements MediaInterface, Routable
 
         $this->getResponse()->mergeHeaders('Content-Type: ' . mime_content_type($path));
         readfile($path);
+
+        return null;
     }
 }

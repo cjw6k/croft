@@ -48,7 +48,7 @@ class JsonPost extends Post
     /**
      * Build the post record front matter from POST parameters
      */
-    protected function setFrontMatter(): void
+    protected function buildPostFrontMatter(): void
     {
         $this->setPostType($this->getMf2()->type[0] ?? 'h-entry');
 
@@ -60,7 +60,7 @@ class JsonPost extends Post
 
         $this->setPostSlug($post_slug);
 
-        parent::setFrontMatter();
+        parent::buildPostFrontMatter();
     }
 
     /**

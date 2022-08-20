@@ -13,6 +13,10 @@ if ($this->getSession()->hasErrors()) {
     <?php
 
     foreach ($this->getSession()->getErrors() as $error) {
+        if (! is_string($error)) {
+            continue;
+        }
+
         ?>
         <li><?= $error ?></li>
         <?php
@@ -23,8 +27,14 @@ if ($this->getSession()->hasErrors()) {
     <?php
 }
 
+/** @var string|null|false $url */
+$url = filter_input(INPUT_SERVER, 'REQUEST_URI');
+if (! is_string($url)) {
+    $url = 'SELF';
+}
+
 ?>
-<form action="<?= filter_input(INPUT_SERVER, 'REQUEST_URI') ?>" method="POST">
+<form action="<?= $url ?>" method="POST">
     Username <input type="text" name="username">
     Password <input type="password" name="userkey">
     <button type="submit">Log In</button>

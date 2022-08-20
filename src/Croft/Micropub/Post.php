@@ -47,7 +47,7 @@ class Post
             return;
         }
 
-        $this->setFrontMatter();
+        $this->buildPostFrontMatter();
         $this->storePost();
 
         $this->getResponse()->setCode(201);
@@ -97,7 +97,7 @@ class Post
     /**
      * Build the post record front matter
      */
-    protected function setFrontMatter(): void
+    protected function buildPostFrontMatter(): void
     {
         $front_matter = [
             'client_id' => $this->getClientId(),

@@ -110,15 +110,10 @@ class Router implements RouterInterface
     private function _processRoute(mixed $matched_route): mixed
     {
         // trigger_error(print_r(array($this->getRequest()->getPath(), $matched_route), true));
-        switch ($matched_route[0]) {
-            case Dispatcher::METHOD_NOT_ALLOWED:
-                return [null, '_sling405', ['use_vars' => true], $matched_route[1]];
-
-            case Dispatcher::NOT_FOUND:
-                return [null, '_sling404', null, null];
-
-            case Dispatcher::FOUND:
-                return array_merge($matched_route[1], [$matched_route[2]]);
-        }
+        return match ($matched_route[0]) {
+            Dispatcher::METHOD_NOT_ALLOWED => [null, '_sling405', ['use_vars' => true], $matched_route[1]],
+            Dispatcher::NOT_FOUND =>  [null, '_sling404', null, null],
+            Dispatcher::FOUND => array_merge($matched_route[1], [$matched_route[2]])
+        };
     }
 }

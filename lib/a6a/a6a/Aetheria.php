@@ -27,7 +27,6 @@ use League\CLImate\CLImate;
 
 use function is_string;
 use function explode;
-use function get_class;
 use function array_pop;
 use function is_null;
 use function is_array;

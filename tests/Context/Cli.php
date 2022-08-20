@@ -12,6 +12,17 @@ use function PHPUnit\Framework\assertFileDoesNotExist;
 use function PHPUnit\Framework\assertNotEmpty;
 use function PHPUnit\Framework\assertStringContainsString;
 use function PHPUnit\Framework\assertTrue;
+use function yaml_emit_file;
+use function file_exists;
+use function unlink;
+use function exec;
+use function implode;
+
+use const PHP_EOL;
+
+use function yaml_parse_file;
+use function preg_match;
+use function password_verify;
 
 require_once From::VENDOR->dir() . 'phpunit/phpunit/src/Framework/Assert/Functions.php';
 

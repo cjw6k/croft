@@ -100,11 +100,6 @@ class Setup implements SetupInterface
         $this->setUrl($this->getUrl() . '/');
     }
 
-    /**
-     * Configure WebFoo using parameters provided on the command line
-     *
-     * @return int The return code of the setup.php script.
-     */
     public function configure(CLImate $cli): int
     {
         $password = substr(base64_encode(random_bytes(12)), 0, 16);
