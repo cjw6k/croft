@@ -5,7 +5,7 @@ use Croft\From;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-(function (Croft $croft) {
+(static function (Croft $croft): void {
     $croft->pushCrops();
 })(
     (require From::BOOTSTRAP->dir() . 'ioc.php')

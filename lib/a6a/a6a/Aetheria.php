@@ -37,9 +37,7 @@ class Aetheria
 {
     use Aether;
 
-    /**
-     * @param array<Extension>|null $extensions Optional extensions.
-     */
+    /** @param array<Extension>|null $extensions Optional extensions. */
     public function __construct(
         Async $async,
         Config $config,

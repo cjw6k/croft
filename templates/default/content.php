@@ -1,7 +1,6 @@
 <?php
-/**
- * @var Croft $this
- */
+
+/** @var Croft $this */
 
 use Croft\Croft;
 
