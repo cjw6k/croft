@@ -3,7 +3,7 @@
 use Croft\Croft;
 use Croft\From;
 
-require From::VENDOR->dir() . 'autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 (function (Croft $croft) {
     $croft->pushCrops();
