@@ -28,4 +28,8 @@ use League\CLImate\CLImate;
 
 class Croft extends Aetheria
 {
+    public function pushCrops(): void
+    {
+        $this->some();
+    }
 }

@@ -38,9 +38,7 @@ class Aetheria
     use Aether;
 
     /**
-     * Construct the web stuff slinging thinger
-     *
-     * @param array<Extension>|null $extensions Optional extensions to WebFoo.
+     * @param array<Extension>|null $extensions Optional extensions.
      */
     public function __construct(
         Async $async,
@@ -87,9 +85,8 @@ class Aetheria
     /**
      * Provide core functionality with the provided services
      *
-     * @param string|int $service_name The name to use when registering this service
- * with webfoo. If not a string, will use the
- * class name as the name.
+     * @param string|int $service_name The name to use when registering this service with webfoo. If not a string, will
+     *                                 use the class name as the name.
      * @param Service $service The service to register.
      */
     private function service(string|int $service_name, Service $service): void
@@ -244,10 +241,7 @@ class Aetheria
         }
     }
 
-    /**
-     * Sling some web stuff with this thinger.
-     */
-    public function sling(): void
+    public function some(): void
     {
         $response = $this->getResponse();
 
