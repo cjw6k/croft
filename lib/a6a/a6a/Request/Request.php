@@ -2,12 +2,12 @@
 
 namespace a6a\a6a\Request;
 
-use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Service\Service;
 
 /**
  * The Request service interface
  */
-interface RequestInterface extends ServiceInterface
+interface Request extends Service
 {
     /**
      * Parse the request URI

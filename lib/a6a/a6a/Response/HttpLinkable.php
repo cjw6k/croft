@@ -7,12 +7,12 @@ namespace a6a\a6a\Response;
  *
  * An HTTPLinkable class has an opportunity to add HTTP Link headers.
  */
-interface HTTPLinkable
+interface HttpLinkable
 {
     /**
      * Provide HTTP link header configuration to the Response\HTTP
      *
      * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks(): array;
+    public function getHttpLinks(): array;
 }

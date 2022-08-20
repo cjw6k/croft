@@ -2,11 +2,11 @@
 
 namespace Croft;
 
-use a6a\a6a\Exception\YagniException;
+use a6a\a6a\Exception\Yagni;
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config;
 use a6a\a6a\Storage\Segment;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage as StorageA6a;
 use a6a\a6a\Storage\Store;
 
 use function file_exists;
@@ -19,15 +19,14 @@ use function defined;
 use function fopen;
 use function flock;
 use function fclose;
+use function unlink;
 
 use const LOCK_UN;
-
-use function unlink;
 
 /**
  * The Storage service loads and stores data.
  */
-class Storage implements StorageInterface
+class Storage implements StorageA6a
 {
     use Aether;
 
@@ -41,9 +40,9 @@ class Storage implements StorageInterface
     /**
      * Store a local reference to the active configuration
      *
-     * @param ConfigInterface $config The active configuration.
+     * @param Config $config The active configuration.
      */
-    public function __construct(ConfigInterface $config)
+    public function __construct(Config $config)
     {
         $this->setConfig($config);
     }
@@ -89,7 +88,7 @@ class Storage implements StorageInterface
             return false;
         }
 
-        $path = $this->_getPathFromSegment($segment);
+        $path = $this->getPathFromSegment($segment);
 
         if (empty($path)) {
             // throw exception
@@ -112,7 +111,7 @@ class Storage implements StorageInterface
     public function store(int $segment, string $prefix, string $index, mixed $data): void
     {
         // WARNING: will overwrite stored data without any notice
-        $path = $this->_getPathFromSegment($segment);
+        $path = $this->getPathFromSegment($segment);
 
         if (empty($path)) {
             // throw exception
@@ -146,7 +145,7 @@ class Storage implements StorageInterface
             return null;
         }
 
-        $path = $this->_getPathFromSegment($segment);
+        $path = $this->getPathFromSegment($segment);
 
         if (empty($path)) {
             // throw exception
@@ -166,16 +165,16 @@ class Storage implements StorageInterface
      *
      * @return string|null The storage path on disk, or null on failure.
      */
-    private function _getPathFromSegment(int $segment): ?string
+    private function getPathFromSegment(int $segment): ?string
     {
         switch ($segment) {
             case Segment::SYSTEM:
                 // $path = $this->getConfig()->getStorage()['system'];
-                return defined('VAR_ROOT') ? VAR_ROOT : null;
+                return defined('VAR_ROOT') ? From::VAR->dir() : null;
 
             case Segment::CONTENT:
                 // $path = $this->getConfig()->getStorage()['content'];
-                return defined('CONTENT_ROOT') ? CONTENT_ROOT : null;
+                return defined('CONTENT_ROOT') ? From::CONTENT->dir() : null;
 
             default:
                 // throw exception
@@ -195,7 +194,7 @@ class Storage implements StorageInterface
      */
     public function lock(int $segment, string $prefix, string $index, int $operation): mixed
     {
-        $path = $this->_getPathFromSegment($segment);
+        $path = $this->getPathFromSegment($segment);
 
         if (empty($path)) {
             // throw exception
@@ -244,10 +243,10 @@ class Storage implements StorageInterface
      */
     public function purge(int $segment, string $prefix, string $index): void
     {
-        $path = $this->_getPathFromSegment($segment);
+        $path = $this->getPathFromSegment($segment);
 
         if (empty($path)) {
-            throw new YagniException();
+            throw new Yagni();
         }
 
         unlink($path . $prefix . '/' . $index);

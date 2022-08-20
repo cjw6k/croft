@@ -1,10 +1,10 @@
 <?php
 
-use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Session\Session as SessionA6a;
 use Croft\Session;
 
 return [
-    SessionInterface::class => [
+    SessionA6a::class => [
         'instanceOf' => Session::class,
     ],
 ];

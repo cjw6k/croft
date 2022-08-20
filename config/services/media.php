@@ -1,17 +1,18 @@
 <?php
 
-use a6a\a6a\Media\MediaInterface;
+use a6a\a6a\Media\Media as MediaA6a;
 use Croft\Media;
-use a6a\a6a\Response\ResponseInterface;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Response\Response as ResponseA6a;
+use a6a\a6a\Storage\Storage as StorageA6a;
+use Croft\Response;
 use Croft\Storage;
 
 return [
-    MediaInterface::class => [
+    MediaA6a::class => [
         'instanceOf' => Media::class,
         'substitutions' => [
-            ResponseInterface::class => ResponseInterface::class,
-            StorageInterface::class => Storage::class,
+            ResponseA6a::class => Response::class,
+            StorageA6a::class => Storage::class,
         ],
     ],
 ];

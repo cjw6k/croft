@@ -3,8 +3,8 @@
 namespace Croft\IndieAuth;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Request\Request;
 
 use function explode;
 use function rtrim;
@@ -23,10 +23,10 @@ class Validation
     /**
      * Store a local reference to the current request.
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request)
+    public function __construct(Config $config, Request $request)
     {
         $this->setRequest($request);
         $this->setConfig($config);
@@ -37,7 +37,7 @@ class Validation
      */
     public function authenticationRequest(): void
     {
-        $this->_authenticationRequest(new URL($this->getConfig()));
+        $this->authenticationRequestHelper(new URL($this->getConfig()));
     }
 
     /**
@@ -45,35 +45,35 @@ class Validation
      *
      * @param URL $url Helper for validating URLs.
      */
-    private function _authenticationRequest(URL $url): void
+    private function authenticationRequestHelper(URL $url): void
     {
         $this->setURL($url);
 
         $this->isValid(false);
 
-        $this->_setupAuthenticationRequest();
+        $this->setupAuthenticationRequest();
 
-        if (! $this->_responseType()) {
+        if (! $this->responseType()) {
             return;
         }
 
-        if (! $this->_clientId()) {
+        if (! $this->clientId()) {
             return;
         }
 
-        if (! $this->_userProfileURL()) {
+        if (! $this->userProfileUrlHelper()) {
             return;
         }
 
-        if (! $this->_redirectUri()) {
+        if (! $this->redirectUri()) {
             return;
         }
 
-        if (! $this->_clientMatchesRedirect()) {
+        if (! $this->clientMatchesRedirect()) {
             return;
         }
 
-        if (! $this->_state()) {
+        if (! $this->state()) {
             return;
         }
 
@@ -83,7 +83,7 @@ class Validation
     /**
      * Collect the request parameters related to the authentication request
      */
-    private function _setupAuthenticationRequest(): void
+    private function setupAuthenticationRequest(): void
     {
         $request = $this->getRequest();
         $this->setMe($request->get('me'));
@@ -114,7 +114,7 @@ class Validation
      * @return bool True The response_type is valid.
  * False The response_type is not valid.
      */
-    private function _responseType(): bool
+    private function responseType(): bool
     {
         if ($this->getResponseType() == 'id') {
             if ($this->getScopes() != ['identity']) {
@@ -133,7 +133,7 @@ class Validation
      * @return bool True The client_id is valid.
  * False The client_id is not valid.
      */
-    private function _clientId(): bool
+    private function clientId(): bool
     {
         if ($this->getClientId() == null) {
             $this->mergeErrors('missing required client_id parameter');
@@ -160,9 +160,9 @@ class Validation
      * Ensure the provided user profile URL (me) matches requirements of the spec
      *
      * @return bool True The me is valid.
- * False The me is not valid.
+     *              False The me is not valid.
      */
-    private function _userProfileURL(): bool
+    private function userProfileUrlHelper(): bool
     {
         if ($this->getMe() == null) {
             $this->mergeErrors('missing required user profile URL (me) parameter');
@@ -185,7 +185,7 @@ class Validation
      * @return bool True The redirect_uri is valid.
  * False The redirect_uri is not valid.
      */
-    private function _redirectUri(): bool
+    private function redirectUri(): bool
     {
         if ($this->getRedirectUri() == null) {
             $this->mergeErrors('missing required redirect_uri parameter');
@@ -208,7 +208,7 @@ class Validation
      * @return bool True If the parameters are compatible.
  * False If the parameters are not compatible.
      */
-    private function _clientMatchesRedirect(): bool
+    private function clientMatchesRedirect(): bool
     {
         $client_id_parts = parse_url(strtolower($this->getClientId()));
         $redirect_uri_parts = parse_url(strtolower($this->getRedirectUri()));
@@ -270,7 +270,7 @@ class Validation
      * @return bool True The state parameter is present.
  * False The state parameter is missing.
      */
-    private function _state(): bool
+    private function state(): bool
     {
         if ($this->getRequest()->get('state') == null) {
             $this->mergeErrors('missing required state parameter');
@@ -289,7 +289,7 @@ class Validation
      * @return bool True If the user profile URL is valid.
  * False If the user profile URL is not valid.
      */
-    public function userProfileURL(string $url): bool
+    public function userProfileUrl(string $url): bool
     {
         $this->setURL(new URL($this->getConfig()));
 

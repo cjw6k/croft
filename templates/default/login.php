@@ -27,8 +27,9 @@ if ($this->getSession()->hasErrors()) {
     <?php
 }
 
-/** @var string|null|false $url */
+/** @var string|false|null $url */
 $url = filter_input(INPUT_SERVER, 'REQUEST_URI');
+
 if (! is_string($url)) {
     $url = 'SELF';
 }

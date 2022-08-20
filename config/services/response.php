@@ -1,10 +1,10 @@
 <?php
 
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Response\Response as ResponseA6a;
 use Croft\Response;
 
 return [
-    ResponseInterface::class => [
+    ResponseA6a::class => [
         'instanceOf' => Response::class,
     ],
 ];

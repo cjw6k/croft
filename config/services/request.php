@@ -1,10 +1,10 @@
 <?php
 
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Request\Request as RequestA6a;
 use Croft\Request;
 
 return [
-    RequestInterface::class => [
+    RequestA6a::class => [
         'instanceOf' => Request::class,
     ],
 ];

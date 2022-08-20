@@ -23,41 +23,41 @@ final class Segment
      * The zero value is unused to avoid edge case behaviours that originate with the falsity of 0
      * in PHP.
      */
-    const UNUSED = 0;
+    public const UNUSED = 0;
 
     /**
      * Data which has a transient nature and may be lost without consequence.
      */
-    const RUNTIME = 10;
-    const TEMP = 20;
-    const CACHE = 30;
+    public const RUNTIME = 10;
+    public const TEMP = 20;
+    public const CACHE = 30;
 
     /**
      * Data which records various system state and may be lost with only minor inconvenience, e.g.
      * losing the value of an OAUTH bearer token.
      */
-    const SYSTEM = 50;
-    const LOG = 51;
+    public const SYSTEM = 50;
+    public const LOG = 51;
 
     /**
      * Data which is the original work of the end-user of the software system, is subject to
      * copyright, is appropriate for a version control system, and should be treated in a backup
      * strategy outside the current software.
      */
-    const CONTENT = 60;
-    const WWW = 70;
+    public const CONTENT = 60;
+    public const WWW = 70;
 
     /**
      * A
      */
-    const EXTENSION = 80;
+    public const EXTENSION = 80;
 
     /**
      * Cache the result of a reflection method
      *
      * @var array<string, mixed>|null
      */
-    private static ?array $_cache = null;
+    private static ?array $cache = null;
 
     /**
      * This private constructor prevents instantiation of the class, which has been declared final
@@ -65,6 +65,7 @@ final class Segment
      */
     private function __construct()
     {
+        // prevents direct class instantiation
     }
 
     /**
@@ -77,7 +78,7 @@ final class Segment
      */
     public static function hasSegment(string $segment): bool
     {
-        return array_key_exists($segment, self::_getConstants());
+        return array_key_exists($segment, self::getConstants());
     }
 
     /**
@@ -90,7 +91,7 @@ final class Segment
      */
     public static function hasValue(int $value): bool
     {
-        return in_array($value, array_values(self::_getConstants()));
+        return in_array($value, array_values(self::getConstants()));
     }
 
     /**
@@ -98,15 +99,15 @@ final class Segment
      *
      * @return array<string, mixed> The class contants.
      */
-    private static function _getConstants(): array
+    private static function getConstants(): array
     {
-        if (! is_null(self::$_cache)) {
-            return self::$_cache;
+        if (! is_null(self::$cache)) {
+            return self::$cache;
         }
 
         $reflection = new ReflectionClass(self::class);
-        self::$_cache = $reflection->getConstants();
+        self::$cache = $reflection->getConstants();
 
-        return self::$_cache;
+        return self::$cache;
     }
 }

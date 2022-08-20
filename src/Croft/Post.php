@@ -3,14 +3,14 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Post\PostInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Post\Post as PostA6a;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
 use a6a\a6a\Storage\Segment;
 use a6a\a6a\Storage\Storable;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use a6a\a6a\Storage\Store;
 use DateTime;
 
@@ -32,18 +32,18 @@ use const LOCK_EX;
 /**
  * The Post class is the data model for all lexical content in WebFoo
  */
-class Post implements PostInterface, Routable, Storable
+class Post implements PostA6a, Routable, Storable
 {
     use Aether;
 
     /**
      * Store a local reference to the active configuration
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param ResponseInterface $response The response.
-     * @param StorageInterface $storage The storage service.
+     * @param Config $config The active configuration.
+     * @param Response $response The response.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(ConfigInterface $config, ResponseInterface $response, StorageInterface $storage)
+    public function __construct(Config $config, Response $response, Storage $storage)
     {
         $this->setConfig($config);
         $this->setResponse($response);
@@ -118,14 +118,14 @@ class Post implements PostInterface, Routable, Storable
         $index = implode('/', $vars) . '/web.foo';
         $path = From::CONTENT->dir() . $index;
 
-        if (! $this->_hasStored($index)) {
+        if (! $this->hasStored($index)) {
             $this->getResponse()->setCode(404);
 
             return ['404.php', 'default.php'];
         }
 
         $this->setContentSource($path);
-        $this->_readStored($index);
+        $this->readStored($index);
 
         if ($this->isLoadError()) {
             // 500?
@@ -183,11 +183,11 @@ class Post implements PostInterface, Routable, Storable
     {
         $this->setPublished($dt_published);
 
-        if (! $this->_makeContentPath($dt_published->getTimestamp())) {
+        if (! $this->makeContentPath($dt_published->getTimestamp())) {
             return false;
         }
 
-        if (! $this->_takeNextPostId()) {
+        if (! $this->takeNextPostId()) {
             return false;
         }
 
@@ -204,7 +204,7 @@ class Post implements PostInterface, Routable, Storable
      * @return bool True If the path exists or has been created.
  * False If the path does not exist and could not be created.
      */
-    private function _makeContentPath(int $pub_ts): bool
+    private function makeContentPath(int $pub_ts): bool
     {
         $pub_dt = getdate($pub_ts);
 
@@ -225,8 +225,8 @@ class Post implements PostInterface, Routable, Storable
         }
 
         $this->setUrlPath(
-            $pub_dt['year'] . '/' . str_pad( (string)$pub_dt['mon'], 2, '0', STR_PAD_LEFT) . '/'
-            . str_pad( (string)$pub_dt['mday'], 2, '0', STR_PAD_LEFT) . '/'
+            $pub_dt['year'] . '/' . str_pad($pub_dt['mon'], 2, '0', STR_PAD_LEFT) . '/'
+            . str_pad($pub_dt['mday'], 2, '0', STR_PAD_LEFT) . '/'
         );
         $this->setContentPath(From::CONTENT->dir() . $this->getUrlPath());
 
@@ -266,7 +266,7 @@ class Post implements PostInterface, Routable, Storable
      * @return bool True If the claim on the next id succeeded.
  * False If the claim on the next id failed.
      */
-    private function _takeNextPostId(): bool
+    private function takeNextPostId(): bool
     {
         $storage = $this->getStorage();
 
@@ -296,7 +296,8 @@ class Post implements PostInterface, Routable, Storable
         }
 
         $this_day = yaml_parse($storage->load(Segment::SYSTEM, 'post', $this->getUrlPath() . 'thisday.yml'));
-        $this->setContentId($this_day['next_id']++);
+        $this->setContentId($this_day['next_id']);
+        $this_day['next_id']++;
         $storage->store(Segment::SYSTEM, 'post', $this->getUrlPath() . 'thisday.yml', yaml_emit($this_day));
 
         $storage->unlock($file_lock);
@@ -313,7 +314,7 @@ class Post implements PostInterface, Routable, Storable
     public function store(mixed $front_matter, string $content): void
     {
         $content = str_replace("\r\n", "\n", $content);
-        $this->_writeStored($this->getUrlPath() . $this->getContentId() . '/web.foo', [$front_matter, $content]);
+        $this->writeStored($this->getUrlPath() . $this->getContentId() . '/web.foo', [$front_matter, $content]);
     }
 
     /**
@@ -324,7 +325,7 @@ class Post implements PostInterface, Routable, Storable
      * @return bool True The index is set in storage.
  * False The index is not set in storage.
      */
-    private function _hasStored(string $index): bool
+    private function hasStored(string $index): bool
     {
         return $this->getStorage()->hasIndex(Segment::CONTENT, '', $index);
     }
@@ -336,7 +337,7 @@ class Post implements PostInterface, Routable, Storable
      *
      * @return mixed|null The data from storage or null if the index is not in use.
      */
-    private function _readStored(string $index): mixed
+    private function readStored(string $index): mixed
     {
         return $this->getStorage()->load(Segment::CONTENT, '', $index);
     }
@@ -347,7 +348,7 @@ class Post implements PostInterface, Routable, Storable
      * @param string $index The index to the data store.
      * @param mixed $data The data to store.
      */
-    private function _writeStored(string $index, mixed $data): void
+    private function writeStored(string $index, mixed $data): void
     {
         $this->getStorage()->store(Segment::CONTENT, '', $index, $data);
     }

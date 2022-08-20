@@ -1,15 +1,15 @@
 <?php
 
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Config\Config as ConfigA6a;
+use a6a\a6a\Storage\Storage as StorageA6a;
 use Croft\Config;
 use Croft\Storage;
 
 return [
-    StorageInterface::class => [
+    StorageA6a::class => [
         'instanceOf' => Storage::class,
         'substitutions' => [
-            ConfigInterface::class => Config::class,
+            ConfigA6a::class => Config::class,
         ],
     ],
 ];

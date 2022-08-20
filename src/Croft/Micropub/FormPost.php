@@ -7,17 +7,14 @@ use DateTime;
 use function is_array;
 use function array_merge;
 use function array_keys;
-
-use const UPLOAD_ERR_OK;
-
 use function is_uploaded_file;
 use function mkdir;
 use function pathinfo;
-
-use const PATHINFO_EXTENSION;
-
 use function move_uploaded_file;
 use function is_null;
+
+use const PATHINFO_EXTENSION;
+use const UPLOAD_ERR_OK;
 
 /**
  * The Micropub\Form class handles post creation for www-form-url-encoded and multipart/form-data
@@ -46,13 +43,13 @@ class FormPost extends Post
 
         parent::buildPostFrontMatter();
 
-        $this->_embeddedMedia();
+        $this->embeddedMedia();
     }
 
     /**
-     * Capture optional front matter properties from the POST parameters
+     * Capture optional frontPos matter properties from the POST parameters
      */
-    protected function _setFrontMatterProperties(): void
+    protected function setFrontMatterProperties(): void
     {
         $front_matter = $this->getFrontMatter();
 
@@ -61,7 +58,7 @@ class FormPost extends Post
                 continue;
             }
 
-            $this->_setFrontMatterProperty($front_matter, $key, $value);
+            $this->setFrontMatterProperty($front_matter, $key, $value);
         }
 
         $this->setFrontMatter($front_matter);
@@ -74,7 +71,7 @@ class FormPost extends Post
      * @param string $key The index provided in POST.
      * @param mixed $value The value of POST at the given index.
      */
-    protected function _setFrontMatterProperty(mixed &$front_matter, string $key, mixed $value): void
+    protected function setFrontMatterProperty(mixed &$front_matter, string $key, mixed $value): void
     {
         if (is_array($value)) {
             $array_is_empty = true;
@@ -110,7 +107,7 @@ class FormPost extends Post
     /**
      * Capture the embedded media in a post
      */
-    private function _embeddedMedia(): void
+    private function embeddedMedia(): void
     {
         $files = $this->getRequest()->files();
 
@@ -131,7 +128,7 @@ class FormPost extends Post
 
             if (is_array($set['error'])) {
                 foreach (array_keys($set['error']) as $key) {
-                    $this->_storeMedia(
+                    $this->storeMedia(
                         $name,
                         [
                             'error' => $set['error'][$key],
@@ -145,7 +142,7 @@ class FormPost extends Post
                 continue;
             }
 
-            $this->_storeMedia($name, $set);
+            $this->storeMedia($name, $set);
         }
     }
 
@@ -162,7 +159,7 @@ class FormPost extends Post
      *
      * @SuppressWarnings(PHPMD.UndefinedVariable)
      */
-    private function _storeMedia(string $name, mixed $file): void
+    private function storeMedia(string $name, mixed $file): void
     {
         static $counters = [
             'photo' => 1,
@@ -191,8 +188,13 @@ class FormPost extends Post
 
         $media_folder_made = true;
 
-        $destination_file = $name . $counters[$name]++ . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
-        move_uploaded_file($file['tmp_name'], $this->getPost()->getContentPath() . $this->getPost()->getContentId() . '/media/' . $destination_file);
+        $destination_file = $name . $counters[$name] . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+        $counters[$name]++;
+        move_uploaded_file(
+            $file['tmp_name'],
+            $this->getPost()->getContentPath() . $this->getPost()->getContentId()
+                . '/media/' . $destination_file
+        );
 
         $front_matter['item']['properties'][$name][] = $this->getPost()->getUid() . 'media/' . $destination_file;
 

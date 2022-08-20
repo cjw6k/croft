@@ -3,8 +3,8 @@
 namespace Croft\Micropub;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\Response;
 use Croft\From;
 
 use function preg_match;
@@ -27,10 +27,10 @@ class Query
     /**
      * Store a local reference to the current request.
      *
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
+     * @param Request $request The current request.
+     * @param Response $response The response.
      */
-    public function __construct(RequestInterface $request, ResponseInterface $response)
+    public function __construct(Request $request, Response $response)
     {
         $this->setRequest($request);
         $this->setResponse($response);
@@ -43,12 +43,12 @@ class Query
     {
         switch ($this->getRequest()->get('q')) {
             case 'config':
-                $this->_configQuery();
+                $this->configQuery();
 
                 return;
 
             case 'source':
-                $this->_sourceQuery();
+                $this->sourceQuery();
 
                 return;
         }
@@ -57,7 +57,7 @@ class Query
     /**
      * Respond to a configuration query
      */
-    private function _configQuery(): void
+    private function configQuery(): void
     {
         $this->setResponseBody(['syndicate-to' => [], 'media-endpoint' => '']);
     }
@@ -65,9 +65,9 @@ class Query
     /**
      * Respond to a source query
      */
-    private function _sourceQuery(): void
+    private function sourceQuery(): void
     {
-        if (! $this->_checkSourceQueryURLContent()) {
+        if (! $this->checkSourceQueryUrlContent()) {
             return;
         }
 
@@ -88,7 +88,7 @@ class Query
         $this->setFrontMatter(yaml_parse($yaml[1]));
         $this->setContent(trim(substr($this->getContent(), strlen($yaml[1]))));
 
-        $this->_fillSourceQueryResponseProperties();
+        $this->fillSourceQueryResponseProperties();
     }
 
     /**
@@ -97,7 +97,7 @@ class Query
      * @return bool True If the source query has a valid URL.
  * False If the source query does not have a valid URL.
      */
-    private function _checkSourceQueryURLContent(): bool
+    private function checkSourceQueryUrlContent(): bool
     {
         if (! $this->getRequest()->get('url')) {
             $this->getResponse()->setCode(400);
@@ -160,7 +160,7 @@ class Query
     /**
      * Copy the requested properties into the response object
      */
-    private function _fillSourceQueryResponseProperties(): void
+    private function fillSourceQueryResponseProperties(): void
     {
         $front_matter = $this->getFrontMatter();
 

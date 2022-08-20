@@ -3,12 +3,12 @@
 namespace Croft\Micropub;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Post\PostInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\HTTPLinkable;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Post\Post;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\HttpLinkable;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
 use Croft\From;
@@ -24,19 +24,19 @@ use function yaml_parse_file;
 /**
  * The Micropub class implements a Micropub server
  */
-class Micropub implements ExtensionInterface, HTTPLinkable, Routable
+class Micropub implements Extension, HttpLinkable, Routable
 {
     use Aether;
 
     /**
      * Send the Micropub HTTP link-rel header
      *
-     * @param ConfigInterface $config The config service.
-     * @param PostInterface $post The post service.
-     * @param RequestInterface $request The request service.
-     * @param ResponseInterface $response The response service.
+     * @param Config $config The config service.
+     * @param Post $post The post service.
+     * @param Request $request The request service.
+     * @param Response $response The response service.
      */
-    public function __construct(ConfigInterface $config, PostInterface $post, RequestInterface $request, ResponseInterface $response)
+    public function __construct(Config $config, Post $post, Request $request, Response $response)
     {
         $this->setConfig($config);
         $this->setPost($post);
@@ -61,7 +61,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      *
      * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks(): array
+    public function getHttpLinks(): array
     {
         return [
             '</micropub/>; rel="micropub"',
@@ -77,7 +77,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
 
         $this->getResponse()->mergeHeaders('Content-Type: application/json; charset=UTF-8');
 
-        if (! $this->_checkAccessToken()) {
+        if (! $this->checkAccessToken()) {
             if ($this->hasResponseBody()) {
                 echo json_encode($this->getResponseBody());
             }
@@ -94,7 +94,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
                 break;
 
             case 'POST':
-                $this->_postRequest();
+                $this->postRequest();
 
                 break;
         }
@@ -112,7 +112,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      * @return bool True If the access token is valid.
  * False If the access token is missing or invalid.
      */
-    private function _checkAccessToken(): bool
+    private function checkAccessToken(): bool
     {
         $request = $this->getRequest();
 
@@ -133,7 +133,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
         }
 
         if (! is_null($auth_header) && ! is_null($auth_param)) {
-            if ($this->_isExceptionForMicropubRocks()) {
+            if ($this->isExceptionForMicropubrocks()) {
                 return true;
             }
 
@@ -149,11 +149,11 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
         }
 
         if (! is_null($auth_param)) {
-            return $this->_verifyToken($auth_param);
+            return $this->verifyToken($auth_param);
         }
 
         if (! is_null($auth_header)) {
-            return $this->_verifyToken(str_replace('Bearer ', '', $auth_header));
+            return $this->verifyToken(str_replace('Bearer ', '', $auth_header));
         }
 
         $this->getResponse()->setCode(401);
@@ -175,9 +175,9 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      * @return bool True If this is going to be allowed for Micropub.rocks.
  * False If this is not micropub.rocks.
      */
-    private function _isExceptionForMicropubRocks(): bool
+    private function isExceptionForMicropubrocks(): bool
     {
-        if (! $this->_verifyToken(str_replace('Bearer ', '', $this->getRequest()->server('HTTP_AUTHORIZATION')))) {
+        if (! $this->verifyToken(str_replace('Bearer ', '', $this->getRequest()->server('HTTP_AUTHORIZATION')))) {
             return false;
         }
 
@@ -193,11 +193,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
             return false;
         }
 
-        if (! in_array($url_parts['host'], $config_micropub['exceptions']['two_copies_of_access_token'])) {
-            return false;
-        }
-
-        return true;
+        return in_array($url_parts['host'], $config_micropub['exceptions']['two_copies_of_access_token']);
     }
 
     /**
@@ -208,7 +204,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      * @return bool True If the access token is valid here.
  * False If the access token is not valid here.
      */
-    private function _verifyToken(string $token): bool
+    private function verifyToken(string $token): bool
     {
         if (! file_exists(From::VAR->dir() . 'indieauth/token-' . $token)) {
             $this->getResponse()->setCode(403);
@@ -251,11 +247,11 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
     /**
      * Handle a POST request
      */
-    private function _postRequest(): void
+    private function postRequest(): void
     {
         switch ($this->getRequest()->post('action')) {
             case null:
-                $this->_createPost();
+                $this->createPost();
 
                 return;
         }
@@ -264,13 +260,13 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
     /**
      * Handle a create request
      */
-    private function _createPost(): void
+    private function createPost(): void
     {
-        if (! $this->_hasSufficientScope('create', 'create a post')) {
+        if (! $this->hasSufficientScope('create', 'create a post')) {
             return;
         }
 
-        $post = $this->_postFromContentType();
+        $post = $this->postFromContentType();
         $post->createPost($this->getClientId());
         $this->setResponseBody($post->getResponseBody());
     }
@@ -284,7 +280,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      * @return bool True If the token has sufficient scope.
  * False If the token has insufficient scope.
      */
-    private function _hasSufficientScope(string $required_scope, string $description): bool
+    private function hasSufficientScope(string $required_scope, string $description): bool
     {
         if (in_array($required_scope, $this->getScopes())) {
             return true;
@@ -307,7 +303,7 @@ class Micropub implements ExtensionInterface, HTTPLinkable, Routable
      *
      * @return JsonPost|FormPost The post instance.
      */
-    private function _postFromContentType(): JsonPost|FormPost
+    private function postFromContentType(): JsonPost|FormPost
     {
         if ($this->getRequest()->server('CONTENT_TYPE') == 'application/json') {
             return new JsonPost($this->getPost(), $this->getRequest(), $this->getResponse());

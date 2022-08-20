@@ -10,12 +10,12 @@ class Route
     /**
      * The packaged route.
      */
-    private mixed $_route = null;
+    private mixed $route = null;
 
     /**
      * The priority of this route.
      */
-    private int $_priority = 50;
+    private int $priority = 50;
 
     /**
      * Combine HTTP verb, path regex, controller method, and extra data into a route definition
@@ -30,7 +30,7 @@ class Route
      */
     public function __construct(array|string $verb, string $regex, string $method, mixed $extra = null, ?string $controller = null, int $priority = 50)
     {
-        $this->_route = [
+        $this->route = [
             $verb,
             $regex,
             [
@@ -40,7 +40,7 @@ class Route
             ],
         ];
 
-        $this->_priority = $priority;
+        $this->priority = $priority;
     }
 
     /**
@@ -50,7 +50,7 @@ class Route
      */
     public function setController(string $class_name): void
     {
-        $this->_route[2][0] = $class_name;
+        $this->route[2][0] = $class_name;
     }
 
     /**
@@ -60,7 +60,7 @@ class Route
      */
     public function pack(): mixed
     {
-        return $this->_route;
+        return $this->route;
     }
 
     /**
@@ -70,6 +70,6 @@ class Route
      */
     public function getPriority(): int
     {
-        return $this->_priority;
+        return $this->priority;
     }
 }

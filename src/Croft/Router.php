@@ -3,10 +3,10 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Request\Request;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Router\RouterInterface;
+use a6a\a6a\Router\Router as RouterA6a;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -17,17 +17,17 @@ use function array_merge;
 /**
  * The Router service determines which object method will handle incoming request
  */
-class Router implements RouterInterface
+class Router implements RouterA6a
 {
     use Aether;
 
     /**
      * Store a local reference to the active configuration and current request
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request)
+    public function __construct(Config $config, Request $request)
     {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -97,7 +97,7 @@ class Router implements RouterInterface
             $this->getRequest()->getPath()
         );
 
-        return $this->_processRoute($match);
+        return $this->processRoute($match);
     }
 
     /**
@@ -107,12 +107,12 @@ class Router implements RouterInterface
      *
      * @return mixed The class, method and parameters that are matched to the request.
      */
-    private function _processRoute(mixed $matched_route): mixed
+    private function processRoute(mixed $matched_route): mixed
     {
         // trigger_error(print_r(array($this->getRequest()->getPath(), $matched_route), true));
         return match ($matched_route[0]) {
             Dispatcher::METHOD_NOT_ALLOWED => [null, '_sling405', ['use_vars' => true], $matched_route[1]],
-            Dispatcher::NOT_FOUND =>  [null, '_sling404', null, null],
+            Dispatcher::NOT_FOUND => [null, '_sling404', null, null],
             Dispatcher::FOUND => array_merge($matched_route[1], [$matched_route[2]])
         };
     }

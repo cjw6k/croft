@@ -3,17 +3,14 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config;
 use a6a\a6a\Exception\Redirect;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Request\Request;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Session\Session as SessionA6a;
 
 use function session_name;
-
-use const PHP_SESSION_NONE;
-
 use function session_status;
 use function session_start;
 use function now;
@@ -23,20 +20,22 @@ use function openssl_random_pseudo_bytes;
 use function urldecode;
 use function setcookie;
 
+use const PHP_SESSION_NONE;
+
 /**
  * The Session class maintains session data for logged in users
  */
-class Session implements SessionInterface, Routable
+class Session implements SessionA6a, Routable
 {
     use Aether;
 
     /**
      * Construct the Session
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request)
+    public function __construct(Config $config, Request $request)
     {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -49,13 +48,13 @@ class Session implements SessionInterface, Routable
     {
         $request = $this->getRequest();
 
-        session_name($this->_getCookieName());
+        session_name($this->getCookieName());
 
-        if (! $request->cookie($this->_getCookieName())) {
+        if (! $request->cookie($this->getCookieName())) {
             return;
         }
 
-        $this->_sessionStart();
+        $this->sessionStart();
 
         if ($request->session('logged_in')) {
             $this->isLoggedIn(true);
@@ -86,7 +85,7 @@ class Session implements SessionInterface, Routable
      *
      * Updates a last access time so that active sessions are not garbage collected too soon.
      */
-    private function _sessionStart(): void
+    private function sessionStart(): void
     {
         if (session_status() != PHP_SESSION_NONE) {
             return;
@@ -133,7 +132,7 @@ class Session implements SessionInterface, Routable
             return 'login.php';
         }
 
-        $this->_sessionStart();
+        $this->sessionStart();
         $request->session('started', now());
         $request->session('logged_in', true);
         $request->session('ssrv', bin2hex(openssl_random_pseudo_bytes(16)));
@@ -154,7 +153,7 @@ class Session implements SessionInterface, Routable
     public function doLogout(): void
     {
         $this->getRequest()->session('logged_in', false);
-        setcookie($this->_getCookieName(), '', -1, '/', '', true, true);
+        setcookie($this->getCookieName(), '', -1, '/', '', true, true);
         throw new Redirect('/');
     }
 
@@ -163,7 +162,7 @@ class Session implements SessionInterface, Routable
      *
      * @return string The session cookie name.
      */
-    private function _getCookieName(): string
+    private function getCookieName(): string
     {
         return $this->getConfig()->getCookieName()
             ?: 'webfoo';

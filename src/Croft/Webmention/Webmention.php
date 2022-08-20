@@ -4,14 +4,14 @@ namespace Croft\Webmention;
 
 use A6A\Aether\Aether;
 use a6a\a6a\Async\Asyncable;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\HTTPLinkable;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\HttpLinkable;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use Croft\From;
 
 use function preg_match;
@@ -24,27 +24,13 @@ use function parse_url;
 use function unlink;
 use function curl_init;
 use function curl_setopt_array;
-
-use const CURLOPT_RETURNTRANSFER;
-use const CURLOPT_FOLLOWLOCATION;
-use const CURLOPT_TIMEOUT;
-use const CURLOPT_MAXREDIRS;
-use const CURLOPT_REFERER;
-use const CURLOPT_USERAGENT;
-
 use function curl_exec;
 use function curl_getinfo;
-
-use const CURLINFO_HTTP_CODE;
-
 use function curl_close;
 use function is_string;
 use function strpos;
 use function fopen;
 use function flock;
-
-use const LOCK_EX;
-
 use function fclose;
 use function fread;
 use function filesize;
@@ -56,24 +42,32 @@ use function fwrite;
 use function yaml_emit;
 use function fflush;
 
+use const CURLINFO_HTTP_CODE;
+use const CURLOPT_RETURNTRANSFER;
+use const CURLOPT_FOLLOWLOCATION;
+use const CURLOPT_TIMEOUT;
+use const CURLOPT_MAXREDIRS;
+use const CURLOPT_REFERER;
+use const CURLOPT_USERAGENT;
+use const LOCK_EX;
 use const LOCK_UN;
 
 /**
  * The Webmention class implements a webmention receiver
  */
-class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routable
+class Webmention implements Extension, Asyncable, HttpLinkable, Routable
 {
     use Aether;
 
     /**
      * Send the Webmention HTTP link-rel header
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
-     * @param StorageInterface $storage The storage service.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
+     * @param Response $response The response.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request, ResponseInterface $response, StorageInterface $storage)
+    public function __construct(Config $config, Request $request, Response $response, Storage $storage)
     {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -98,7 +92,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      *
      * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks(): array
+    public function getHttpLinks(): array
     {
         return [
             '</webmention/>; rel="webmention"',
@@ -125,7 +119,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
         $this->setTargetParts($validation->getTargetParts());
         $this->setSourceParts($validation->getSourceParts());
 
-        if ($this->_targetsRestrictedPath()) {
+        if ($this->targetsRestrictedPath()) {
             $this->getResponse()->setCode(400);
             $this->getResponse()->mergeHeaders('Content-Type: text/plain; charset=UTF-8');
             echo 'Error: the target URL does not accept webmentions';
@@ -133,7 +127,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
             return;
         }
 
-        if (! $this->_targetsContentThatExistsHere()) {
+        if (! $this->targetsContentThatExistsHere()) {
             $this->getResponse()->setCode(400);
             $this->getResponse()->mergeHeaders('Content-Type: text/plain; charset=UTF-8');
             echo 'Error: the target URL is for content that does not exist here';
@@ -141,7 +135,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
             return;
         }
 
-        $this->_spoolIncoming();
+        $this->spoolIncoming();
         $this->getResponse()->setCode(202);
     }
 
@@ -151,7 +145,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      * @return bool True If the webmention targets a restricted path.
  * False If the webmention does not target a restricted path.
      */
-    private function _targetsRestrictedPath(): bool
+    private function targetsRestrictedPath(): bool
     {
         switch ($this->getTargetParts()['path']) {
             case '/auth/':
@@ -169,11 +163,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
             return false;
         }
 
-        if (isset($matches[2])) {
-            return true;
-        }
-
-        return false;
+        return isset($matches[2]);
     }
 
     /**
@@ -182,7 +172,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      * @return bool True If the webmention targets valid content.
  * False If the webmention does not target valid content.
      */
-    private function _targetsContentThatExistsHere(): bool
+    private function targetsContentThatExistsHere(): bool
     {
         $matches = [];
 
@@ -202,7 +192,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
     /**
      * Record a valid incoming webmention for later processing
      */
-    private function _spoolIncoming(): void
+    private function spoolIncoming(): void
     {
         $request = $this->getRequest();
         $webmention = [
@@ -229,15 +219,15 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      */
     public function async(): void
     {
-        $this->_processIncoming();
+        $this->processIncoming();
     }
 
     /**
      * Process incoming webmentions from the spool
      */
-    private function _processIncoming(): void
+    private function processIncoming(): void
     {
-        $incoming = glob(FROM::VAR->dir() . 'webmention/incoming-*');
+        $incoming = glob(From::VAR->dir() . 'webmention/incoming-*');
 
         foreach ($incoming as $spooled) {
             $webmention = yaml_parse_file($spooled);
@@ -246,17 +236,17 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
 
             $this->setTargetParts(parse_url($webmention['target']));
 
-            if (! $this->_targetsContentThatExistsHere()) {
+            if (! $this->targetsContentThatExistsHere()) {
                 unlink($spooled);
                 continue;
             }
 
-            if (! $this->_sourceContainsTargetLink()) {
+            if (! $this->sourceContainsTargetLink()) {
                 unlink($spooled);
                 continue;
             }
 
-            if (! $this->_recordWebmention()) {
+            if (! $this->recordWebmention()) {
                 continue;
             }
 
@@ -270,7 +260,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      * @return bool True If the source contains the target URL.
  * False If the source does not contain the target URL.
      */
-    private function _sourceContainsTargetLink(): bool
+    private function sourceContainsTargetLink(): bool
     {
         $curl_handle = curl_init($this->getSource());
         curl_setopt_array(
@@ -303,7 +293,7 @@ class Webmention implements ExtensionInterface, Asyncable, HTTPLinkable, Routabl
      * @return bool True The webmention has been recorded.
  * False Recording the webmention has failed.
      */
-    private function _recordWebmention(): bool
+    private function recordWebmention(): bool
     {
         $webmentions = [
             'generic' => [

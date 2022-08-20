@@ -2,9 +2,9 @@
 
 namespace Croft;
 
-use a6a\a6a\Setup\SetupInterface;
+use a6a\a6a\Setup\Setup as SetupA6a;
 use A6A\Aether\Aether;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Request\Request;
 use League\CLImate\CLImate;
 
 use function file_exists;
@@ -13,11 +13,9 @@ use function substr;
 use function base64_encode;
 use function random_bytes;
 use function password_hash;
-
-use const PASSWORD_DEFAULT;
-
 use function yaml_emit_file;
 
+use const PASSWORD_DEFAULT;
 use const PHP_EOL;
 
 /**
@@ -29,16 +27,16 @@ use const PHP_EOL;
  * IndieAuth user profile URL. A password is generated and displayed on the command line when
  * setup completes successfully.
  */
-class Setup implements SetupInterface
+class Setup implements SetupA6a
 {
     use Aether;
 
     /**
      * Construct the Setup
      *
-     * @param RequestInterface $request The current request.
+     * @param Request $request The current request.
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(Request $request)
     {
         $this->setRequest($request);
     }
@@ -59,7 +57,7 @@ class Setup implements SetupInterface
             return false;
         }
 
-        $this->_ensureURLHasPath();
+        $this->ensureUrlHasPath();
 
         return true;
     }
@@ -72,7 +70,7 @@ class Setup implements SetupInterface
      * @return bool True If called with all required parameters.
  * False If not called with all required parameters.
      */
-    private function _hasRequiredParameters(CLImate $cli): bool
+    private function hasRequiredParameters(CLImate $cli): bool
     {
         if (
             ! $cli->arguments->get('username')
@@ -89,7 +87,7 @@ class Setup implements SetupInterface
     /**
      * Append the root path component '/' if missing from the URL
      */
-    private function _ensureURLHasPath(): void
+    private function ensureUrlHasPath(): void
     {
         $url_parts = parse_url($this->getUrl());
 

@@ -2,12 +2,12 @@
 
 namespace a6a\a6a\Config;
 
-use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Service\Service;
 
 /**
  * The Config service interface.
  */
-interface ConfigInterface extends ServiceInterface
+interface Config extends Service
 {
     /**
      * Construct the Config

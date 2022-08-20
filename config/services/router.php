@@ -2,18 +2,17 @@
 
 use Croft\Config;
 use Croft\Request;
-use Dice\Dice;
-use a6a\a6a\Router\RouterInterface;
+use a6a\a6a\Router\Router as RouterA6a;
 use Croft\Router;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Config\Config as ConfigA6a;
+use a6a\a6a\Request\Request as RequestA6a;
 
 return [
-    RouterInterface::class => [
+    RouterA6a::class => [
         'instanceOf' => Router::class,
         'substitutions' => [
-            ConfigInterface::class => Config::class,
-            RequestInterface::class => Request::class,
+            ConfigA6a::class => Config::class,
+            RequestA6a::class => Request::class,
         ],
     ],
 ];

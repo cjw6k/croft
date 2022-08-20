@@ -1,11 +1,10 @@
 <?php
 
 use Croft\Config;
-use Dice\Dice;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config as ConfigA6a;
 
 return [
-    ConfigInterface::class => [
+    ConfigA6a::class => [
         'instanceOf' => Config::class,
         'shared' => true,
     ],

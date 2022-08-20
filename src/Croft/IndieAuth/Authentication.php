@@ -4,7 +4,7 @@ namespace Croft\IndieAuth;
 
 use A6A\Aether\Aether;
 use a6a\a6a\Exception\Redirect;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Request\Request;
 use Croft\From;
 
 use function str_replace;
@@ -12,12 +12,11 @@ use function substr;
 use function bin2hex;
 use function openssl_random_pseudo_bytes;
 use function password_hash;
-
-use const PASSWORD_DEFAULT;
-
 use function now;
 use function hash;
 use function yaml_emit_file;
+
+use const PASSWORD_DEFAULT;
 
 /**
  * The Authentication class provides methods to service the authentication steps of IndieAuth
@@ -29,9 +28,9 @@ class Authentication
     /**
      * Store a local reference to required services
      *
-     * @param RequestInterface $request The current request.
+     * @param Request $request The current request.
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(Request $request)
     {
         $this->setRequest($request);
     }
@@ -46,7 +45,7 @@ class Authentication
         $request = $this->getRequest();
 
         if ($request->getMethod() == 'GET') {
-            $this->_start($validation);
+            $this->start($validation);
         }
 
         /**
@@ -67,7 +66,7 @@ class Authentication
             return;
         }
 
-        $this->_approve();
+        $this->approve();
     }
 
     /**
@@ -75,7 +74,7 @@ class Authentication
      *
      * @param Validation $validation Helper for validation of request parameters.
      */
-    private function _start(Validation $validation): void
+    private function start(Validation $validation): void
     {
         $validation->authenticationRequest();
 
@@ -91,7 +90,7 @@ class Authentication
      *
      * @throws Redirect A HTTP redirect is required.
      */
-    private function _approve(): void
+    private function approve(): void
     {
         $request = $this->getRequest();
 

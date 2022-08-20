@@ -3,8 +3,8 @@
 namespace Croft\Webmention;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Request\Request;
 
 use function parse_url;
 use function is_null;
@@ -19,10 +19,10 @@ class Validation
     /**
      * Store a local reference to the current request.
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request)
+    public function __construct(Config $config, Request $request)
     {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -36,11 +36,11 @@ class Validation
      */
     public function request(): bool
     {
-        if (! $this->_hasRequiredParams()) {
+        if (! $this->hasRequiredParams()) {
             return false;
         }
 
-        if (! $this->_hasValidURLs()) {
+        if (! $this->hasValidUrls()) {
             return false;
         }
 
@@ -70,7 +70,7 @@ class Validation
      * @return bool True If the request has required parameters.
  * False If the request does not have required parameters.
      */
-    private function _hasRequiredParams(): bool
+    private function hasRequiredParams(): bool
     {
         $this->setTarget($this->getRequest()->post('target'));
         $this->setSource($this->getRequest()->post('source'));
@@ -108,15 +108,15 @@ class Validation
      * @return bool True If the request parameters are valid URLs.
  * False If the request parameters are not valid URLs.
      */
-    private function _hasValidURLs(): bool
+    private function hasValidUrls(): bool
     {
-        if (! $this->_hasValidTargetURL()) {
+        if (! $this->hasValidTargetUrl()) {
             $this->setResponseBody('Error: the target URL is invalid');
 
             return false;
         }
 
-        if (! $this->_hasValidSourceURL()) {
+        if (! $this->hasValidSourceUrl()) {
             $this->setResponseBody('Error: the source URL is invalid');
 
             return false;
@@ -131,7 +131,7 @@ class Validation
      * @return bool True If the target parameter is a valid URL.
  * False If the target parameter is not a valid URL.
      */
-    private function _hasValidTargetURL(): bool
+    private function hasValidTargetUrl(): bool
     {
         $this->setTargetParts(parse_url($this->getTarget()));
 
@@ -155,7 +155,7 @@ class Validation
      * @return bool True If the source parameter is a valid URL.
  * False If the source parameter is not a valid URL.
      */
-    private function _hasValidSourceURL(): bool
+    private function hasValidSourceUrl(): bool
     {
         $this->setSourceParts(parse_url($this->getSource()));
 

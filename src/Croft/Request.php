@@ -3,7 +3,7 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Request\RequestInterface;
+use a6a\a6a\Request\Request as RequestA6a;
 
 use function is_null;
 use function parse_url;
@@ -21,7 +21,7 @@ use const INPUT_COOKIE;
 /**
  * The Request class provides an interface to the current HTTP request
  */
-class Request implements RequestInterface
+class Request implements RequestA6a
 {
     use Aether;
 

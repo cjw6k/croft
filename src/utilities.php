@@ -17,7 +17,7 @@ function showMe(mixed $data): void
     // Determine appropriate newline character
     $newline = PHP_EOL;
 
-    if (php_sapi_name() != 'cli') {
+    if (PHP_SAPI != 'cli') {
         $newline = '<br>';
 
         // If not in CLI, use HTML
@@ -32,7 +32,7 @@ function showMe(mixed $data): void
     echo $newline;
 
     // If not in CLI, use HTML
-    if (php_sapi_name() == 'cli') {
+    if (PHP_SAPI == 'cli') {
         return;
     }
 

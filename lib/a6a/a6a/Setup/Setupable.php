@@ -14,10 +14,10 @@ interface Setupable
      *
      * Errors should be directly echoed to the console.
      *
-     * @param SetupInterface $setup The setup service.
+     * @param Setup $setup The setup service.
      *
      * @return bool True Setup may proceed.
  * False Setup has failed.
      */
-    public function setup(SetupInterface $setup): bool;
+    public function setup(Setup $setup): bool;
 }

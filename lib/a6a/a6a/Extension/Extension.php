@@ -7,7 +7,7 @@ use Exception;
 /**
  * The Extension interface
  */
-interface ExtensionInterface
+interface Extension
 {
     /**
      * Provides a list of routes to register with the Router to be serviced by this extension.

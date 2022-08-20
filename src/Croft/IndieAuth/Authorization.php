@@ -3,9 +3,9 @@
 namespace Croft\IndieAuth;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\Response;
 use Croft\From;
 
 use function hash;
@@ -24,11 +24,11 @@ class Authorization
     /**
      * Store a local reference to required services
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
+     * @param Response $response The response.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request, ResponseInterface $response)
+    public function __construct(Config $config, Request $request, Response $response)
     {
         $this->setConfig($config);
         $this->setRequest($request);

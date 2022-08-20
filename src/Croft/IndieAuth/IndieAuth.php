@@ -2,19 +2,19 @@
 
 namespace Croft\IndieAuth;
 
-use a6a\a6a\Setup\SetupInterface;
+use a6a\a6a\Setup\Setup as SetupInterface;
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config;
 use a6a\a6a\Exception\Redirect;
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\HTTPLinkable;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\HttpLinkable;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Session\Session;
 use a6a\a6a\Setup\Setupable;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use Croft\Setup;
 
 use function json_encode;
@@ -26,25 +26,25 @@ use const PHP_EOL;
 /**
  * The IndieAuth class implements an IndieAuth server
  */
-class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
+class IndieAuth implements Extension, HttpLinkable, Setupable, Routable
 {
     use Aether;
 
     /**
      * Send the IndieAuth authorization point HTTP link-rel header
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
-     * @param SessionInterface $session The login session.
-     * @param StorageInterface $storage The storage service.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
+     * @param Response $response The response.
+     * @param Session $session The login session.
+     * @param Storage $storage The storage service.
      */
     public function __construct(
-        ConfigInterface $config,
-        RequestInterface $request,
-        ResponseInterface $response,
-        SessionInterface $session,
-        StorageInterface $storage
+        Config $config,
+        Request $request,
+        Response $response,
+        Session $session,
+        Storage $storage
     ) {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -72,7 +72,7 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @return array<mixed> An array of HTTP link headers.
      */
-    public function getHTTPLinks(): array
+    public function getHttpLinks(): array
     {
         return [
             '</auth/>; rel="authorization_endpoint"',
@@ -87,10 +87,10 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @throws Redirect A HTTP redirect is required.
      */
-    public function handleRequest(): string|null
+    public function handleRequest(): ?string
     {
         if ($this->getSession()->isLoggedIn()) {
-            return $this->_loggedInRequest();
+            return $this->loggedInRequest();
         }
 
         if ($this->getRequest()->getMethod() == 'POST') {
@@ -117,7 +117,7 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      *
      * @return string The template to render.
      */
-    private function _loggedInRequest(): string
+    private function loggedInRequest(): string
     {
         $validation = new Validation($this->getConfig(), $this->getRequest());
         $authentication = new Authentication($this->getRequest());
@@ -149,7 +149,7 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      */
     public function setup(SetupInterface $setup): bool
     {
-        if (! $this->validateUserProfileURL($setup->getUrl())) {
+        if (! $this->validateUserProfileUrl($setup->getUrl())) {
             foreach ($this->getErrors() as $error) {
                 echo 'error: ', $error, PHP_EOL;
             }
@@ -170,11 +170,11 @@ class IndieAuth implements ExtensionInterface, HTTPLinkable, Setupable, Routable
      * @return bool True If the user profile URL is valid.
  * False If the user profile URL is not valid.
      */
-    public function validateUserProfileURL(string $url): bool
+    public function validateUserProfileUrl(string $url): bool
     {
         $validation = new Validation($this->getConfig(), $this->getRequest());
 
-        if (! $validation->userProfileURL($url)) {
+        if (! $validation->userProfileUrl($url)) {
             $this->setErrors($validation->getErrors());
 
             return false;

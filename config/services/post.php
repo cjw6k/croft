@@ -3,19 +3,19 @@
 use Croft\Config;
 use Croft\Response;
 use Croft\Storage;
-use a6a\a6a\Post\PostInterface;
+use a6a\a6a\Post\Post as PostA6a;
 use Croft\Post;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Response\ResponseInterface;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Config\Config as ConfigA6a;
+use a6a\a6a\Response\Response as ResponseA6a;
+use a6a\a6a\Storage\Storage as StorageA6a;
 
 return [
-    PostInterface::class => [
+    PostA6a::class => [
         'instanceOf' => Post::class,
         'substitutions' => [
-            ConfigInterface::class => Config::class,
-            ResponseInterface::class => Response::class,
-            StorageInterface::class => Storage::class,
+            ConfigA6a::class => Config::class,
+            ResponseA6a::class => Response::class,
+            StorageA6a::class => Storage::class,
         ],
     ],
 ];

@@ -2,19 +2,20 @@
 
 namespace Croft\Console;
 
-use a6a\a6a\Setup\SetupInterface;
+use a6a\a6a\Setup\Setup;
 use Croft\Croft;
 use Croft\From;
 use League\CLImate\CLImate;
 use League\Pipeline\StageInterface;
 
 use function file_exists;
+use function gettype;
 
 class Hub implements StageInterface
 {
     public const CONTINUE = 1000;
 
-    public function __construct(private CLImate $cli, private SetupInterface $setup, private Croft $croft)
+    public function __construct(private CLImate $cli, private Setup $setup, private Croft $croft)
     {
     }
 
@@ -32,6 +33,6 @@ class Hub implements StageInterface
             $this->croft->setup($this->cli, $this->setup);
         }
 
-        $this->cli->out('hi');
+        $this->cli->out(gettype($payload));
     }
 }

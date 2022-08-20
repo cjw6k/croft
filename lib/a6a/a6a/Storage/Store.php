@@ -10,7 +10,7 @@ class Store
     /**
      * The packaged store.
      */
-    private mixed $_store = null;
+    private mixed $store = null;
 
     /**
      * Combine _params_ into a store definition
@@ -22,7 +22,7 @@ class Store
      */
     public function __construct(int $segment, string $prefix, ?callable $ingress = null, ?callable $egress = null)
     {
-        $this->_store = [
+        $this->store = [
             $segment,
             $prefix,
             $ingress,
@@ -37,6 +37,6 @@ class Store
      */
     public function pack(): mixed
     {
-        return $this->_store;
+        return $this->store;
     }
 }

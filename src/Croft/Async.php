@@ -4,35 +4,34 @@ namespace Croft;
 
 use A6A\Aether\Aether;
 use a6a\a6a\Async\Asyncable;
-use a6a\a6a\Async\AsyncInterface;
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Async\Async as AsyncA6a;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Service\Service;
 use a6a\a6a\Storage\Segment;
 use a6a\a6a\Storage\Storable;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use a6a\a6a\Storage\Store;
 
 use function is_numeric;
 use function now;
+use function time;
 
 use const LOCK_EX;
 use const LOCK_NB;
 
-use function time;
-
 /**
  * The Async class runs additional code after the user request has completed and been closed
  */
-class Async implements AsyncInterface, Storable
+class Async implements AsyncA6a, Storable
 {
     use Aether;
 
     /**
      * Store a local reference to the storage service
      *
-     * @param StorageInterface $storage The storage service.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(StorageInterface $storage)
+    public function __construct(Storage $storage)
     {
         $this->setStorage($storage);
     }
@@ -53,7 +52,7 @@ class Async implements AsyncInterface, Storable
     /**
      * Register a service or extension that implements the async interface
      *
-     * @param ServiceInterface|ExtensionInterface $extension A webfoo extension.
+     * @param Service|Extension $extension A webfoo extension.
      */
     public function register(object $extension): void
     {
@@ -76,23 +75,23 @@ class Async implements AsyncInterface, Storable
      */
     public function run(): void
     {
-        if ($this->_hasStored('.async-active')) {
+        if ($this->hasStored('.async-active')) {
             return;
         }
 
-        $last_async = $this->_readStored('.async-last');
+        $last_async = $this->readStored('.async-last');
 
         if (is_numeric($last_async) && (30 > (now() - $last_async))) {
             return;
         }
 
-        $lock = $this->_lockStored('.async-active', LOCK_EX | LOCK_NB);
+        $lock = $this->lockStored('.async-active', LOCK_EX | LOCK_NB);
 
         if (! $lock) {
             return;
         }
 
-        $this->_writeStored('.async-last', time());
+        $this->writeStored('.async-last', time());
 
         $extensions = $this->getExtensions();
 
@@ -102,8 +101,8 @@ class Async implements AsyncInterface, Storable
             }
         }
 
-        $this->_unlockStored($lock);
-        $this->_deleteStored('.async-active');
+        $this->unlockStored($lock);
+        $this->deleteStored('.async-active');
     }
 
     /**
@@ -114,7 +113,7 @@ class Async implements AsyncInterface, Storable
      * @return bool True The index is set in storage.
  * False The index is not set in storage.
      */
-    private function _hasStored(string $index): bool
+    private function hasStored(string $index): bool
     {
         return $this->getStorage()->hasIndex(Segment::SYSTEM, 'async', $index);
     }
@@ -126,7 +125,7 @@ class Async implements AsyncInterface, Storable
      *
      * @return mixed|null The data from storage or null if the index is not in use.
      */
-    private function _readStored(string $index): mixed
+    private function readStored(string $index): mixed
     {
         return $this->getStorage()->load(Segment::SYSTEM, 'async', $index);
     }
@@ -139,7 +138,7 @@ class Async implements AsyncInterface, Storable
      *
      * @return mixed|null A handle for the lock or null on failure.
      */
-    private function _lockStored(string $index, int $operation = LOCK_EX): mixed
+    private function lockStored(string $index, int $operation = LOCK_EX): mixed
     {
         return $this->getStorage()->lock(Segment::SYSTEM, 'async', $index, $operation);
     }
@@ -150,7 +149,7 @@ class Async implements AsyncInterface, Storable
      * @param string $index The index to the data store.
      * @param mixed $data The data to store.
      */
-    private function _writeStored(string $index, mixed $data): void
+    private function writeStored(string $index, mixed $data): void
     {
         $this->getStorage()->store(Segment::SYSTEM, 'async', $index, $data);
     }
@@ -160,7 +159,7 @@ class Async implements AsyncInterface, Storable
      *
      * @param mixed $lock The handle for the lock.
      */
-    private function _unlockStored(mixed $lock): void
+    private function unlockStored(mixed $lock): void
     {
         $this->getStorage()->unlock($lock);
     }
@@ -170,7 +169,7 @@ class Async implements AsyncInterface, Storable
      *
      * @param string $index The index to the data store.
      */
-    private function _deleteStored(string $index): void
+    private function deleteStored(string $index): void
     {
         $this->getStorage()->purge(Segment::SYSTEM, 'async', $index);
     }

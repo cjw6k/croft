@@ -5,7 +5,7 @@ namespace Croft;
 use A6A\Aether\Aether;
 use a6a\a6a\Storage\Segment;
 use a6a\a6a\Storage\Storable;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use a6a\a6a\Storage\Store;
 
 /**
@@ -18,9 +18,9 @@ class Log implements Storable
     /**
      * Store a local reference to storage.
      *
-     * @param StorageInterface $storage The storage service.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(StorageInterface $storage)
+    public function __construct(Storage $storage)
     {
         $this->setStorage($storage);
     }

@@ -4,9 +4,9 @@ namespace Croft\Micropub;
 
 use A6A\Aether\Aether;
 use a6a\a6a\Exception\Redirect;
-use a6a\a6a\Post\PostInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Post\Post as PostA6a;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\Response;
 use DateTime;
 
 use function is_null;
@@ -21,11 +21,11 @@ class Post
     /**
      * Store a local reference to a model post
      *
-     * @param PostInterface $post The model post.
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
+     * @param PostA6a $post The model post.
+     * @param Request $request The current request.
+     * @param Response $response The response.
      */
-    public function __construct(PostInterface $post, RequestInterface $request, ResponseInterface $response)
+    public function __construct(PostA6a $post, Request $request, Response $response)
     {
         $this->setPost($post);
         $this->setRequest($request);
@@ -43,7 +43,7 @@ class Post
     {
         $this->setClientId($client_id);
 
-        if (! $this->_allocate()) {
+        if (! $this->allocate()) {
             return;
         }
 
@@ -60,7 +60,7 @@ class Post
      * @return bool True If post allocation works.
  * False If post allocation does not work.
      */
-    private function _allocate(): bool
+    private function allocate(): bool
     {
         return $this->getPost()->allocate(
             $this->getPublicationDateFromRequest()
@@ -138,16 +138,10 @@ class Post
      */
     protected function reservedPropertyKey(string $key): bool
     {
-        switch ($key) {
-            case 'access_token':
-            case 'h':
-            case 'slug':
-            case 'published':
-            case 'content':
-                return true;
-        }
-
-        return false;
+        return match ($key) {
+            'access_token', 'h', 'slug', 'published', 'content' => true,
+            default => false,
+        };
     }
 
     /**

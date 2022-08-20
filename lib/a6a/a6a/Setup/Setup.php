@@ -7,15 +7,12 @@ use League\CLImate\CLImate;
 
 /**
  * @see Aether
- * @todo an interface consumer relies on the getUrl method, but it is provided via magic __call handling, boo
  * @method string getUrl()
  */
-interface SetupInterface
+interface Setup
 {
     /**
      * Configure WebFoo using parameters provided on the command line
-     *
-     * @param CLImate $cli
      *
      * @return int The return code.
      */

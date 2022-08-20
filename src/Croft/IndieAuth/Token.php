@@ -3,9 +3,9 @@
 namespace Croft\IndieAuth;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\Response;
 use Croft\From;
 
 use function json_encode;
@@ -29,11 +29,11 @@ class Token
     /**
      * Store a local reference to the current request.
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param RequestInterface $request The current request.
-     * @param ResponseInterface $response The response.
+     * @param Config $config The active configuration.
+     * @param Request $request The current request.
+     * @param Response $response The response.
      */
-    public function __construct(ConfigInterface $config, RequestInterface $request, ResponseInterface $response)
+    public function __construct(Config $config, Request $request, Response $response)
     {
         $this->setConfig($config);
         $this->setRequest($request);
@@ -46,12 +46,12 @@ class Token
     public function handleRequest(): void
     {
         if ($this->getRequest()->post('action') == 'revoke') {
-            $this->_revocation();
+            $this->revocation();
 
             return;
         }
 
-        if (! $this->_request()) {
+        if (! $this->request()) {
             $this->getResponse()->setCode(400);
         }
 
@@ -64,13 +64,13 @@ class Token
      * @return bool True If the token request is good.
  * False If the token request is not good.
      */
-    private function _request(): bool
+    private function request(): bool
     {
         $request = $this->getRequest();
 
         $this->getResponse()->mergeHeaders('Content-Type: application/json; charset=UTF-8');
 
-        if (! $this->_hasRequiredParams(new Validation($this->getConfig(), $request))) {
+        if (! $this->hasRequiredParams(new Validation($this->getConfig(), $request))) {
             return false;
         }
 
@@ -168,7 +168,7 @@ class Token
      * @return bool True If the token request has required parameters.
  * False If the token request is missing required parameters.
      */
-    private function _hasRequiredParams(Validation $validation): bool
+    private function hasRequiredParams(Validation $validation): bool
     {
         $request = $this->getRequest();
 
@@ -217,7 +217,7 @@ class Token
     /**
      * Revoke an access token if it exists
      */
-    private function _revocation(): void
+    private function revocation(): void
     {
         $token = $this->getRequest()->post('token');
 
@@ -269,7 +269,7 @@ class Token
             return;
         }
 
-        if (! $this->_verifyToken(str_replace('Bearer ', '', $auth_header))) {
+        if (! $this->verifyToken(str_replace('Bearer ', '', $auth_header))) {
             return;
         }
 
@@ -290,7 +290,7 @@ class Token
      * @return bool True If the access token is valid here.
  * False If the access token is not valid here.
      */
-    private function _verifyToken(string $token): bool
+    private function verifyToken(string $token): bool
     {
         if (! file_exists(From::VAR->dir() . 'indieauth/token-' . $token)) {
             $this->getResponse()->setCode(401);

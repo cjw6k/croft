@@ -3,7 +3,7 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config as ConfigA6a;
 use Exception;
 
 use function is_null;
@@ -13,7 +13,7 @@ use function yaml_parse_file;
 /**
  * The Config class loads and saves configurations.
  */
-class Config implements ConfigInterface
+class Config implements ConfigA6a
 {
     use Aether;
 
@@ -27,7 +27,7 @@ class Config implements ConfigInterface
     public function __construct(?string $config_file = 'not-config.yml')
     {
         if (is_null($config_file)) {
-            $this->_makeDefaultConfig();
+            $this->makeDefaultConfig();
 
             return;
         }
@@ -43,13 +43,13 @@ class Config implements ConfigInterface
         }
 
         // This should be a notice to run setup.php
-        $this->_makeDefaultConfig();
+        $this->makeDefaultConfig();
     }
 
     /**
      * Setup a default configuration when no configuration file is available
      */
-    private function _makeDefaultConfig(): void
+    private function makeDefaultConfig(): void
     {
         $this->setTitle('the default config');
         $this->setMe('http://localhost/');

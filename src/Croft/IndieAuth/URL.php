@@ -3,18 +3,16 @@
 namespace Croft\IndieAuth;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Config\Config;
 
 use function filter_var;
-
-use const FILTER_VALIDATE_URL;
-
 use function parse_url;
 use function strtolower;
 use function in_array;
+use function str_contains;
 use function trim;
-use function strpos;
 
+use const FILTER_VALIDATE_URL;
 use const FILTER_VALIDATE_DOMAIN;
 use const FILTER_VALIDATE_IP;
 use const FILTER_FLAG_IPV4;
@@ -30,9 +28,9 @@ class URL
     /**
      * Accept the Config and make it local expressly to permit exceptions to the indieauth spec.
      *
-     * @param ConfigInterface $config The active configuration.
+     * @param Config $config The active configuration.
      */
-    public function __construct(ConfigInterface $config)
+    public function __construct(Config $config)
     {
         $this->setConfig($config);
     }
@@ -108,11 +106,7 @@ class URL
 
         $this->path($url_parts, $name);
 
-        if ($this->hasErrors()) {
-            return false;
-        }
-
-        return true;
+        return ! $this->hasErrors();
     }
 
     /**
@@ -140,8 +134,8 @@ class URL
         $path = '/' . trim($url_parts['path'], '/') . '/';
 
         if (
-            strpos($path, '/./') === false
-            && strpos($path, '/../') === false
+            ! str_contains($path, '/./')
+            && ! str_contains($path, '/../')
         ) {
             return;
         }
@@ -179,10 +173,6 @@ class URL
             }
         }
 
-        if ($this->hasErrors()) {
-            return false;
-        }
-
-        return true;
+        return ! $this->hasErrors();
     }
 }

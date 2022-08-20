@@ -2,26 +2,26 @@
 
 namespace a6a\a6a\Async;
 
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Service\ServiceInterface;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Service\Service;
+use a6a\a6a\Storage\Storage;
 
 /**
  * The Async service interface.
  */
-interface AsyncInterface extends ServiceInterface
+interface Async extends Service
 {
     /**
      * Store a local reference to the storage service
      *
-     * @param StorageInterface $storage The storage service.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(StorageInterface $storage);
+    public function __construct(Storage $storage);
 
     /**
      * Register a service or extension that implements the async interface
      *
-     * @param ServiceInterface|ExtensionInterface $extension A webfoo extension.
+     * @param Service|Extension $extension A webfoo extension.
      */
     public function register(object $extension): void;
 

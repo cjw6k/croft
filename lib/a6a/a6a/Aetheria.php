@@ -2,25 +2,25 @@
 
 namespace a6a\a6a;
 
-use a6a\a6a\Async\AsyncInterface;
-use a6a\a6a\Config\ConfigInterface;
+use a6a\a6a\Async\Async;
+use a6a\a6a\Config\Config;
 use a6a\a6a\Exception\Redirect;
-use a6a\a6a\Extension\ExtensionInterface;
-use a6a\a6a\Media\MediaInterface;
-use a6a\a6a\Page\PageInterface;
-use a6a\a6a\Post\PostInterface;
-use a6a\a6a\Request\RequestInterface;
-use a6a\a6a\Response\HTTPLinkable;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Extension\Extension;
+use a6a\a6a\Media\Media;
+use a6a\a6a\Page\Page;
+use a6a\a6a\Post\Post;
+use a6a\a6a\Request\Request;
+use a6a\a6a\Response\HttpLinkable;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Router\RouterInterface;
-use a6a\a6a\Service\ServiceInterface;
-use a6a\a6a\Session\SessionInterface;
+use a6a\a6a\Router\Router;
+use a6a\a6a\Service\Service;
+use a6a\a6a\Session\Session;
 use a6a\a6a\Setup\Setupable;
-use a6a\a6a\Setup\SetupInterface;
+use a6a\a6a\Setup\Setup;
 use a6a\a6a\Storage\Storable;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 use a6a\a6a\Storage\Store;
 use A6A\Aether\Aether;
 use League\CLImate\CLImate;
@@ -31,6 +31,7 @@ use function array_pop;
 use function is_null;
 use function is_array;
 use function file_exists;
+use function implode;
 
 class Aetheria
 {
@@ -39,67 +40,48 @@ class Aetheria
     /**
      * Construct the web stuff slinging thinger
      *
-     * @param array<ExtensionInterface>|null $extensions Optional extensions to WebFoo.
+     * @param array<Extension>|null $extensions Optional extensions to WebFoo.
      */
     public function __construct(
-        AsyncInterface $async,
-        ConfigInterface $config,
-        MediaInterface $media,
-        PageInterface $page,
-        PostInterface $post,
-        RequestInterface $request,
-        ResponseInterface $response,
-        RouterInterface $router,
-        SessionInterface $session,
-        StorageInterface $storage,
-        //        $extensions = null
+        Async $async,
+        Config $config,
+        Media $media,
+        Page $page,
+        Post $post,
+        Request $request,
+        Response $response,
+        Router $router,
+        Session $session,
+        Storage $storage,
+        ?array $extensions = null
     ) {
-        //        $services = compact(
-        ////            'async',
-        ////            'config',
-        ////            'media',
-        ////            'page',
-        ////            'post',
-        ////            'request',
-        ////            'response',
-        ////            'router',
-        ////            'session',
-        ////            'storage',
-        //        );
-        //        $services = [];
-        //        foreach($services as $service_name => $service){
-        //            $this->_service($service_name, $service);
-        //        }
-        //
-        //        foreach($this->getServices() as $service){
-        //            $this->_serviceRoutes($service);
-        //            $this->_serviceStores($service);
-        //        }
-        //
-        //        if(!empty($extensions)) {
-        //            foreach($extensions as $extension){
-        //                $this->_extend($extension);
-        //            }
-        //        }
-        //
-        //        if($this->hasHTTPLinks()) {
-        //            $this->getResponse()->mergeHeaders('Link: ' . implode(',', $this->getHTTPLinks()));
-        //        }
-        $this->_service('config', $config);
-        $this->_service('request', $request);
-        $this->_service('response', $response);
-        $this->_service('router', $router);
-        $this->_service('session', $session);
-        $this->_service('storage', $storage);
-        $this->_service('async', $async);
-        $this->_service('media', $media);
-        $this->_service('post', $post);
-        $this->_service('page', $page);
+        $this->service('config', $config);
+        $this->service('request', $request);
+        $this->service('response', $response);
+        $this->service('router', $router);
+        $this->service('session', $session);
+        $this->service('storage', $storage);
+        $this->service('async', $async);
+        $this->service('media', $media);
+        $this->service('post', $post);
+        $this->service('page', $page);
 
         foreach ($this->getServices() as $service) {
-            $this->_serviceRoutes($service);
-            $this->_serviceStores($service);
+            $this->serviceRoutes($service);
+            $this->serviceStores($service);
         }
+
+        if (! empty($extensions)) {
+            foreach ($extensions as $extension) {
+                $this->_extend($extension);
+            }
+        }
+
+        if (! $this->hasHTTPLinks()) {
+            return;
+        }
+
+        $this->getResponse()->mergeHeaders('Link: ' . implode(',', $this->getHTTPLinks()));
     }
 
     /**
@@ -108,9 +90,9 @@ class Aetheria
      * @param string|int $service_name The name to use when registering this service
  * with webfoo. If not a string, will use the
  * class name as the name.
-     * @param ServiceInterface $service The service to register.
+     * @param Service $service The service to register.
      */
-    private function _service(string|int $service_name, ServiceInterface $service): void
+    private function service(string|int $service_name, Service $service): void
     {
         if (! is_string($service_name)) {
             $class_path_parts = explode('\\', $service::class);
@@ -131,7 +113,7 @@ class Aetheria
      *
      * @param string $class_index The index into the data array where this service is referenced.
      */
-    private function _serviceRoutes(string $class_index): void
+    private function serviceRoutes(string $class_index): void
     {
         $service = $this->data[$class_index];
 
@@ -163,7 +145,7 @@ class Aetheria
      *
      * @param string $class_index The index into the data array where this service is referenced.
      */
-    private function _serviceStores(string $class_index): void
+    private function serviceStores(string $class_index): void
     {
         $service = $this->data[$class_index];
 
@@ -192,9 +174,9 @@ class Aetheria
     /**
      * Extend functionality with the provided extension
      *
-     * @param ExtensionInterface $extension The extension.
+     * @param Extension $extension The extension.
      */
-    private function _extend(ExtensionInterface $extension): void
+    private function extend(Extension $extension): void
     {
         $class_path_parts = explode('\\', $extension::class);
         $class_index = $this->_underscore(array_pop($class_path_parts));
@@ -203,8 +185,8 @@ class Aetheria
 
         $this->data[$class_index] = $extension;
 
-        $this->_extensionRoutes($class_index, $extension);
-        $this->_extensionLinks($extension);
+        $this->extensionRoutes($class_index, $extension);
+        $this->extensionLinks($extension);
         $this->getAsync()->register($extension);
     }
 
@@ -213,9 +195,9 @@ class Aetheria
      *
      * @param string $class_index The index into the data array where this
      *                                        extension is referenced.
-     * @param ExtensionInterface $extension The extension.
+     * @param Extension $extension The extension.
      */
-    private function _extensionRoutes(string $class_index, ExtensionInterface $extension): void
+    private function extensionRoutes(string $class_index, Extension $extension): void
     {
         if (! ($extension instanceof Routable)) {
             return;
@@ -243,15 +225,15 @@ class Aetheria
     /**
      * Add extension links to Response
      *
-     * @param ExtensionInterface $extension The extension.
+     * @param Extension $extension The extension.
      */
-    private function _extensionLinks(ExtensionInterface $extension): void
+    private function extensionLinks(Extension $extension): void
     {
-        if (! ($extension instanceof HTTPLinkable)) {
+        if (! ($extension instanceof HttpLinkable)) {
             return;
         }
 
-        $links = $extension->getHTTPLinks();
+        $links = $extension->getHttpLinks();
 
         if (! $links) {
             return;
@@ -285,7 +267,7 @@ class Aetheria
                 : $that->$method();
 
             if ($template) {
-                $this->_includeTemplate($template);
+                $this->includeTemplate($template);
             }
         } catch (Redirect $redirect) {
             $response->mergeHeaders('Location: ' . $redirect->getMessage());
@@ -306,7 +288,7 @@ class Aetheria
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function _sling404(): array
+    private function sling404(): array
     {
         $this->getResponse()->setCode(404);
         $this->getConfig()->setTitle(
@@ -325,7 +307,7 @@ class Aetheria
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function _sling405(array $allowed_methods): array
+    private function sling405(array $allowed_methods): array
     {
         $this->setAllowedMethods($allowed_methods);
 
@@ -344,7 +326,7 @@ class Aetheria
      *
      * @return int The exit status code.
      */
-    public function setup(CLImate $cli, SetupInterface $setup): int
+    public function setup(CLImate $cli, Setup $setup): int
     {
         $extensions = $this->getExtensions();
 
@@ -372,7 +354,7 @@ class Aetheria
             return;
         }
 
-        $this->_includeTemplate('webfoo_controls.php');
+        $this->includeTemplate('webfoo_controls.php');
     }
 
     /**
@@ -380,15 +362,15 @@ class Aetheria
      *
      * @param string|array<string> $template The filename to include or a pair of primary and alternate.
      */
-    private function _includeTemplate(string|array $template): void
+    private function includeTemplate(string|array $template): void
     {
         if (is_array($template)) {
-            $this->_includeTemplateWithAlternate($template[0], $template[1]);
+            $this->includeTemplateWithAlternate($template[0], $template[1]);
 
             return;
         }
 
-        $this->_includeTemplateWithAlternate($template);
+        $this->includeTemplateWithAlternate($template);
     }
 
     /**
@@ -400,7 +382,7 @@ class Aetheria
      *
      * @psalm-suppress UnresolvableInclude
      */
-    private function _includeTemplateWithAlternate(string $template, string $alternate = ''): void
+    private function includeTemplateWithAlternate(string $template, string $alternate = ''): void
     {
         if (file_exists(From::TEMPLATES___LOCAL->dir() . $template)) {
             /**

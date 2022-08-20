@@ -3,11 +3,11 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Page\PageInterface;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Page\Page as PageA6a;
+use a6a\a6a\Response\Response;
 use a6a\a6a\Router\Routable;
 use a6a\a6a\Router\Route;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Storage\Storage;
 
 use function realpath;
 use function strpos;
@@ -16,17 +16,17 @@ use function file_exists;
 /**
  * The Page class slings page templates
  */
-class Page implements PageInterface, Routable
+class Page implements PageA6a, Routable
 {
     use Aether;
 
     /**
      * Store a local reference to the response
      *
-     * @param ResponseInterface $response The response.
-     * @param StorageInterface $storage The storage service.
+     * @param Response $response The response.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(ResponseInterface $response, StorageInterface $storage)
+    public function __construct(Response $response, Storage $storage)
     {
         $this->setResponse($response);
         $this->setStorage($storage);

@@ -2,25 +2,25 @@
 
 namespace a6a\a6a\Post;
 
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Response\ResponseInterface;
-use a6a\a6a\Service\ServiceInterface;
-use a6a\a6a\Storage\StorageInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Response\Response;
+use a6a\a6a\Service\Service;
+use a6a\a6a\Storage\Storage;
 use DateTime;
 
 /**
  * The Post service interface
  */
-interface PostInterface extends ServiceInterface
+interface Post extends Service
 {
     /**
      * Store a local reference to the active configuration
      *
-     * @param ConfigInterface $config The active configuration.
-     * @param ResponseInterface $response The response.
-     * @param StorageInterface $storage The storage service.
+     * @param Config $config The active configuration.
+     * @param Response $response The response.
+     * @param Storage $storage The storage service.
      */
-    public function __construct(ConfigInterface $config, ResponseInterface $response, StorageInterface $storage);
+    public function __construct(Config $config, Response $response, Storage $storage);
 
     /**
      * Make post directory in local storage based on publication date

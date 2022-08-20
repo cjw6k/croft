@@ -2,20 +2,20 @@
 
 namespace a6a\a6a\Storage;
 
-use a6a\a6a\Config\ConfigInterface;
-use a6a\a6a\Service\ServiceInterface;
+use a6a\a6a\Config\Config;
+use a6a\a6a\Service\Service;
 use Exception;
 
-interface StorageInterface extends ServiceInterface
+interface Storage extends Service
 {
     /**
      * Store a local reference to the active configuration
      *
-     * @param ConfigInterface $config The active configuration.
+     * @param Config $config The active configuration.
      *
      * @throws Exception The method has not been implemented.
      */
-    public function __construct(ConfigInterface $config);
+    public function __construct(Config $config);
 
     /**
      * Register a prefix in for storage in segment

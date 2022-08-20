@@ -1,19 +1,70 @@
 <?php
 
+namespace Tests\Context;
+
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Behat\MinkExtension\Context\MinkContext;
+use Croft\From;
+use IndieAuth\Client;
+use IndieWeb\MentionClient;
+
+use function PHPUnit\Framework\assertArrayHasKey;
+use function PHPUnit\Framework\assertArrayNotHasKey;
+use function PHPUnit\Framework\assertContains;
+use function PHPUnit\Framework\assertEmpty;
+use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertFileDoesNotExist;
+use function PHPUnit\Framework\assertFileExists;
+use function PHPUnit\Framework\assertIsArray;
+use function PHPUnit\Framework\assertNotContains;
+use function PHPUnit\Framework\assertNotEmpty;
+use function PHPUnit\Framework\assertNotFalse;
+use function PHPUnit\Framework\assertObjectHasAttribute;
+use function PHPUnit\Framework\assertTrue;
+use function rtrim;
+use function str_replace;
+use function glob;
+use function is_file;
+use function unlink;
+use function parse_url;
+use function parse_str;
+use function hash;
+use function yaml_parse_file;
+use function password_hash;
+use function time;
+use function yaml_emit_file;
+use function json_decode;
+use function password_verify;
+use function preg_match;
+use function substr;
+use function strlen;
+use function file_get_contents;
+use function yaml_parse;
+use function trim;
+use function strrev;
+use function strpos;
+use function explode;
+use function json_encode;
+use function uniqid;
+use function file_exists;
+use function file_put_contents;
+use function chmod;
+use function str_ends_with;
+use function str_starts_with;
+
+use const PASSWORD_DEFAULT;
 
 /**
  * Defines application features from the specific context.
  */
-class PublicContext extends MinkContext implements Context, SnippetAcceptingContext
+class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
 {
-    use WebContextTrait;
+    use Web;
 
-    private $_auth_url;
+    private string $authUrl;
 
     /** @BeforeScenario @micropub_authorized */
     public function micropubAuthorizedBefore(): void
@@ -32,32 +83,32 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I start an IndieAuth authorization flow */
     public function iStartAnIndieauthAuthorizationFlow(): void
     {
-        IndieAuth\Client::$clientID = 'https://example.com';
-        IndieAuth\Client::$redirectURL = 'https://example.com/redirect.php';
+        Client::$clientID = 'https://example.com';
+        Client::$redirectURL = 'https://example.com/redirect.php';
     }
 
     /** @When the client tries to discover the authorization endpoint */
     public function theClientTriesToDiscoverTheAuthorizationEndpoint(): void
     {
-        $this->_auth_url = IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url);
-        assertNotEmpty($this->_auth_url);
+        $this->authUrl = Client::discoverAuthorizationEndpoint($this->base_url);
+        assertNotEmpty($this->authUrl);
     }
 
     /** @Then the authorization_endpoint is base_url plus :arg1 */
-    public function theAuthorizationEndpointIsBaseURLPlus($arg1): void
+    public function theAuthorizationEndpointIsBaseURLPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_auth_url);
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->authUrl);
     }
 
     /** @When the client tries to discover the token endpoint */
     public function theClientTriesToDiscoverTheTokenEndpoint(): void
     {
-        $this->_token_url = IndieAuth\Client::discoverTokenEndpoint($this->base_url);
+        $this->_token_url = Client::discoverTokenEndpoint($this->base_url);
         assertNotEmpty($this->_token_url);
     }
 
     /** @Then the token_endpoint is base_url plus :arg1 */
-    public function theTokenEndpointIsBaseUrlPlus($arg1): void
+    public function theTokenEndpointIsBaseUrlPlus(string $arg1): void
     {
         assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_token_url);
     }
@@ -65,8 +116,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I receive an authentication request */
     public function iReceiveAnAuthenticationRequest(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://example.com/',
             'https://example.com/',
@@ -87,8 +138,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given the authentication request has no me parameter */
     public function theAuthenticationRequestHasNoMeParameter(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             '',
             'https://example.com/',
             'https://example.com/',
@@ -101,10 +152,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given the authentication request has me parameter :arg1 */
-    public function theAuthenticationRequestHasMeParameter($arg1): void
+    public function theAuthenticationRequestHasMeParameter(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $arg1,
             'https://example.com/',
             'https://example.com/',
@@ -118,8 +169,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given the authentication request has no client_id parameter */
     public function theAuthenticationRequestHasNoClientIdParameter(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://example.com/',
             '',
@@ -132,10 +183,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given the authentication request has client_id :arg1 */
-    public function theAuthenticationRequestHasClientId($arg1): void
+    public function theAuthenticationRequestHasClientId(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://example.com/',
             $arg1,
@@ -149,8 +200,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given the authentication request has no redirect_uri parameter */
     public function theAuthenticationRequestHasNoRedirectUriParameter(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             '',
             'https://example.com/',
@@ -163,10 +214,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given the authentication request has redirect_uri parameter :arg1 */
-    public function theAuthenticationRequestHasRedirectUriParameter($arg1): void
+    public function theAuthenticationRequestHasRedirectUriParameter(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             $arg1,
             'https://example.com/',
@@ -178,10 +229,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given the authentication request has redirect_uri parameter :arg1 with client_id :arg2 */
-    public function theAuthenticationRequestHasRedirectUriParameterWithClientId($arg1, $arg2): void
+    public function theAuthenticationRequestHasRedirectUriParameterWithClientId(string $arg1, string $arg2): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             $arg1,
             $arg2,
@@ -195,8 +246,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given the authentication request has no state parameter */
     public function theAuthenticationRequestHasNoStateParameter(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://example.com/',
             'https://example.com/',
@@ -209,10 +260,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given the authentication request has scope parameter :arg1 */
-    public function theAuthenticationRequestHasScopeParameter($arg1): void
+    public function theAuthenticationRequestHasScopeParameter(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://example.com/',
             'https://example.com/',
@@ -225,10 +276,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I receive an authentication request from :arg1 */
-    public function iReceiveAnAuthenticationRequestFrom($arg1): void
+    public function iReceiveAnAuthenticationRequestFrom(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             $arg1,
             $arg1,
@@ -242,7 +293,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I have not approved an authentication request */
     public function iHaveNotApprovedAnAuthenticationRequest(): void
     {
-        $files = glob(VAR_ROOT . 'indieauth/auth-*');
+        $files = glob(From::VAR->dir() . 'indieauth/auth-*');
 
         foreach ($files as $file) {
             if (! is_file($file)) {
@@ -262,7 +313,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             [
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
-                'code' => $this->_indieauth_code ?? 'test',
+                'code' => $this->indieAuthCode ?? 'test',
             ]
         );
     }
@@ -271,8 +322,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function iHaveApprovedAnAuthenticationRequest(): void
     {
         $this->iAmLoggedIn();
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -284,7 +335,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->getPage()->findButton('Continue')->press();
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
+        $this->indieAuthCode = $params['code'];
         $this->resetSession();
     }
 
@@ -297,7 +348,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             [
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
-            //'code' => 'test',
+                //'code' => 'test',
             ]
         );
     }
@@ -309,7 +360,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             'POST',
             '/auth/',
             [
-            // 'client_id' => 'http://localhost/fake/',
+                // 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
             ]
@@ -324,7 +375,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             '/auth/',
             [
                 'client_id' => 'http://localhost/fake/',
-            // 'redirect_uri' => 'http://localhost/fake/',
+                // 'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
             ]
         );
@@ -333,9 +384,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Then the authorization code should be marked as having been used */
     public function theAuthorizationCodeShouldBeMarkedAsHavingBeenUsed(): void
     {
-        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->indieAuthCode}]");
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
         assertNotFalse($approval);
         assertEquals(1, $approval['used']);
     }
@@ -343,9 +394,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Then the authorization code should be marked as having been used twice */
     public function theAuthorizationCodeShouldBeMarkedAsHavingBeenUsedTwice(): void
     {
-        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->indieAuthCode}]");
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
         assertNotFalse($approval);
         assertEquals(2, $approval['used']);
     }
@@ -354,7 +405,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function iHaveApprovedAnAuthenticationRequestMoreThanTenMinutesAgo(): void
     {
         $client_id = $redirect_uri = 'http://localhost/fake/';
-        $this->_indieauth_code = $code = 'expired';
+        $this->indieAuthCode = $code = 'expired';
         $approval = [
             'client_id' => $client_id,
             'redirect_uri' => $redirect_uri,
@@ -364,24 +415,24 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         ];
 
         $filename = hash('sha1', "[$client_id][$redirect_uri][$code]");
-        assertNotFalse(yaml_emit_file(VAR_ROOT . 'indieauth/auth-' . $filename, $approval));
+        assertNotFalse(yaml_emit_file(From::VAR->dir() . 'indieauth/auth-' . $filename, $approval));
     }
 
     /** @Then the authorization code should not be marked as having been used */
     public function theAuthorizationCodeShouldNotBeMarkedAsHavingBeenUsed(): void
     {
         $client_id = $redirect_uri = 'http://localhost/fake/';
-        $filename = hash('sha1', "[$client_id][$redirect_uri][{$this->_indieauth_code}]");
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $filename = hash('sha1', "[$client_id][$redirect_uri][{$this->indieAuthCode}]");
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
         assertEquals(0, $approval['used']);
     }
 
     /** @Given I receive an authorization request */
     public function iReceiveAnAuthorizationRequest(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -393,10 +444,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I receive an authorization request with client_id :arg1 and redirect_uri :arg2 */
-    public function iReceiveAnAuthorizationRequestWithClientIdAndRedirectUri($arg1, $arg2): void
+    public function iReceiveAnAuthorizationRequestWithClientIdAndRedirectUri(string $arg1, string $arg2): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             $arg2,
             $arg1,
@@ -410,8 +461,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given the authorization request is missing the scope parameter */
     public function theAuthorizationRequestIsMissingTheScopeParameter(): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -425,10 +476,10 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I receive an authorization request with scope parameter :arg1 */
-    public function iReceiveAnAuthorizationRequestWithScopeParameter($arg1): void
+    public function iReceiveAnAuthorizationRequestWithScopeParameter(string $arg1): void
     {
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -440,37 +491,37 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Then the authorization record should have scope :arg1 */
-    public function theAuthorizationRecordShouldHaveScope($arg1): void
+    public function theAuthorizationRecordShouldHaveScope(string $arg1): void
     {
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
-        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $this->indieAuthCode = $params['code'];
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->indieAuthCode}]");
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
         assertNotFalse($approval);
         assertContains($arg1, $approval['scopes']);
     }
 
     /** @Then the authorization record should not have scope :arg1 */
-    public function theAuthorizationRecordShouldNotHaveScope($arg1): void
+    public function theAuthorizationRecordShouldNotHaveScope(string $arg1): void
     {
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
-        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->_indieauth_code}]");
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $filename);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $filename);
+        $this->indieAuthCode = $params['code'];
+        $filename = hash('sha1', "[http://localhost/fake/][http://localhost/fake/][{$this->indieAuthCode}]");
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $filename);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $filename);
         assertNotFalse($approval);
         assertNotContains($arg1, $approval['scopes']);
     }
 
     /** @Given I have approved an authorization request with scope parameter :arg1 */
-    public function iHaveApprovedAnAuthorizationRequestWithScopeParameter($arg1): void
+    public function iHaveApprovedAnAuthorizationRequestWithScopeParameter(string $arg1): void
     {
         $this->iAmLoggedIn();
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -482,17 +533,17 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->getPage()->findButton('Continue')->press();
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
+        $this->indieAuthCode = $params['code'];
         $this->resetSession();
     }
 
     /** @When the client requests a token */
     public function theClientRequestsAToken(): void
     {
-        $token_endpoint = IndieAuth\Client::discoverTokenEndpoint($this->base_url);
-        $token = IndieAuth\Client::getAccessToken(
+        $token_endpoint = Client::discoverTokenEndpoint($this->base_url);
+        Client::getAccessToken(
             $token_endpoint,
-            $this->_indieauth_code,
+            $this->indieAuthCode,
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -501,18 +552,18 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Then the json :arg1 parameter should match the recorded access token */
-    public function theJsonParameterShouldMatchTheRecordedAccessToken($arg1): void
+    public function theJsonParameterShouldMatchTheRecordedAccessToken(string $arg1): void
     {
         $content = $this->getSession()->getPage()->getContent();
         $json = json_decode($content);
         assertNotFalse($json);
         assertObjectHasAttribute($arg1, $json);
         $response_token = $json->$arg1;
-        assertFileExists(VAR_ROOT . 'indieauth/token-' . $response_token);
-        $auth = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $response_token);
-        assertFileExists(VAR_ROOT . 'indieauth/auth-' . $auth['auth']);
-        $approval = yaml_parse_file(VAR_ROOT . 'indieauth/auth-' . $auth['auth']);
-        assertTrue(password_verify($this->_indieauth_code, $approval['code']));
+        assertFileExists(From::VAR->dir() . 'indieauth/token-' . $response_token);
+        $auth = yaml_parse_file(From::VAR->dir() . 'indieauth/token-' . $response_token);
+        assertFileExists(From::VAR->dir() . 'indieauth/auth-' . $auth['auth']);
+        $approval = yaml_parse_file(From::VAR->dir() . 'indieauth/auth-' . $auth['auth']);
+        assertTrue(password_verify($this->indieAuthCode, $approval['code']));
     }
 
     /** @Given I receive a token request with no grant_type parameter */
@@ -522,7 +573,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             'POST',
             '/token/',
             [
-            // 'grant_type' => 'authorization_code',
+                // 'grant_type' => 'authorization_code',
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
@@ -532,7 +583,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I receive a token request with grant_type parameter :arg1 */
-    public function iReceiveATokenRequestWithGrantTypeParameter($arg1): void
+    public function iReceiveATokenRequestWithGrantTypeParameter(string $arg1): void
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
@@ -555,7 +606,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             '/token/',
             [
                 'grant_type' => 'authorization_code',
-            //'client_id' => 'http://localhost/fake/',
+                //'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
                 'me' => 'http://localhost/',
@@ -572,7 +623,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             [
                 'grant_type' => 'authorization_code',
                 'client_id' => 'http://localhost/fake/',
-            //'redirect_uri' => 'http://localhost/fake/',
+                //'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
                 'me' => 'http://localhost/',
             ]
@@ -589,7 +640,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
                 'grant_type' => 'authorization_code',
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
-            //'code' => 'test',
+                //'code' => 'test',
                 'me' => 'http://localhost/',
             ]
         );
@@ -606,7 +657,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
                 'code' => 'test',
-            //'me' => 'http://localhost/'
+                //'me' => 'http://localhost/'
             ]
         );
     }
@@ -627,7 +678,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
                 'grant_type' => 'authorization_code',
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
-                'code' => $this->_indieauth_code ?? 'test',
+                'code' => $this->indieAuthCode ?? 'test',
                 'me' => 'http://localhost/',
             ]
         );
@@ -657,8 +708,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function iHaveApprovedAnAuthorizationRequest(): void
     {
         $this->iAmLoggedIn();
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'http://localhost/fake/',
             'http://localhost/fake/',
@@ -670,14 +721,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->getPage()->findButton('Continue')->press();
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
+        $this->indieAuthCode = $params['code'];
         $this->resetSession();
     }
 
     /** @Given no tokens have been issued */
     public function noTokensHaveBeenIssued(): void
     {
-        $files = glob(VAR_ROOT . 'indieauth/token-*');
+        $files = glob(From::VAR->dir() . 'indieauth/token-*');
 
         foreach ($files as $file) {
             if (! is_file($file)) {
@@ -730,7 +781,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function anAccessTokenHasBeenIssued(): void
     {
         $this->iReceiveATokenRequest();
-        assertFileExists(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+        assertFileExists(From::VAR->dir() . 'indieauth/token-' . $this->_indieauth_token);
     }
 
     /** @Given an access token has been issued to micropub.rocks */
@@ -743,7 +794,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
                 'grant_type' => 'authorization_code',
                 'client_id' => 'https://micropub.rocks/fake/',
                 'redirect_uri' => 'https://micropub.rocks/fake/',
-                'code' => $this->_indieauth_code,
+                'code' => $this->indieAuthCode,
                 'me' => 'http://localhost/',
             ]
         );
@@ -754,13 +805,13 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             $this->_indieauth_token = $response->access_token;
         }
 
-        assertFileExists(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+        assertFileExists(From::VAR->dir() . 'indieauth/token-' . $this->_indieauth_token);
     }
 
     /** @Then the token should be marked as revoked */
     public function theTokenShouldBeMarkedAsRevoked(): void
     {
-        $token = yaml_parse_file(VAR_ROOT . 'indieauth/token-' . $this->_indieauth_token);
+        $token = yaml_parse_file(From::VAR->dir() . 'indieauth/token-' . $this->_indieauth_token);
         assertNotFalse($token);
         assertArrayHasKey('revoked', $token);
     }
@@ -768,19 +819,20 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I use the indieauth-client library */
     public function iUseTheIndieauthClientLibrary(): void
     {
+        // this is currently the only option available
     }
 
     /** @When the client tries to discover the micropub endpoint */
     public function theClientTriesToDiscoverTheMicropubEndpoint(): void
     {
-        $this->_micropub_endpoint = IndieAuth\Client::discoverMicropubEndpoint($this->base_url);
-        assertNotEmpty($this->_micropub_endpoint);
+        $this->micropubEndpoint = Client::discoverMicropubEndpoint($this->base_url);
+        assertNotEmpty($this->micropubEndpoint);
     }
 
     /** @Then the micropub endpoint is base_url plus :arg1 */
-    public function theMicropubEndpointIsBaseUrlPlus($arg1): void
+    public function theMicropubEndpointIsBaseUrlPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_micropub_endpoint);
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->micropubEndpoint);
     }
 
     /** @When I receive a micropub request */
@@ -818,8 +870,8 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function iHaveAuthorizedMicropubRocks(): void
     {
         $this->iAmLoggedIn();
-        $authorization_url = IndieAuth\Client::buildAuthorizationURL(
-            IndieAuth\Client::discoverAuthorizationEndpoint($this->base_url),
+        $authorization_url = Client::buildAuthorizationURL(
+            Client::discoverAuthorizationEndpoint($this->base_url),
             $this->base_url,
             'https://micropub.rocks/fake/',
             'https://micropub.rocks/fake/',
@@ -831,7 +883,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->getPage()->findButton('Continue')->press();
         $redirect_url = parse_url($this->getSession()->getCurrentUrl());
         parse_str($redirect_url['query'], $params);
-        $this->_indieauth_code = $params['code'];
+        $this->indieAuthCode = $params['code'];
         $this->resetSession();
     }
 
@@ -910,11 +962,14 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
         $permalink = $headers['Location'][0];
-        assertEquals(1, preg_match('/[0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/$/', $permalink));
+        assertEquals(
+            1,
+            preg_match('/[0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/$/', $permalink)
+        );
     }
 
     /** @Given I create a new micropub post with content :arg1 */
-    public function iCreateANewMicropubPostWithContent($arg1): void
+    public function iCreateANewMicropubPostWithContent(string $arg1): void
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
@@ -926,13 +981,13 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         );
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
-        $this->_micropub_post_permalink = $headers['Location'][0];
+        $this->micropubPostPermalink = $headers['Location'][0];
     }
 
     /** @When I visit the post permalink */
     public function iVisitThePostPermalink(): void
     {
-        $this->getSession()->visit($this->_micropub_post_permalink);
+        $this->getSession()->visit($this->micropubPostPermalink);
     }
 
     /** @Given I have received a micropub request to create: */
@@ -954,75 +1009,105 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         $this->getSession()->getDriver()->getClient()->request('POST', '/micropub/', $post_params);
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
-        $this->_micropub_post_permalink = $headers['Location'][0];
+        $this->micropubPostPermalink = $headers['Location'][0];
     }
 
     /** @Then the post record should have yaml front matter */
     public function thePostRecordShouldHaveYamlFrontMatter(): void
     {
-        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
-        assertFileExists(CONTENT_ROOT . $matches[1] . 'web.foo');
-        $post_record = file_get_contents(CONTENT_ROOT . $matches[1] . 'web.foo');
+        assertEquals(
+            1,
+            preg_match(
+                '/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/',
+                $this->micropubPostPermalink,
+                $matches
+            )
+        );
+        assertFileExists(From::CONTENT->dir() . $matches[1] . 'web.foo');
+        $post_record = file_get_contents(From::CONTENT->dir() . $matches[1] . 'web.foo');
         assertEquals(1, preg_match('/^(?m)(---$.*^...)$/Us', $post_record, $yaml));
-        $this->_front_matter = yaml_parse($yaml[1]);
+        $this->frontMatter = yaml_parse($yaml[1]);
         $this->_post_content = trim(substr($post_record, strlen($yaml[1])));
-        assertNotFalse($this->_front_matter);
+        assertNotFalse($this->frontMatter);
     }
 
     /** @Then the yaml should have a :arg1 key with value :arg2 */
-    public function theYamlShouldHaveAKeyWithValue($arg1, $arg2): void
+    public function theYamlShouldHaveAKeyWithValue(string $arg1, string $arg2): void
     {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertEquals($arg2, $this->_front_matter[$arg1]);
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertEquals($arg2, $this->frontMatter[$arg1]);
     }
 
     /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with an element :arg3 */
-    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithAnElement($arg1, $arg2, $arg3): void
-    {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertIsArray($this->_front_matter[$arg1]);
-        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
-        assertIsArray($this->_front_matter[$arg1][$arg2]);
-        assertContains($arg3, $this->_front_matter[$arg1][$arg2]);
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithAnElement(
+        string $arg1,
+        string $arg2,
+        string $arg3
+    ): void {
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertIsArray($this->frontMatter[$arg1]);
+        assertArrayHasKey($arg2, $this->frontMatter[$arg1]);
+        assertIsArray($this->frontMatter[$arg1][$arg2]);
+        assertContains($arg3, $this->frontMatter[$arg1][$arg2]);
     }
 
-    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element :arg4 */
-    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElement($arg1, $arg2, $arg3, $arg4): void
-    {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertIsArray($this->_front_matter[$arg1]);
-        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
-        assertIsArray($this->_front_matter[$arg1][$arg2]);
-        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
-        assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
-        assertContains($arg4, $this->_front_matter[$arg1][$arg2][$arg3]);
+    /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3
+     *       with an element :arg4
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElement(
+        string $arg1,
+        string $arg2,
+        string $arg3,
+        string $arg4
+    ): void {
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertIsArray($this->frontMatter[$arg1]);
+        assertArrayHasKey($arg2, $this->frontMatter[$arg1]);
+        assertIsArray($this->frontMatter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->frontMatter[$arg1][$arg2]);
+        assertIsArray($this->frontMatter[$arg1][$arg2][$arg3]);
+        assertContains($arg4, $this->frontMatter[$arg1][$arg2][$arg3]);
     }
 
-    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element the post permalink */
-    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThePostPermalink($arg1, $arg2, $arg3): void
-    {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertIsArray($this->_front_matter[$arg1]);
-        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
-        assertIsArray($this->_front_matter[$arg1][$arg2]);
-        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
-        assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
-        assertContains($this->_micropub_post_permalink, $this->_front_matter[$arg1][$arg2][$arg3]);
+    /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3
+     *       with an element the post permalink
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThePostPermalink(
+        string $arg1,
+        string $arg2,
+        string $arg3
+    ): void {
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertIsArray($this->frontMatter[$arg1]);
+        assertArrayHasKey($arg2, $this->frontMatter[$arg1]);
+        assertIsArray($this->frontMatter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->frontMatter[$arg1][$arg2]);
+        assertIsArray($this->frontMatter[$arg1][$arg2][$arg3]);
+        assertContains($this->micropubPostPermalink, $this->frontMatter[$arg1][$arg2][$arg3]);
     }
 
-    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element that ends with :arg4 */
-    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThatEndsWith($arg1, $arg2, $arg3, $arg4): void
-    {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertIsArray($this->_front_matter[$arg1]);
-        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
-        assertIsArray($this->_front_matter[$arg1][$arg2]);
-        assertArrayHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
-        assertIsArray($this->_front_matter[$arg1][$arg2][$arg3]);
+    /**
+     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3
+     *       with an element that ends with :arg4
+     */
+    public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThatEndsWith(
+        string $arg1,
+        string $arg2,
+        string $arg3,
+        string $arg4
+    ): void {
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertIsArray($this->frontMatter[$arg1]);
+        assertArrayHasKey($arg2, $this->frontMatter[$arg1]);
+        assertIsArray($this->frontMatter[$arg1][$arg2]);
+        assertArrayHasKey($arg3, $this->frontMatter[$arg1][$arg2]);
+        assertIsArray($this->frontMatter[$arg1][$arg2][$arg3]);
         $found = false;
         $arg4 = strrev($arg4);
 
-        foreach ($this->_front_matter[$arg1][$arg2][$arg3] as $value) {
+        foreach ($this->frontMatter[$arg1][$arg2][$arg3] as $value) {
             if (strpos(strrev($value), $arg4) !== 0) {
                 continue;
             }
@@ -1034,13 +1119,16 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Then the yaml nested array in :arg1 with a nested array in :arg2 should not have a key :arg3 */
-    public function theYamlNestedArrayInWithANestedArrayInShouldNotHaveAKey($arg1, $arg2, $arg3): void
-    {
-        assertArrayHasKey($arg1, $this->_front_matter);
-        assertIsArray($this->_front_matter[$arg1]);
-        assertArrayHasKey($arg2, $this->_front_matter[$arg1]);
-        assertIsArray($this->_front_matter[$arg1][$arg2]);
-        assertArrayNotHasKey($arg3, $this->_front_matter[$arg1][$arg2]);
+    public function theYamlNestedArrayInWithANestedArrayInShouldNotHaveAKey(
+        string $arg1,
+        string $arg2,
+        string $arg3
+    ): void {
+        assertArrayHasKey($arg1, $this->frontMatter);
+        assertIsArray($this->frontMatter[$arg1]);
+        assertArrayHasKey($arg2, $this->frontMatter[$arg1]);
+        assertIsArray($this->frontMatter[$arg1][$arg2]);
+        assertArrayNotHasKey($arg3, $this->frontMatter[$arg1][$arg2]);
     }
 
     /** @Then the post record should have content following the front matter */
@@ -1050,7 +1138,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Then the post record content should be :arg1 */
-    public function thePostRecordContentShouldBe($arg1): void
+    public function thePostRecordContentShouldBe(string $arg1): void
     {
         assertEquals($arg1, $this->_post_content);
     }
@@ -1059,7 +1147,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     public function iReceiveASourceQueryForThePost(): void
     {
         $this->getSession()->setRequestHeader('Authorization', 'Bearer ' . ($this->_indieauth_token ?? 'test'));
-        $this->getSession()->visit('/micropub/?q=source&url=' . $this->_micropub_post_permalink);
+        $this->getSession()->visit('/micropub/?q=source&url=' . $this->micropubPostPermalink);
     }
 
     /** @When I receive a source query that is missing the URL parameter */
@@ -1070,17 +1158,17 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @When I receive a source query for :arg1 */
-    public function iReceiveASourceQueryForUrl($arg1): void
+    public function iReceiveASourceQueryForUrl(string $arg1): void
     {
         $this->getSession()->setRequestHeader('Authorization', 'Bearer ' . ($this->_indieauth_token ?? 'test'));
         $this->getSession()->visit('/micropub/?q=source&url=' . $arg1);
     }
 
     /** @When I receive a source query for the post properties :arg1 */
-    public function iReceiveASourceQueryForThePostProperties($arg1): void
+    public function iReceiveASourceQueryForThePostProperties(string $arg1): void
     {
         $this->getSession()->setRequestHeader('Authorization', 'Bearer ' . ($this->_indieauth_token ?? 'test'));
-        $url = '/micropub/?q=source&url=' . $this->_micropub_post_permalink;
+        $url = '/micropub/?q=source&url=' . $this->micropubPostPermalink;
 
         foreach (explode(' ', $arg1) as $property) {
             $url .= '&properties[]=' . $property;
@@ -1092,30 +1180,9 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I have received a micropub request with embedded media to create: */
     public function iHaveReceivedAMicropubRequestWithEmbeddedMediaToCreate(TableNode $table): void
     {
-        $post_params = [
-            'access_token' => $this->_indieauth_token ?? 'test',
-        ];
+        $post_params = ['access_token' => $this->_indieauth_token ?? 'test'];
 
-        foreach ($table->getHash() as $row) {
-            if (substr($row['parameter'], -2) == '[]') {
-                if (strpos($row['value'], 'from_file:') === 0) {
-                    $value = trim(substr($row['value'], 10));
-                    $files[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = FIXTURES_ROOT . 'media/' . $value;
-                    continue;
-                }
-
-                $post_params[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = $row['value'];
-                continue;
-            }
-
-            if (strpos($row['value'], 'from_file:') === 0) {
-                $value = trim(substr($row['value'], 10));
-                $files[$row['parameter']] = FIXTURES_ROOT . 'media/' . $value;
-                continue;
-            }
-
-            $post_params[$row['parameter']] = $row['value'];
-        }
+        $files = $this->getFilesAndSetPostParamsFromMicropubRequest($table, $post_params);
 
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
@@ -1125,7 +1192,41 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         );
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
-        $this->_micropub_post_permalink = $headers['Location'][0];
+        $this->micropubPostPermalink = $headers['Location'][0];
+    }
+
+    /**
+     * @param string|array<string, list<string>> $postParams
+     *
+     * @return array{0: list<string>, 1: string|array<string, list<string>>}
+     */
+    private function getFilesAndSetPostParamsFromMicropubRequest(TableNode $table, array &$postParams): array
+    {
+        $files = [];
+
+        foreach ($table->getHash() as $row) {
+            if (str_ends_with($row['parameter'], '[]')) {
+                if (str_starts_with($row['value'], 'from_file:')) {
+                    $value = trim(substr($row['value'], 10));
+                    $files[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][]
+                        = From::TESTS___FIXTURES->dir() . 'media/' . $value;
+                    continue;
+                }
+
+                $postParams[substr($row['parameter'], 0, strlen($row['parameter']) - 2)][] = $row['value'];
+                continue;
+            }
+
+            if (str_starts_with($row['value'], 'from_file:')) {
+                $value = trim(substr($row['value'], 10));
+                $files[$row['parameter']] = From::TESTS___FIXTURES->dir() . 'media/' . $value;
+                continue;
+            }
+
+            $postParams[$row['parameter']] = $row['value'];
+        }
+
+        return [$files, $postParams];
     }
 
     /** @Given I have received a micropub request with embedded photo */
@@ -1137,17 +1238,17 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             [
                 'access_token' => $this->_indieauth_token ?? 'test',
             ],
-            ['photo' => FIXTURES_ROOT . 'media/0-1.jpg'],
+            ['photo' => From::TESTS___FIXTURES->dir() . 'media/0-1.jpg'],
         );
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
-        $this->_micropub_post_permalink = $headers['Location'][0];
+        $this->micropubPostPermalink = $headers['Location'][0];
     }
 
     /** @When I visit the photo url */
     public function iVisitThePhotoUrl(): void
     {
-        $this->getSession()->visit($this->_micropub_post_permalink . 'media/photo1.jpg');
+        $this->getSession()->visit($this->micropubPostPermalink . 'media/photo1.jpg');
     }
 
     /** @Given I receive a JSON-encoded micropub request to create a post that has no h parameter */
@@ -1188,11 +1289,11 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
         );
         $headers = $this->getSession()->getResponseHeaders();
         assertArrayHasKey('Location', $headers);
-        $this->_micropub_post_permalink = $headers['Location'][0];
+        $this->micropubPostPermalink = $headers['Location'][0];
     }
 
     /** @Then there should be a :arg1 element with text content :arg2 */
-    public function thereShouldBeAElementWithTextContent($arg1, $arg2): void
+    public function thereShouldBeAElementWithTextContent(string $arg1, string $arg2): void
     {
         $results = $this->getSession()->getPage()->findAll('css', $arg1);
         assertNotEmpty($results);
@@ -1212,20 +1313,21 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I use the mention-client library */
     public function iUseTheMentionClientLibrary(): void
     {
+        // this is the only supported option at present
     }
 
     /** @When the client tries to discover the webmention endpoint */
     public function theClientTriesToDiscoverTheWebmentionEndpoint(): void
     {
-        $client = new IndieWeb\MentionClient();
-        $this->_webmention_url = $client->discoverWebmentionEndpoint($this->base_url);
-        assertNotEmpty($this->_webmention_url);
+        $client = new MentionClient();
+        $this->webmentionUrl = $client->discoverWebmentionEndpoint($this->base_url);
+        assertNotEmpty($this->webmentionUrl);
     }
 
     /** @Then the webmention endpoint is base_url plus :arg1 */
-    public function theWebmentionEndpointIsBaseUrlPlus($arg1): void
+    public function theWebmentionEndpointIsBaseUrlPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_webmention_url);
+        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->webmentionUrl);
     }
 
     /** @Given I receive a webmention that has no target parameter */
@@ -1235,7 +1337,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             'POST',
             '/webmention/',
             [
-            // 'target' => 'http://localhost/',
+                // 'target' => 'http://localhost/',
                 'source' => 'http://localhost/',
             ],
         );
@@ -1249,7 +1351,7 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
             '/webmention/',
             [
                 'target' => 'http://localhost/',
-            // 'source' => 'http://localhost/',
+                // 'source' => 'http://localhost/',
             ],
         );
     }
@@ -1267,25 +1369,25 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I receive a webmention that has a target parameter :arg1 */
-    public function iReceiveAWebmentionThatHasATargetParameter($arg1): void
+    public function iReceiveAWebmentionThatHasATargetParameter(string $arg1): void
     {
         $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($arg1, 'http://localhost/');
     }
 
     /** @Given I receive a webmention that has a target parameter base_url plus :arg1 */
-    public function iReceiveAWebmentionThatHasATargetParameterBaseUrlPlus($arg1): void
+    public function iReceiveAWebmentionThatHasATargetParameterBaseUrlPlus(string $arg1): void
     {
         $this->iReceiveAWebmentionThatHasATargetParameter($this->base_url . $arg1);
     }
 
     /** @Given I receive a webmention that has a source parameter :arg1 */
-    public function iReceiveAWebmentionThatHasASourceParameterSource($arg1): void
+    public function iReceiveAWebmentionThatHasASourceParameterSource(string $arg1): void
     {
         $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter('http://localhost/', $arg1);
     }
 
     /** @Given I receive a webmention that has target parameter :arg1 and source parameter :arg2 */
-    public function iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($arg1, $arg2): void
+    public function iReceiveAWebmentionThatHasTargetParameterAndSourceParameter(string $arg1, string $arg2): void
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
@@ -1298,21 +1400,21 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Given I have created a new post with content :arg1 */
-    public function iHaveCreatedANewPostWithContent($arg1): void
+    public function iHaveCreatedANewPostWithContent(string $arg1): void
     {
         $this->iCreateANewMicropubPostWithContent($arg1);
     }
 
     /** @When I receive a webmention that has the post permalink in the target and source :arg1 */
-    public function iReceiveAWebmentionThatHasThePostPermalinkInTheTargetAndSource($arg1): void
+    public function iReceiveAWebmentionThatHasThePostPermalinkInTheTargetAndSource(string $arg1): void
     {
-        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, $arg1);
+        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->micropubPostPermalink, $arg1);
     }
 
     /** @Given I have no incoming webmentions spooled for verification */
     public function iHaveNoIncomingWebmentionsSpooledForVerification(): void
     {
-        $files = glob(VAR_ROOT . 'webmention/incoming-*');
+        $files = glob(From::VAR->dir() . 'webmention/incoming-*');
 
         foreach ($files as $file) {
             if (! is_file($file)) {
@@ -1326,23 +1428,26 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @When I receive a webmention from my own site that has the post permalink in the target */
     public function iReceiveAWebmentionFromMyOwnSiteThatHasThePostPermalinkInTheTarget(): void
     {
-        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, 'http://localhost/fake/');
+        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter(
+            $this->micropubPostPermalink,
+            'http://localhost/fake/'
+        );
     }
 
     /** @When I receive a webmention from :arg1 that has the post permalink in the target */
-    public function iReceiveAWebmentionFromThatHasThePostPermalinkInTheTarget($arg1): void
+    public function iReceiveAWebmentionFromThatHasThePostPermalinkInTheTarget(string $arg1): void
     {
-        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->_micropub_post_permalink, $arg1);
+        $this->iReceiveAWebmentionThatHasTargetParameterAndSourceParameter($this->micropubPostPermalink, $arg1);
     }
 
     /** @Then there should be an incoming webmention spooled for verification */
     public function thereShouldBeAnIncomingWebmentionSpooledForVerification(): void
     {
-        $spooled = glob(VAR_ROOT . 'webmention/incoming-*');
+        $spooled = glob(From::VAR->dir() . 'webmention/incoming-*');
         assertNotEmpty($spooled);
     }
 
-    private function _spoolIncomingWebmention($target, $source): void
+    private function spoolIncomingWebmention(string $target, string $source): void
     {
         $webmention = [
             'target' => $target,
@@ -1354,70 +1459,78 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
                 'remote_addr' => '',
             ],
         ];
-        yaml_emit_file(VAR_ROOT . 'webmention/incoming-' . uniqid(), $webmention);
+        yaml_emit_file(From::VAR->dir() . 'webmention/incoming-' . uniqid(), $webmention);
     }
 
     /** @Given I have an incoming webmention spooled for verification */
     public function iHaveAnIncomingWebmentionSpooledForVerification(): void
     {
-        $this->_spoolIncomingWebmention('http://localhost/fake/', 'http://localhost/fake/');
+        $this->spoolIncomingWebmention('http://localhost/fake/', 'http://localhost/fake/');
     }
 
     /** @Then I should have no incoming webmentions spooled for verification */
     public function iShouldHaveNoIncomingWebmentionsSpooledForVerification(): void
     {
-        $spooled = glob(VAR_ROOT . 'webmention/incoming-*');
+        $spooled = glob(From::VAR->dir() . 'webmention/incoming-*');
         assertEmpty($spooled);
     }
 
     /** @Given an async operation will start on the next visit */
     public function anAsyncOperationWillStartOnTheNextVisit(): void
     {
-        assertFileNotExists(VAR_ROOT . 'async/.async-active');
+        assertFileDoesNotExist(From::VAR->dir() . 'async/.async-active');
 
-        if (file_exists(VAR_ROOT . 'async/.async-last')) {
-            assertTrue(unlink(VAR_ROOT . 'async/.async-last'));
+        if (file_exists(From::VAR->dir() . 'async/.async-last')) {
+            assertTrue(unlink(From::VAR->dir() . 'async/.async-last'));
         }
 
-        file_put_contents(VAR_ROOT . 'async/.async-last', time() - 30);
-        chmod(VAR_ROOT . 'async/.async-last', 0777);
+        file_put_contents(From::VAR->dir() . 'async/.async-last', time() - 30);
+        chmod(From::VAR->dir() . 'async/.async-last', 0777);
     }
 
     /** @Given an async operation will not start on the next visit */
     public function anAsyncOperationWillNotStartOnTheNextVisit(): void
     {
-        assertFileNotExists(VAR_ROOT . 'async/.async-active');
+        assertFileDoesNotExist(From::VAR->dir() . 'async/.async-active');
 
-        if (file_exists(VAR_ROOT . 'async/.async-last')) {
-            assertTrue(unlink(VAR_ROOT . 'async/.async-last'));
+        if (file_exists(From::VAR->dir() . 'async/.async-last')) {
+            assertTrue(unlink(From::VAR->dir() . 'async/.async-last'));
         }
 
-        file_put_contents(VAR_ROOT . 'async/.async-last', time());
-        chmod(VAR_ROOT . 'async/.async-last', 0777);
+        file_put_contents(From::VAR->dir() . 'async/.async-last', time());
+        chmod(From::VAR->dir() . 'async/.async-last', 0777);
     }
 
     /** @Given I have an incoming webmention spooled for verification with target base_url plus :arg1 */
-    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetBaseUrlPlus($arg1): void
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetBaseUrlPlus(string $arg1): void
     {
-        $this->_spoolIncomingWebmention($this->base_url . 'fake/', 'http://localhost/fake2/');
+        $this->spoolIncomingWebmention($this->base_url . $arg1, 'http://localhost/fake2/');
     }
 
     /** @Given I have an incoming webmention spooled for verification with target the post permalink and source :arg1 */
-    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetThePostPermalinkAndSource($arg1): void
-    {
-        assertNotEmpty($this->_micropub_post_permalink);
-        $this->_spoolIncomingWebmention($this->_micropub_post_permalink, $arg1);
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetThePostPermalinkAndSource(
+        string $arg1
+    ): void {
+        assertNotEmpty($this->micropubPostPermalink);
+        $this->spoolIncomingWebmention($this->micropubPostPermalink, $arg1);
     }
 
     /** @Then the post record should have no webmentions */
     public function thePostRecordShouldHaveNoWebmentions(): void
     {
-        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
-        assertFileNotExists(CONTENT_ROOT . $matches[1] . 'web.mentions');
+        assertEquals(
+            1,
+            preg_match(
+                '/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/',
+                $this->micropubPostPermalink,
+                $matches
+            )
+        );
+        assertFileDoesNotExist(From::CONTENT->dir() . $matches[1] . 'web.mentions');
     }
 
     /** @Given I have created a webmention source post with content :arg1 */
-    public function iHaveCreatedAWebmentionSourcePostWithContent($arg1): void
+    public function iHaveCreatedAWebmentionSourcePostWithContent(string $arg1): void
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
@@ -1435,30 +1548,37 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     /** @Given I have created a webmention source post with content the post permalink */
     public function iHaveCreatedAWebmentionSourcePostWithContentThePostPermalink(): void
     {
-        $this->iHaveCreatedAWebmentionSourcePostWithContent($this->_micropub_post_permalink);
+        $this->iHaveCreatedAWebmentionSourcePostWithContent($this->micropubPostPermalink);
     }
 
     /** @Then the post record should have webmentions */
     public function thePostRecordShouldHaveWebmentions(): void
     {
-        assertEquals(1, preg_match('/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/', $this->_micropub_post_permalink, $matches));
-        assertFileExists(CONTENT_ROOT . $matches[1] . 'web.mentions');
-        $this->_post_webmentions = yaml_parse_file(CONTENT_ROOT . $matches[1] . 'web.mentions');
+        assertEquals(
+            1,
+            preg_match(
+                '/([0-9]{4}\/(?:(?:0[0-9])|1[0-2])\/(?:(?:[012][0-9])|3[0-1])\/[0-9]+\/)$/',
+                $this->micropubPostPermalink,
+                $matches
+            )
+        );
+        assertFileExists(From::CONTENT->dir() . $matches[1] . 'web.mentions');
+        $this->_post_webmentions = yaml_parse_file(From::CONTENT->dir() . $matches[1] . 'web.mentions');
         assertNotFalse($this->_post_webmentions);
     }
 
-    /** @Given I have an incoming webmention spooled for verification with target the post permalink and source the webmention source post permalink */
-    public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetThePostPermalinkAndSourceTheWebmentionSourcePostPermalink(): void
+    /** @Given I have an incoming webmention spooled for verification with matching targets */
+    public function iHaveAnIncomingWebmentionSpooledForVerificationWithMatchingTargets(): void
     {
-        assertNotEmpty($this->_micropub_post_permalink);
+        assertNotEmpty($this->micropubPostPermalink);
         assertNotEmpty($this->_webmention_source_permalink);
-        $this->_spoolIncomingWebmention($this->_micropub_post_permalink, $this->_webmention_source_permalink);
+        $this->spoolIncomingWebmention($this->micropubPostPermalink, $this->_webmention_source_permalink);
     }
 
     /** @Then there should be :arg1 generic webmentions */
-    public function thereShouldBeGenericWebmentions($arg1): void
+    public function thereShouldBeGenericWebmentions(int $arg1): void
     {
-        assertEquals(1, $this->_post_webmentions['generic']['count']);
+        assertEquals($arg1, $this->_post_webmentions['generic']['count']);
     }
 
     /** @Then the list of generic webmentions should contain the webmention source post permalink */
@@ -1468,32 +1588,32 @@ class PublicContext extends MinkContext implements Context, SnippetAcceptingCont
     }
 
     /** @Then there should be :arg1 repost webmentions */
-    public function thereShouldBeRepostWebmentions($arg1): void
+    public function thereShouldBeRepostWebmentions(int $arg1): void
     {
-        assertEquals(0, $this->_post_webmentions['repost']['count']);
+        assertEquals($arg1, $this->_post_webmentions['repost']['count']);
     }
 
     /** @Then there should be :arg1 response webmentions */
-    public function thereShouldBeResponseWebmentions($arg1): void
+    public function thereShouldBeResponseWebmentions(int $arg1): void
     {
-        assertEquals(0, $this->_post_webmentions['response']['count']);
+        assertEquals($arg1, $this->_post_webmentions['response']['count']);
     }
 
     /** @Then there should be :arg1 like webmentions */
-    public function thereShouldBeLikeWebmentions($arg1): void
+    public function thereShouldBeLikeWebmentions(int $arg1): void
     {
-        assertEquals(0, $this->_post_webmentions['response']['items']['like']['count']);
+        assertEquals($arg1, $this->_post_webmentions['response']['items']['like']['count']);
     }
 
     /** @Then there should be :arg1 bookmark webmentions */
-    public function thereShouldBeBookmarkWebmentions($arg1): void
+    public function thereShouldBeBookmarkWebmentions(int $arg1): void
     {
-        assertEquals(0, $this->_post_webmentions['response']['items']['bookmark']['count']);
+        assertEquals($arg1, $this->_post_webmentions['response']['items']['bookmark']['count']);
     }
 
     /** @Then there should be :arg1 reply webmentions */
-    public function thereShouldBeReplyWebmentions($arg1): void
+    public function thereShouldBeReplyWebmentions(int $arg1): void
     {
-        assertEquals(0, $this->_post_webmentions['response']['items']['reply']['count']);
+        assertEquals($arg1, $this->_post_webmentions['response']['items']['reply']['count']);
     }
 }

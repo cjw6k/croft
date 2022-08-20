@@ -17,22 +17,20 @@ use function file_exists;
 use function unlink;
 use function exec;
 use function implode;
-
-use const PHP_EOL;
-
 use function yaml_parse_file;
 use function preg_match;
 use function password_verify;
 
-require_once From::VENDOR->dir() . 'phpunit/phpunit/src/Framework/Assert/Functions.php';
+use const PHP_EOL;
 
 /**
  * Defines application features from the specific context.
  */
 class Cli implements Context, SnippetAcceptingContext
 {
-    private $cliOutput = null;
-    private $cliStatus = null;
+    /** @var list<string>|null */
+    private ?array $cliOutput = null;
+    private ?int $cliStatus = null;
 
     /** @BeforeScenario @make_config */
     public function makeEmptyConfig(): void
@@ -77,32 +75,32 @@ class Cli implements Context, SnippetAcceptingContext
     }
 
     /** @When I run the setup script with arguments :arg1 */
-    public function iRunTheSetupScriptWithArguments($arg1): void
+    public function iRunTheSetupScriptWithArguments(string $arg1): void
     {
         exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1, $this->cliOutput, $this->cliStatus);
     }
 
     /** @When I run the setup script with user :arg1 and URL :arg2 */
-    public function iRunTheSetupScriptWithUserAndUrl($arg1, $arg2): void
+    public function iRunTheSetupScriptWithUserAndUrl(string $arg1, string $arg2): void
     {
         exec('php ' . From::___->dir() . 'bin/setup.php ' . $arg1 . ' ' . $arg2, $this->cliOutput, $this->cliStatus);
     }
 
     /** @Then I should see :arg1 */
-    public function iShouldSee($arg1): void
+    public function iShouldSee(string $arg1): void
     {
         assertNotEmpty($this->cliOutput);
         assertStringContainsString($arg1, implode(PHP_EOL, $this->cliOutput));
     }
 
     /** @Then the exit status should be :arg1 */
-    public function theExitStatusShouldBe($arg1): void
+    public function theExitStatusShouldBe(string $arg1): void
     {
         assertEquals($arg1, $this->cliStatus);
     }
 
     /** @Then the config file should have key :arg1 with value :arg2 */
-    public function theConfigFileShouldHaveKeyWithValue($arg1, $arg2): void
+    public function theConfigFileShouldHaveKeyWithValue(string $arg1, string $arg2): void
     {
         $config = yaml_parse_file(From::___->dir() . 'config.yml');
         assertArrayHasKey($arg1, $config);
@@ -118,7 +116,10 @@ class Cli implements Context, SnippetAcceptingContext
     /** @Then the config file should contain the password hash */
     public function theConfigFileShouldContainThePasswordHash(): void
     {
-        assertEquals(1, preg_match('/^Your temporary password is: (.*)/m', implode(PHP_EOL, $this->cliOutput), $matches));
+        assertEquals(
+            1,
+            preg_match('/^Your temporary password is: (.*)/m', implode(PHP_EOL, $this->cliOutput), $matches)
+        );
         $config = yaml_parse_file(From::___->dir() . 'config.yml');
         assertArrayHasKey('password', $config);
         assertTrue(password_verify($matches[1], $config['password']));

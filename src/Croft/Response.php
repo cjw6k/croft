@@ -3,7 +3,7 @@
 namespace Croft;
 
 use A6A\Aether\Aether;
-use a6a\a6a\Response\ResponseInterface;
+use a6a\a6a\Response\Response as ResponseA6a;
 
 use function ob_start;
 use function session_id;
@@ -18,7 +18,7 @@ use function header;
 /**
  * The Response class composes and sends the response to the client when complete
  */
-class Response implements ResponseInterface
+class Response implements ResponseA6a
 {
     use Aether;
 
@@ -45,14 +45,14 @@ class Response implements ResponseInterface
 
         $this->setBody(ob_get_clean());
 
-        $this->_setContentLength();
+        $this->setContentLength();
 
         if ($this->hasHeaders()) {
-            $this->_sendHeaders();
+            $this->sendHeaders();
         }
 
         if ($this->hasBody()) {
-            $this->_sendBody();
+            $this->sendBody();
         }
 
         flush();
@@ -62,7 +62,7 @@ class Response implements ResponseInterface
     /**
      * Calculate the length of the response body and set the content-length HTTP header
      */
-    private function _setContentLength(): void
+    private function setContentLength(): void
     {
         $content_length = $this->hasBody() ? strlen($this->getBody()) : 0;
         $this->mergeHeaders("Content-Length: $content_length");
@@ -71,7 +71,7 @@ class Response implements ResponseInterface
     /**
      * Send the HTTP headers
      */
-    private function _sendHeaders(): void
+    private function sendHeaders(): void
     {
         if ($this->hasCode()) {
             http_response_code($this->getCode());
@@ -85,7 +85,7 @@ class Response implements ResponseInterface
     /**
      * Send the response body
      */
-    private function _sendBody(): void
+    private function sendBody(): void
     {
         echo $this->getBody();
     }
