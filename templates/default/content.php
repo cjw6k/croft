@@ -1,17 +1,18 @@
 <?php
 
-/** @var Croft $this */
-
 use Croft\Croft;
 
-$mf2ish = $this->getPost()->getFrontMatter();
+/** @var Croft $croft */
+$croft = $this;
+
+$mf2ish = $croft->getPost()->getFrontMatter();
 
 if (isset($mf2ish['item']['properties']['visibility'][0])) {
     switch ($mf2ish['item']['properties']['visibility'][0]) {
         case 'private':
         case 'draft':
-            if (! $this->getSession()->isLoggedIn()) {
-                $this->sling404();
+            if (! $croft->getSession()->isLoggedIn()) {
+                $croft->sling404();
 
                 return;
             }
@@ -34,7 +35,7 @@ require 'header.php';
 
     ?>
     <div class="e-content">
-        <?= $this->getPost()->getContent() ?>
+        <?= $croft->getPost()->getContent() ?>
     </div>
     <?php
 
@@ -68,7 +69,7 @@ require 'header.php';
 
         $dt = new DateTime($mf2ish['item']['properties']['published'][0]);
         $udt = new DateTime();
-        $udt->setTimestamp(filemtime($this->getContentSource()));
+        $udt->setTimestamp(filemtime($croft->getContentSource()));
         $edt = clone $dt;
         $updated = $edt->modify('+30 seconds') < $udt;
 
