@@ -124,7 +124,7 @@ class Session implements SessionA6a, Routable
         }
 
         if (
-            ! password_verify($request->post('userkey'), $this->getConfig()->getPassword())
+            ! password_verify($request->post('userkey'), $this->getConfig()->getPassword() ?? '')
             || $request->post('username') != $this->getConfig()->getUsername()
         ) {
             $this->mergeErrors('The username and password entered did not match the config. Please double-check and try again');
@@ -135,9 +135,7 @@ class Session implements SessionA6a, Routable
         $this->startSession($request);
     }
 
-    /**
-     * @throws Redirect
-     */
+    /** @throws Redirect */
     private function startSession(Request $request): never
     {
         $this->sessionStart();
