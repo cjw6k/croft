@@ -1051,9 +1051,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
         assertContains($arg3, $this->frontMatter[$arg1][$arg2]);
     }
 
-    /**
-     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element :arg4
-     */
+    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element :arg4 */
     public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElement(
         string $arg1,
         string $arg2,
@@ -1069,9 +1067,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
         assertContains($arg4, $this->frontMatter[$arg1][$arg2][$arg3]);
     }
 
-    /**
-     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element the post permalink
-     */
+    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element the post permalink */
     public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThePostPermalink(
         string $arg1,
         string $arg2,
@@ -1086,9 +1082,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
         assertContains($this->micropubPostPermalink, $this->frontMatter[$arg1][$arg2][$arg3]);
     }
 
-    /**
-     * @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element that ends with :arg4
-     */
+    /** @Then the yaml should have a nested array in :arg1 with a nested array in :arg2 with a nested array in :arg3 with an element that ends with :arg4 */
     public function theYamlShouldHaveANestedArrayInWithANestedArrayInWithANestedArrayInWithAnElementThatEndsWith(
         string $arg1,
         string $arg2,
