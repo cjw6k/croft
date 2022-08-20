@@ -47,7 +47,7 @@ return [
                 'description',
                 [
                     'croft: v' . InstalledVersions::getPrettyVersion('croft/croft')
-                    . ' (PHP ' . PHP_VERSION . ' - ' . php_sapi_name() . ')',
+                    . ' (PHP ' . PHP_VERSION . ' - ' . PHP_SAPI . ')',
                 ],
             ],
         ],
