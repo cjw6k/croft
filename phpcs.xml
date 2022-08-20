@@ -15,6 +15,7 @@
         <exclude name="Generic.Files.InlineHTML.Found"/>
         <exclude name="Generic.Files.LineLength.TooLong"/>
         <exclude name="SlevomatCodingStandard.Files.LineLength.LineTooLong"/>
+        <exclude name="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion.DisallowedConstructorPropertyPromotion"/>
     </rule>
 
     <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse">
