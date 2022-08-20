@@ -1,11 +1,5 @@
 <?php
 
-/**
- * The Async class is herein defined.
- *
- * @link https://cj.w6k.ca/
- */
-
 namespace Croft;
 
 use A6A\Aether\Aether;

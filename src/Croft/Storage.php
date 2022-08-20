@@ -242,7 +242,7 @@ class Storage implements StorageInterface
      * @param string $prefix The prefix.
      * @param string $index The index.
      */
-    public function purge(int $segment, string $prefix, string $index)
+    public function purge(int $segment, string $prefix, string $index): void
     {
         $path = $this->_getPathFromSegment($segment);
 

@@ -1,11 +1,5 @@
 <?php
 
-/**
- * The WebFoo class is herein defined.
- *
- * @link https://cj.w6k.ca/
- */
-
 namespace Croft;
 
 use a6a\a6a\Aetheria;
