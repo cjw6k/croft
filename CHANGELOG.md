@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - run-tests using an sh environment, syntax requires bash
 
 ### Changed
-- Fiery-slash PHPCS ruleset (more strict commenting requirements)
+- phpcs coding standard to A6a-relaxed
 
 ## [0.1.1] 2018-06-19
 ### Changed
