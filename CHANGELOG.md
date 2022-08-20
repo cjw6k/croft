@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- renamed the project to Croft
+- renamed source to src
+- moved a bunch of architectural code into lib\a6a
+
+### Removed
+- a bunch of dev dependencies
+- composer.lock
+
 ### Fixed
 - run-tests using an sh environment, syntax requires bash
 
