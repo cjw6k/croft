@@ -1,7 +1,5 @@
 <?php
 
-// todo: check if running in console
-
 use Croft\Console\Hub;
 use Dice\Dice;
 use League\Pipeline\Pipeline;

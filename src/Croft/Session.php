@@ -42,7 +42,7 @@ class Session implements SessionA6a, Routable
     }
 
     /**
-     * Setup the session and start the session handler
+     * Set up the session and start the session handler
      */
     public function start(): void
     {
@@ -101,7 +101,7 @@ class Session implements SessionA6a, Routable
      *
      * @return string The template to render.
      *
-     * @throws Redirect A HTTP redirect is required.
+     * @throws Redirect An HTTP redirect is required.
      */
     public function doLogin(): string
     {
@@ -132,13 +132,21 @@ class Session implements SessionA6a, Routable
             return 'login.php';
         }
 
+        $this->startSession($request);
+    }
+
+    /**
+     * @throws Redirect
+     */
+    private function startSession(Request $request): never
+    {
         $this->sessionStart();
         $request->session('started', now());
         $request->session('logged_in', true);
         $request->session('ssrv', bin2hex(openssl_random_pseudo_bytes(16)));
 
         if ($request->get('redirect_to')) {
-            $redirect_to = urldecode($request->get('redirect_to'));
+            $redirect_to = urldecode($request->get('redirect_to') ?? '');
             throw new Redirect('/' . $redirect_to);
         }
 
@@ -148,7 +156,7 @@ class Session implements SessionA6a, Routable
     /**
      * Logout a user
      *
-     * @throws Redirect A HTTP redirect is required.
+     * @throws Redirect An HTTP redirect is required.
      */
     public function doLogout(): void
     {

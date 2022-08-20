@@ -118,14 +118,7 @@ class Authentication
         ];
 
         $filename = hash('sha1', "[$client_id][$redirect_uri][$code]");
-
-        /**
-         * This is actually needed lol. Remove the suppression if you don't believe it.
-         *
-         * @psalm-suppress UnusedFunctionCall
-         */
         yaml_emit_file(From::VAR->dir() . '/indieauth/auth-' . $filename, $approval);
-
         throw new Redirect($redirect_uri . '?code=' . $code . '&state=' . $state);
     }
 }
