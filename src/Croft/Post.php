@@ -13,6 +13,7 @@ use a6a\a6a\Storage\Storable;
 use a6a\a6a\Storage\Storage;
 use a6a\a6a\Storage\Store;
 use DateTime;
+use DateTimeImmutable;
 
 use function implode;
 use function str_replace;
@@ -23,10 +24,7 @@ use function trim;
 use function substr;
 use function strlen;
 use function rtrim;
-use function getdate;
-use function str_pad;
 
-use const STR_PAD_LEFT;
 use const LOCK_EX;
 
 /**
@@ -58,7 +56,12 @@ class Post implements PostA6a, Routable, Storable
     public function getRoutes(): mixed
     {
         return [
-            new Route('GET', '/{year:[0-9]{4}}/{month:(?:0[0-9])|(?:1[0-2])}/{day:(?:[012][0-9])|(?:3[0-1])}/{post_id:[0-9]+}/', 'sling', ['use_vars' => true]),
+            new Route(
+                'GET',
+                '/{year:[0-9]{4}}/{month:(?:0[0-9])|(?:1[0-2])}/{day:(?:[012][0-9])|(?:3[0-1])}/{post_id:[0-9]+}/',
+                'sling',
+                ['use_vars' => true]
+            ),
         ];
     }
 
@@ -206,28 +209,8 @@ class Post implements PostA6a, Routable, Storable
      */
     private function makeContentPath(int $pub_ts): bool
     {
-        $pub_dt = getdate($pub_ts);
-
-        if (
-            ! isset($pub_dt['year'])
-            || ! isset($pub_dt['mon'])
-            || ! isset($pub_dt['mday'])
-        ) {
-            $this->getResponse()->setCode(500);
-            $this->setResponse(
-                [
-                    'error' => 'broken',
-                    'error_description' => "the server encountered an unspecified internal error and could not complete the request",
-                ]
-            );
-
-            return false;
-        }
-
-        $this->setUrlPath(
-            $pub_dt['year'] . '/' . str_pad($pub_dt['mon'], 2, '0', STR_PAD_LEFT) . '/'
-            . str_pad($pub_dt['mday'], 2, '0', STR_PAD_LEFT) . '/'
-        );
+        $publicationDateTime = new DateTimeImmutable((string)$pub_ts);
+        $this->setUrlPath($publicationDateTime->format('Y/m/d/'));
         $this->setContentPath(From::CONTENT->dir() . $this->getUrlPath());
 
         $storage = $this->getStorage();
