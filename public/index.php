@@ -5,6 +5,7 @@ use Croft\From;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+/** @psalm-suppress UnresolvableInclude */
 (static function (Croft $croft): void {
     $croft->pushCrops();
 })(
