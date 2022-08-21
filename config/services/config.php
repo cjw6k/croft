@@ -1,11 +1,11 @@
 <?php
 
-use Croft\Config;
-use a6a\a6a\Config\Config as ConfigA6a;
+use Croft\Config as CroftConfig;
+use a6a\a6a\Config\Config;
 
 return [
-    ConfigA6a::class => [
-        'instanceOf' => Config::class,
+    Config::class => [
+        'instanceOf' => CroftConfig::class,
         'shared' => true,
     ],
 ];

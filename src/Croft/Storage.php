@@ -35,7 +35,7 @@ class Storage implements StorageA6a
      *
      * @var array<mixed>
      */
-    private array $_stores = [];
+    private array $stores = [];
 
     /**
      * Store a local reference to the active configuration
@@ -65,7 +65,7 @@ class Storage implements StorageA6a
 
      // @phpcs:enable Generic.CodeAnalysis.EmptyStatement.DetectedIf
 
-        $this->_stores[$segment][$prefix] = [
+        $this->stores[$segment][$prefix] = [
             'ingress' => $ingress,
             'egress' => $egress,
         ];
@@ -83,7 +83,7 @@ class Storage implements StorageA6a
      */
     public function hasIndex(int $segment, string $prefix, string $index): bool
     {
-        if (! isset($this->_stores[$segment][$prefix])) {
+        if (! isset($this->stores[$segment][$prefix])) {
             // throw exception
             return false;
         }
@@ -118,7 +118,7 @@ class Storage implements StorageA6a
             return;
         }
 
-        $ingress = $this->_stores[$segment][$prefix]['ingress'];
+        $ingress = $this->stores[$segment][$prefix]['ingress'];
         $content = is_null($ingress) ? $data : $ingress($data);
 
         $parent_path = dirname($path . $prefix . '/' . $index);
@@ -152,7 +152,7 @@ class Storage implements StorageA6a
             return null;
         }
 
-        $egress = $this->_stores[$segment][$prefix]['egress'];
+        $egress = $this->stores[$segment][$prefix]['egress'];
         $content = file_get_contents($path . $prefix . '/' . $index);
 
         return is_null($egress) ? $content : $egress($content);

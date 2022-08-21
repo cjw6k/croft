@@ -37,7 +37,6 @@ class Aetheria
 {
     use Aether;
 
-    /** @param array<Extension>|null $extensions Optional extensions. */
     public function __construct(
         Async $async,
         Config $config,
@@ -49,7 +48,6 @@ class Aetheria
         Router $router,
         Session $session,
         Storage $storage,
-        ?array $extensions = null
     ) {
         $this->service('config', $config);
         $this->service('request', $request);
@@ -66,18 +64,6 @@ class Aetheria
             $this->serviceRoutes($service);
             $this->serviceStores($service);
         }
-
-        if (! empty($extensions)) {
-            foreach ($extensions as $extension) {
-                $this->_extend($extension);
-            }
-        }
-
-        if (! $this->hasHTTPLinks()) {
-            return;
-        }
-
-        $this->getResponse()->mergeHeaders('Link: ' . implode(',', $this->getHTTPLinks()));
     }
 
     /**
@@ -171,10 +157,10 @@ class Aetheria
      *
      * @param Extension $extension The extension.
      */
-    private function extend(Extension $extension): void
+    public function extend(Extension $extension): void
     {
         $class_path_parts = explode('\\', $extension::class);
-        $class_index = $this->_underscore(array_pop($class_path_parts));
+        $class_index = $this->asLabel(array_pop($class_path_parts));
 
         $this->mergeExtensions($class_index);
 
@@ -235,7 +221,7 @@ class Aetheria
         }
 
         foreach ($links as $link) {
-            $this->mergeHTTPLinks($link);
+            $this->mergeHttpLinks($link);
         }
     }
 

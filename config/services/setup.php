@@ -1,10 +1,11 @@
 <?php
 
-use a6a\a6a\Setup\Setup as SetupA6a;
-use Croft\Setup;
+use a6a\a6a\Setup\Setup;
+use Croft\Setup as CroftSetup;
 
 return [
-    SetupA6a::class => [
-        'instanceOf' => Setup::class,
+    Setup::class => [
+        'instanceOf' => CroftSetup::class,
+        'shared' => true,
     ],
 ];

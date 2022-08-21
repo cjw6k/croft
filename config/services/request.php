@@ -1,10 +1,11 @@
 <?php
 
-use a6a\a6a\Request\Request as RequestA6a;
-use Croft\Request;
+use a6a\a6a\Request\Request;
+use Croft\Request as CroftRequest;
 
 return [
-    RequestA6a::class => [
-        'instanceOf' => Request::class,
+    Request::class => [
+        'instanceOf' => CroftRequest::class,
+        'shared' => true,
     ],
 ];

@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: WebFoo permits departure from the IndieAuth spec for exceptional clients specified in the config file
 	In order to permit inaccurate implementations of the spec
 	As a webfoo site owner

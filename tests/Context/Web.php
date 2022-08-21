@@ -10,6 +10,7 @@ use function PHPUnit\Framework\assertContains;
 use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFileDoesNotExist;
+use function PHPUnit\Framework\assertFileExists;
 use function PHPUnit\Framework\assertIsArray;
 use function PHPUnit\Framework\assertIsObject;
 use function PHPUnit\Framework\assertNotNull;
@@ -45,9 +46,8 @@ trait Web
      * You can also pass arbitrary arguments to the
      * context constructor through behat.yml.
      */
-    public function __construct(string $base_url = 'http://127.0.0.1')
+    public function __construct()
     {
-        $this->base_url = $base_url;
     }
 
     /** @BeforeScenario @user_exists */
@@ -57,12 +57,13 @@ trait Web
         yaml_emit_file(
             From::___->dir() . 'config.yml',
             [
-                'title' => 'WebFoo',
+                'title' => 'Croft',
                 'username' => 'test',
                 'password' => password_hash('test', PASSWORD_DEFAULT),
                 'me' => 'http://localhost/',
             ]
         );
+        assertFileExists(From::___->dir() . 'config.yml');
     }
 
     /** @BeforeScenario @config_indieauth_exceptions */
@@ -147,12 +148,14 @@ trait Web
     public function iAmOnARandomPathThatDoesntExist(): void
     {
         $this->getSession()->visit(
-            $this->base_url . sprintf(
-                '%s/%s/%s/%s',
-                $this->randomString(),
-                $this->randomString(),
-                $this->randomString(),
-                $this->randomString()
+            $this->locatePath(
+                sprintf(
+                    '%s/%s/%s/%s',
+                    $this->randomString(),
+                    $this->randomString(),
+                    $this->randomString(),
+                    $this->randomString()
+                )
             )
         );
     }
@@ -190,11 +193,12 @@ trait Web
 
     public function doLogIn(string $username, string $password): void
     {
-        $this->getSession()->visit('/login/');
+        $this->getSession()->visit($this->locatePath('/login/'));
         $page = $this->getSession()->getPage();
         $page->find('named', ['field', 'username'])->setValue($username);
         $page->find('named', ['field', 'userkey'])->setValue($password);
         $page->find('css', 'button[type=submit]')->submit();
+        $this->assertPageAddress($this->locatePath('/'));
     }
 
     /** @Then there should be an HTTP :arg1 header with value :arg2 */
@@ -309,7 +313,7 @@ trait Web
     /** @Then the json :arg1 parameter should be base_url plus :arg2 */
     public function theJsonParameterShouldBeBaseUrlPlus(string $arg1, string $arg2): void
     {
-        $this->theJsonParameterShouldBe($arg1, rtrim($this->base_url, '/') . $arg2);
+        $this->theJsonParameterShouldBe($arg1, $this->locatePath($arg2));
     }
 
     /** @Then the json :arg1 parameter should be the empty string */
@@ -388,6 +392,6 @@ trait Web
     /** @Given I make a POST request to the home page */
     public function iMakeAPostRequestToTheHomePage(): void
     {
-        $this->getSession()->getDriver()->getClient()->request('POST', '/');
+        $this->getSession()->getDriver()->getClient()->request('POST', $this->locatePath('/'));
     }
 }

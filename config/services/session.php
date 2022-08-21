@@ -1,10 +1,11 @@
 <?php
 
-use a6a\a6a\Session\Session as SessionA6a;
-use Croft\Session;
+use a6a\a6a\Session\Session;
+use Croft\Session as CroftSession;
 
 return [
-    SessionA6a::class => [
-        'instanceOf' => Session::class,
+    Session::class => [
+        'instanceOf' => CroftSession::class,
+        'shared' => true,
     ],
 ];

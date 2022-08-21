@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: Passing the tests at micropub.rocks
 	In order to pass the tests at micropub.rocks
 	As a micropub server

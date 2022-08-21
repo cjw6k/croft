@@ -90,35 +90,35 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     /** @When the client tries to discover the authorization endpoint */
     public function theClientTriesToDiscoverTheAuthorizationEndpoint(): void
     {
-        $this->authUrl = Client::discoverAuthorizationEndpoint($this->base_url);
+        $this->authUrl = Client::discoverAuthorizationEndpoint($this->locatePath('/'));
         assertNotEmpty($this->authUrl);
     }
 
     /** @Then the authorization_endpoint is base_url plus :arg1 */
     public function theAuthorizationEndpointIsBaseURLPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->authUrl);
+        assertEquals($this->locatePath($arg1), $this->authUrl);
     }
 
     /** @When the client tries to discover the token endpoint */
     public function theClientTriesToDiscoverTheTokenEndpoint(): void
     {
-        $this->_token_url = Client::discoverTokenEndpoint($this->base_url);
+        $this->_token_url = Client::discoverTokenEndpoint($this->locatePath('/'));
         assertNotEmpty($this->_token_url);
     }
 
     /** @Then the token_endpoint is base_url plus :arg1 */
     public function theTokenEndpointIsBaseUrlPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->_token_url);
+        assertEquals($this->locatePath($arg1), $this->_token_url);
     }
 
     /** @Given I receive an authentication request */
     public function iReceiveAnAuthenticationRequest(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://example.com/',
             'https://example.com/',
             'test',
@@ -131,7 +131,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     /** @Given I am not logged in */
     public function iAmNotLoggedIn(): void
     {
-        $this->getSession()->visit('/');
+        $this->getSession()->visit($this->locatePath('/'));
         $this->getSession()->setCookie('webfoo', null);
     }
 
@@ -139,7 +139,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasNoMeParameter(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
             '',
             'https://example.com/',
             'https://example.com/',
@@ -155,7 +155,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasMeParameter(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
             $arg1,
             'https://example.com/',
             'https://example.com/',
@@ -170,8 +170,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasNoClientIdParameter(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://example.com/',
             '',
             'test',
@@ -186,8 +186,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasClientId(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://example.com/',
             $arg1,
             'test',
@@ -201,8 +201,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasNoRedirectUriParameter(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             '',
             'https://example.com/',
             'test',
@@ -217,8 +217,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasRedirectUriParameter(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($$this->locatePath('/')),
+            $this->locatePath('/'),
             $arg1,
             'https://example.com/',
             'test',
@@ -232,8 +232,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasRedirectUriParameterWithClientId(string $arg1, string $arg2): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             $arg1,
             $arg2,
             'test',
@@ -247,8 +247,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasNoStateParameter(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://example.com/',
             'https://example.com/',
             '',
@@ -263,8 +263,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthenticationRequestHasScopeParameter(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://example.com/',
             'https://example.com/',
             'test',
@@ -279,8 +279,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function iReceiveAnAuthenticationRequestFrom(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             $arg1,
             $arg1,
             'test',
@@ -309,7 +309,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/auth/',
+            $this->locatePath('/auth/'),
             [
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
@@ -323,8 +323,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->iAmLoggedIn();
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -344,7 +344,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/auth/',
+            $this->locatePath('/auth/'),
             [
                 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
@@ -358,7 +358,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/auth/',
+            $this->locatePath('/auth/'),
             [
                 // 'client_id' => 'http://localhost/fake/',
                 'redirect_uri' => 'http://localhost/fake/',
@@ -372,7 +372,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/auth/',
+            $this->locatePath('/auth/'),
             [
                 'client_id' => 'http://localhost/fake/',
                 // 'redirect_uri' => 'http://localhost/fake/',
@@ -432,8 +432,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function iReceiveAnAuthorizationRequest(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -447,8 +447,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function iReceiveAnAuthorizationRequestWithClientIdAndRedirectUri(string $arg1, string $arg2): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             $arg2,
             $arg1,
             'test',
@@ -462,8 +462,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theAuthorizationRequestIsMissingTheScopeParameter(): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -479,8 +479,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function iReceiveAnAuthorizationRequestWithScopeParameter(string $arg1): void
     {
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -521,8 +521,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->iAmLoggedIn();
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -540,11 +540,11 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     /** @When the client requests a token */
     public function theClientRequestsAToken(): void
     {
-        $token_endpoint = Client::discoverTokenEndpoint($this->base_url);
+        $token_endpoint = Client::discoverTokenEndpoint($this->locatePath('/'));
         Client::getAccessToken(
             $token_endpoint,
             $this->indieAuthCode,
-            $this->base_url,
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'secret'
@@ -709,8 +709,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->iAmLoggedIn();
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'http://localhost/fake/',
             'http://localhost/fake/',
             'test',
@@ -825,14 +825,14 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     /** @When the client tries to discover the micropub endpoint */
     public function theClientTriesToDiscoverTheMicropubEndpoint(): void
     {
-        $this->micropubEndpoint = Client::discoverMicropubEndpoint($this->base_url);
+        $this->micropubEndpoint = Client::discoverMicropubEndpoint($this->locatePath('/'));
         assertNotEmpty($this->micropubEndpoint);
     }
 
     /** @Then the micropub endpoint is base_url plus :arg1 */
     public function theMicropubEndpointIsBaseUrlPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->micropubEndpoint);
+        assertEquals($this->locatePath($arg1), $this->micropubEndpoint);
     }
 
     /** @When I receive a micropub request */
@@ -871,8 +871,8 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->iAmLoggedIn();
         $authorization_url = Client::buildAuthorizationURL(
-            Client::discoverAuthorizationEndpoint($this->base_url),
-            $this->base_url,
+            Client::discoverAuthorizationEndpoint($this->locatePath('/')),
+            $this->locatePath('/'),
             'https://micropub.rocks/fake/',
             'https://micropub.rocks/fake/',
             'test',
@@ -1311,14 +1311,14 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     public function theClientTriesToDiscoverTheWebmentionEndpoint(): void
     {
         $client = new MentionClient();
-        $this->webmentionUrl = $client->discoverWebmentionEndpoint($this->base_url);
+        $this->webmentionUrl = $client->discoverWebmentionEndpoint($this->locatePath('/'));
         assertNotEmpty($this->webmentionUrl);
     }
 
     /** @Then the webmention endpoint is base_url plus :arg1 */
     public function theWebmentionEndpointIsBaseUrlPlus(string $arg1): void
     {
-        assertEquals(rtrim($this->base_url, '/') . $arg1, $this->webmentionUrl);
+        assertEquals($this->locatePath($arg1), $this->webmentionUrl);
     }
 
     /** @Given I receive a webmention that has no target parameter */
@@ -1326,7 +1326,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/webmention/',
+            $this->locatePath('/webmention/'),
             [
                 // 'target' => 'http://localhost/',
                 'source' => 'http://localhost/',
@@ -1339,7 +1339,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/webmention/',
+            $this->locatePath('/webmention/'),
             [
                 'target' => 'http://localhost/',
                 // 'source' => 'http://localhost/',
@@ -1382,7 +1382,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     {
         $this->getSession()->getDriver()->getClient()->request(
             'POST',
-            '/webmention/',
+            $this->locatePath('/webmention/'),
             [
                 'target' => $arg1,
                 'source' => $arg2,
@@ -1495,7 +1495,7 @@ class NotPrivate extends MinkContext implements Context, SnippetAcceptingContext
     /** @Given I have an incoming webmention spooled for verification with target base_url plus :arg1 */
     public function iHaveAnIncomingWebmentionSpooledForVerificationWithTargetBaseUrlPlus(string $arg1): void
     {
-        $this->spoolIncomingWebmention($this->base_url . $arg1, 'http://localhost/fake2/');
+        $this->spoolIncomingWebmention($this->locatePath($arg1), 'http://localhost/fake2/');
     }
 
     /** @Given I have an incoming webmention spooled for verification with target the post permalink and source :arg1 */

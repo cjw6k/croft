@@ -1,10 +1,11 @@
 <?php
 
-use a6a\a6a\Response\Response as ResponseA6a;
-use Croft\Response;
+use a6a\a6a\Response\Response;
+use Croft\Response as CroftResponse;
 
 return [
-    ResponseA6a::class => [
-        'instanceOf' => Response::class,
+    Response::class => [
+        'instanceOf' => CroftResponse::class,
+        'shared' => true,
     ],
 ];

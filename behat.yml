@@ -1,22 +1,28 @@
 default:
-  autoload:
-    '': '%paths.base%/tests/contexts'
+  suites:
+    cli:
+      paths:
+        - '%paths.base%/tests/features/cli'
+      contexts:
+        - Tests\Context\Cli: ~
+    public:
+      paths:
+        - '%paths.base%/tests/features/public'
+      contexts:
+        - Tests\Context\NotPrivate: ~
+    private:
+      paths:
+        - '%paths.base%/tests/features/private'
+      contexts:
+        - Tests\Context\NotPublic: ~
   extensions:
     Behat\MinkExtension:
-      base_url: 'http://localhost/'
-      goutte: ~
-  suites:
-    public:
-      paths: [ '%paths.base%/tests/features/public' ]
-      contexts:
-       - PublicContext:
-           base_url: 'http://localhost/'
-    private:
-      paths: [ '%paths.base%/tests/features/private' ]
-      contexts:
-       - PrivateContext:
-           base_url: 'http://localhost/'
-    cli:
-      paths: [ '%paths.base%/tests/features/cli' ]
-      contexts:
-       - CLIContext:
+      browserkit_http: ~
+      base_url: http://localhost:8080/
+      default_session: browserkit_http
+      javascript_session: selenium2
+      browser_name: firefox
+      selenium2:
+        capabilities:
+        browser: "firefox"
+        wd_host: http://localhost:4444/wd/hub

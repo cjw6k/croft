@@ -306,7 +306,7 @@ class Post implements PostA6a, Routable, Storable
      * @param string $index The index to the data store.
      *
      * @return bool True The index is set in storage.
- * False The index is not set in storage.
+     *              False The index is not set in storage.
      */
     private function hasStored(string $index): bool
     {

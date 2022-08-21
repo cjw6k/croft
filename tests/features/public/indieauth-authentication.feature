@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: WebFoo provides an indieauth server for logging into other sites
 	In order to log in to other sites
 	As a webfoo site owner
