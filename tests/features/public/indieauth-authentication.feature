@@ -5,7 +5,7 @@ Feature: WebFoo provides an indieauth server for logging into other sites
 
 	Scenario: Discovery available to clients with HTTP link header
 		Given I am on "/"
-		Then there should be an HTTP "Link" header with value '</auth/>; rel="authorization_endpoint"'
+		Then there should be an HTTP "link" header with value '</auth/>; rel="authorization_endpoint"'
 
 	Scenario: Discovery available to clients with HTML link element
 		Given I am on "/"

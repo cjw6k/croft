@@ -228,6 +228,7 @@ class Aetheria
     public function some(): void
     {
         $response = $this->getResponse();
+        $response->mergeHeaders('Link: ' . implode(',', $this->getHttpLinks()));
 
         try {
             $this->getSession()->start();
