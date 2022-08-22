@@ -1,38 +1,50 @@
 <?php
 
-include 'header.php';
+use Croft\Croft;
+
+/** @var Croft $croft */
+$croft = $this;
+
+require 'header.php';
 
 ?>
 <a href="/">home</a>
 <?php
 
-if($this->getSession()->hasErrors()){
+if ($croft->getSession()->hasErrors()) {
+    ?>
+    <p>Log In Error</p>
+    <ul>
+    <?php
 
-	?>
-	<p>Log In Error</p>
-	<ul>
-	<?php
+    foreach ($croft->getSession()->getErrors() as $error) {
+        if (! is_string($error)) {
+            continue;
+        }
 
-	foreach($this->getSession()->getErrors() as $error){
+        ?>
+        <li><?= $error ?></li>
+        <?php
+    }
 
-		?>
-		<li><?= $error ?></li>
-		<?php
+    ?>
+    </ul>
+    <?php
+}
 
-	}
+/** @var string|false|null $url */
+$url = filter_input(INPUT_SERVER, 'REQUEST_URI');
 
-	?>
-	</ul>
-	<?php
-
+if (! is_string($url)) {
+    $url = 'SELF';
 }
 
 ?>
-<form action="<?= filter_input(INPUT_SERVER, 'REQUEST_URI') ?>" method="POST">
-	Username <input type="text" name="username">
-	Password <input type="password" name="userkey">
-	<button type="submit">Log In</button>
+<form action="<?= $url ?>" method="POST">
+    Username <input type="text" name="username">
+    Password <input type="password" name="userkey">
+    <button type="submit">Log In</button>
 </form>
 <?php
 
-include 'footer.php';
+require 'footer.php';

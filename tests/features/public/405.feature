@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: The 405 page provides information about method not allowed results
 	In order to recover from a method not allowed result
 	As a visitor

@@ -1,0 +1,13 @@
+   ___             -
+  / (_)           | |              Welcome to Croft!
+ |      ,_    __  | |_|-
+ |     /  |  / (\_|/  |            This setup process will ask the title of your
+  \___/   |_/\__/ |__/|_/          website and the URL to get things going behind
+                  |\               the scenes. You will choose a username and
+                  |/               receive a temporary password that you can use
+                                   to login anywhere that supports IndieAuth.
+
+                                   The rest is up to you!
+
+
+                                   glhf

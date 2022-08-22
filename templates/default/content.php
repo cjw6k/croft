@@ -1,84 +1,84 @@
 <?php
 
-$mf2ish = $this->getPost()->getFrontMatter();
+use Croft\Croft;
 
-if(isset($mf2ish['item']['properties']['visibility'][0])){
-	switch($mf2ish['item']['properties']['visibility'][0]){
-		case 'private':
-		case 'draft':
-			if(!$this->getSession()->isLoggedIn()){
-				$this->_sling404();
-				return;
-			}
-	}
+/** @var Croft $croft */
+$croft = $this;
+
+$mf2ish = $croft->getPost()->getFrontMatter();
+
+if (isset($mf2ish['item']['properties']['visibility'][0])) {
+    switch ($mf2ish['item']['properties']['visibility'][0]) {
+        case 'private':
+        case 'draft':
+            if (! $croft->getSession()->isLoggedIn()) {
+                $croft->sling404();
+
+                return;
+            }
+    }
 }
 
-include 'header.php';
+require 'header.php';
 
 ?>
 <article class="<?= implode(' ', $mf2ish['item']['type']) ?>">
-	<?php
+    <?php
 
-	if(isset($mf2ish['item']['properties']['name'])){
+    if (isset($mf2ish['item']['properties']['name'])) {
+        ?>
+        <header>
+            <h2 class="p-name"><?= $mf2ish['item']['properties']['name'][0] ?></h2>
+        </header>
+        <?php
+    }
 
-		?>
-		<header>
-			<h2 class="p-name"><?= $mf2ish['item']['properties']['name'][0] ?></h2>
-		</header>
-		<?php
+    ?>
+    <div class="e-content">
+        <?= $croft->getPost()->getContent() ?>
+    </div>
+    <?php
 
-	}
+    if (isset($mf2ish['item']['properties']['photo'])) {
+        foreach ($mf2ish['item']['properties']['photo'] as $photo) {
+            ?>
+            <a href="<?= $photo ?>"><img class="u-photo" src="<?= $photo ?>"></a>
+            <?php
+        }
+    }
 
-	?>
-	<div class="e-content">
-		<?= $this->getPost()->getContent() ?>
-	</div>
-	<?php
+    ?>
+    <footer>
+        <?php
 
-	if(isset($mf2ish['item']['properties']['photo'])){
-		foreach($mf2ish['item']['properties']['photo'] as $photo){
+        if (isset($mf2ish['item']['properties']['category'])) {
+            ?>
+            <ul>
+            <?php
 
-			?>
-			<a href="<?= $photo ?>"><img class="u-photo" src="<?= $photo ?>"></a>
-			<?php
+            foreach ($mf2ish['item']['properties']['category'] as $category) {
+                ?>
+                <li class="p-category"><?= $category ?></li>
+                <?php
+            }
 
-		}
-	}
+            ?>
+            </ul>
+            <?php
+        }
 
-	?>
-	<footer>
-		<?php
+        $dt = new DateTime($mf2ish['item']['properties']['published'][0]);
+        $udt = new DateTime();
+        $udt->setTimestamp(filemtime($croft->getContentSource()));
+        $edt = clone $dt;
+        $updated = $edt->modify('+30 seconds') < $udt;
 
-		if(isset($mf2ish['item']['properties']['category'])){
-
-			?>
-			<ul>
-			<?php
-
-			foreach($mf2ish['item']['properties']['category'] as $category){
-
-				?>
-				<li class="p-category"><?= $category ?></li>
-				<?php
-
-			}
-
-			?>
-			</ul>
-			<?php
-
-		}
-
-		$dt = new DateTime($mf2ish['item']['properties']['published'][0]);
-		$udt = new DateTime();
-		$udt->setTimestamp(filemtime($this->getContentSource()));
-		$edt = clone $dt;
-		$updated = $edt->modify('+30 seconds') < $udt;
-
-		?>
-		<p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a><?= $updated ? ('&mdash; Updated: <time class="dt-updated" datetime="' . $udt->format('c') .'">' . $udt->format('c') . '</time>') : '' ?></p>
-	</footer>
+        ?>
+        <p>Published: <a class="u-uid" href="<?= $mf2ish['item']['properties']['uid'][0] ?>"><time class="dt-published" datetime="<?= $dt->format('c') ?>"><?= $dt->format('c') ?></time></a><?= $updated
+        ? ('&mdash; Updated: <time class="dt-updated" datetime="' . $udt->format('c') . '">' . $udt->format('c') . '</time>')
+        : '' ?></p>
+    </footer>
 </article>
 <?php
 
-include 'footer.php';
+require 'footer.php';

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ruleset>
+    <arg value="ps"/>
+    <arg name="colors"/>
+
+    <exclude-pattern>./tests/coverage</exclude-pattern>
+
+    <rule ref="A6a-relaxed">
+        <exclude name="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses.IncorrectlyOrderedUses"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.UseSpacing.IncorrectLinesCountBeforeFirstUse"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.UseSpacing.IncorrectLinesCountBetweenSameTypeOfUse"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse"/>
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+        <exclude name="Internal.NoCodeFound"/>
+        <exclude name="Generic.Files.InlineHTML.Found"/>
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+        <exclude name="SlevomatCodingStandard.Files.LineLength.LineTooLong"/>
+        <exclude name="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion.DisallowedConstructorPropertyPromotion"/>
+        <exclude name="Generic.Formatting.SpaceBeforeCast.NoSpace"/>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse">
+        <exclude-pattern>lib/a6a/a6a/From.php</exclude-pattern>
+        <exclude-pattern>src/Croft/From.php</exclude-pattern>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing.IncorrectLinesCountBeforeFirstUse">
+        <exclude-pattern>lib/a6a/a6a/From.php</exclude-pattern>
+        <exclude-pattern>src/Croft/From.php</exclude-pattern>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing.IncorrectLinesCountBetweenSameTypeOfUse">
+        <exclude-pattern>lib/a6a/a6a/From.php</exclude-pattern>
+        <exclude-pattern>src/Croft/From.php</exclude-pattern>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses.IncorrectlyOrderedUses">
+        <exclude-pattern>lib/a6a/a6a/From.php</exclude-pattern>
+        <exclude-pattern>src/Croft/From.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>tests/contexts</exclude-pattern>
+    </rule>
+
+    <rule ref="Internal.NoCodeFound">
+        <exclude-pattern>templates</exclude-pattern>
+    </rule>
+
+    <rule ref="Generic.Files.InlineHTML.Found">
+        <exclude-pattern>templates</exclude-pattern>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength.TooLong">
+        <exclude-pattern>templates</exclude-pattern>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.LineLength.LineTooLong">
+        <exclude-pattern>templates</exclude-pattern>
+    </rule>
+
+</ruleset>

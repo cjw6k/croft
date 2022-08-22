@@ -1,9 +1,9 @@
 <?php
 
-include 'header.php';
+require 'header.php';
 
 ?>
 <a href="/">home</a>
 <?php
 
-include 'footer.php';
+require 'footer.php';

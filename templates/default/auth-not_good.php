@@ -1,6 +1,11 @@
 <?php
 
-include 'header.php';
+use Croft\Croft;
+
+/** @var Croft $croft */
+$croft = $this;
+
+require 'header.php';
 
 ?>
 <p>Nope</p>
@@ -8,16 +13,14 @@ include 'header.php';
 <ul>
 <?php
 
-foreach($this->getIndieAuth()->getErrors() as $error){
-
-	?>
-	<li><?= $error ?></li>
-	<?php
-
+foreach ($croft->getIndieAuth()->getErrors() as $error) {
+    ?>
+    <li><?= $error ?></li>
+    <?php
 }
 
 ?>
 </ul>
 <?php
 
-include 'footer.php';
+require 'footer.php';

@@ -1,29 +1,36 @@
 <?xml version="1.0"?>
 <psalm
-    totallyTyped="false"
-    errorLevel="5"
-    resolveFromConfigFile="false"
-    findUnusedVariablesAndParams="true"
-    ensureArrayStringOffsetsExist="true"
-    skipChecksOnUnresolvableIncludes="true"
+    errorLevel="2"
+    resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
 	<projectFiles>
-		<directory name="source" />
-		<directory name="public" />
+
 		<directory name="bin" />
+		<directory name="lib" />
+		<directory name="public" />
+		<directory name="src" />
 		<directory name="templates" />
+
 		<ignoreFiles>
 			<directory name="vendor" />
 		</ignoreFiles>
+
 	</projectFiles>
+
+	<!--
+Invalid Scope: IIRC template files are "included" code; it was quick and easy though! :/
+	-->
 	<issueHandlers>
+
 		<InvalidScope>
 			<errorLevel type="suppress">
 				<directory name="templates" />
 			</errorLevel>
 		</InvalidScope>
+
 	</issueHandlers>
+
 </psalm>

@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: Sending and received webmentions
 	In order to use notify and be notified when blogs mention each other
 	As a webfoo site owner
@@ -11,7 +10,7 @@ Feature: Sending and received webmentions
 	Scenario: Discovery available to clients with HTML link element
 		Given I am on "/"
 		Then there should be a link element with rel "webmention" and href "/webmention/"
-	
+
 	Scenario: Discovery with the IndieWeb\mention-client library
 		Given I use the mention-client library
 		When the client tries to discover the webmention endpoint
@@ -108,12 +107,12 @@ Feature: Sending and received webmentions
 		  | target                          |
 		  | "auth/"                         |
 		  | "token/"                        |
-		  | "micropub/"                     |		  
+		  | "micropub/"                     |
 		  | "login/"                        |
 		  | "logout/"                       |
 		  | "webmention/"                   |
 		  | "2020/07/04/1/media/photo1.jpg" |
-		  
+
 	Scenario: Receiving a webmention with target and source set to the same url
 		Given I receive a webmention that has target parameter "http://localhost/" and source parameter "http://localhost/"
 		Then the response status code should be 400
@@ -193,6 +192,3 @@ Feature: Sending and received webmentions
 		And there should be 0 like webmentions
 		And there should be 0 bookmark webmentions
 		And there should be 0 reply webmentions
-		
-
-

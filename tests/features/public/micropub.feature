@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: Managing content using third-party client applications with the Micropub method
 	In order to manage my webfoo site
 	As a micropub client user

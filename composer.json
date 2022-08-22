@@ -1,10 +1,10 @@
 {
-	"name": "cjw6k/webfoo",
-	"description": "Web stuff slingin' thinger",
-	"homepage": "https://code.cjwillcock.ca/cjwillcock/webfoo",
-	"version": "0.1.0",
+	"name": "croft/croft",
+	"description": "",
+	"homepage": "https://packagist.org/croft/croft",
+	"version": "0.2.0",
 	"type": "project",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"authors": [
@@ -14,31 +14,76 @@
 		}
 	],
 	"require": {
+		"php": "^8.1",
+		"ext-curl": "*",
+		"ext-fileinfo": "*",
+		"ext-openssl": "*",
 		"ext-yaml": "*@stable",
-		"nikic/fast-route": "*@stable",
 		"a6a/aether": "*@stable",
-		"level-2/dice": "^4.0"
+		"a6a/fromdir": "dev-main",
+		"cjw6k/chapeau": "^1.1",
+		"filp/whoops": "^2.14",
+		"league/climate": "^3.8",
+		"level-2/dice": "^4.0",
+		"nikic/fast-route": "*@stable",
+		"nunomaduro/collision": "^6.2",
+		"psy/psysh": "^0.11.8",
+		"vlucas/phpdotenv": "^5.4"
 	},
 	"require-dev": {
+		"a6a/coding-standards": "^0.1.4",
+		"behat/behat": "^3.11",
+		"behat/mink": "^1.10",
+		"behat/mink-browserkit-driver": "^2.1",
+		"behat/mink-selenium2-driver": "^1.6",
+		"friends-of-behat/mink-extension": "^2.7",
 		"indieauth/client": "^0.5.2",
 		"indieweb/mention-client": "^1.2",
-		"vimeo/psalm": "^4.26",
 		"phpunit/phpunit": "^9.5",
-		"a6a/coding-standards": "^0.1.4"
+		"symfony/http-client": "^6.1",
+		"symfony/mime": "^6.1",
+		"vimeo/psalm": "^4.26"
 	},
 	"autoload": {
 		"psr-4": {
-			"cjw6k\\": "src"
+			"Croft\\": "src\\Croft",
+			"a6a\\": "lib\\a6a"
 		},
 		"files": [
-			"src/constants.php",
+			"bootstrap/handlers.php",
+			"bootstrap/env.php",
 			"src/utilities.php"
+		]
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests"
+		},
+		"files": [
+			"vendor/phpunit/phpunit/src/Framework/Assert/Functions.php"
 		]
 	},
 	"config": {
 		"allow-plugins": {
 			"composer/package-versions-deprecated": true,
 			"dealerdirect/phpcodesniffer-composer-installer": true
-		}
+		},
+		"sort-packages": true
+	},
+	"scripts": {
+		"phpcs": [
+			"vendor/bin/phpcs --standard=phpcs.xml bin bootstrap config lib public src templates tests .psysh.php"
+		],
+		"psalm": [
+			"vendor/bin/psalm -c psalm.xml"
+		],
+		"phpunit": [
+			"vendor/bin/phpunit -c phpunit.xml --coverage-filter src --coverage-html qa/coverage"
+		],
+		"qa" : [
+			"@phpcs",
+			"@psalm",
+			"@phpunit"
+		]
 	}
 }

@@ -1,4 +1,3 @@
-@mink:goutte
 Feature: WebFoo provides an indieauth server for clients to interact with a WebFoo site
 	In order to permit clients to modify the site
 	As a webfoo site owner
