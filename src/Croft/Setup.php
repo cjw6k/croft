@@ -19,7 +19,7 @@ use const PASSWORD_DEFAULT;
 use const PHP_EOL;
 
 /**
- * The Setup completes first-time configuratrion of WebFoo
+ * The Setup completes first-time configuration.
  *
  * Setup is triggered by running the setup.php script in the bin folder of the package root.
  *
@@ -100,10 +100,10 @@ class Setup implements SetupA6a
 
     public function configure(CLImate $cli): int
     {
-        $password = substr(base64_encode(random_bytes(12)), 0, 16);
+        $password = substr(base64_encode(openssl_random_pseudo_bytes(12)), 0, 16);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $this->setUsername($cli->yellow()->input('Choose your username:')->prompt());
+        $this->setUsername($cli->br()->yellow()->input('Choose your username:')->prompt());
         $this->setUrl($cli->yellow()->input('The URL:')->prompt());
 
         $config = [
@@ -113,12 +113,12 @@ class Setup implements SetupA6a
         ];
 
         if (! yaml_emit_file(From::___->dir() . 'config.yml', $config)) {
-            echo 'setup.php: An error occured writing the config to ' . From::___->dir() . 'config.yml.';
+            $cli->error('setup.php: An error occured writing the config to ' . From::___->dir() . 'config.yml.');
 
             return 1;
         }
 
-        echo 'setup.php: Done! Enjoy WebFoo!', PHP_EOL, 'Your temporary password is: ', $password, PHP_EOL;
+        $cli->lightGreen()->br()->out('setup.php: Done!')->br()->out("Your temporary password is: {$password}");
 
         return 0;
     }

@@ -3,6 +3,7 @@
 namespace Croft\Console;
 
 use a6a\a6a\Setup\Setup;
+use Chapeau\ConsoleApp;
 use Croft\Croft;
 use Croft\From;
 use League\CLImate\CLImate;
@@ -19,7 +20,7 @@ class Hub implements StageInterface
     {
     }
 
-    public function __invoke(mixed $payload = []): void
+    public function __invoke(mixed $payload = []): mixed
     {
         if (! file_exists(From::___->dir() . 'config.yml')) {
             $this->cli->info()->animation('croft')->speed(250)->run();
@@ -27,12 +28,12 @@ class Hub implements StageInterface
             if (! $this->cli->lightBlue()->confirm('Start setup?')->confirmed()) {
                 $this->cli->error('Croft must be setup before it may be used.');
 
-                return;
+                return ConsoleApp::EXIT_FAILURE;
             }
 
             $this->croft->setup($this->cli, $this->setup);
         }
 
-        $this->cli->out(gettype($payload));
+        return ConsoleApp::EXIT_SUCCESS;
     }
 }
